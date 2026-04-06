@@ -1,0 +1,7 @@
+/vendor/
+/assets/uploads/logos/*
+/assets/uploads/pdfs/*
+!assets/uploads/logos/.gitkeep
+!assets/uploads/pdfs/.gitkeep
+.env
+*.log
