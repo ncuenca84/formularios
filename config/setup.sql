@@ -52,6 +52,29 @@ INSERT INTO configuracion (clave, valor) VALUES
 ('texto_post_envio', 'Descargue el documento, firmelo con FirmaEC y envielo al correo: soporte@tudominio.com')
 ON DUPLICATE KEY UPDATE clave = clave;
 
+-- Tabla de metadatos por formulario (encabezado institucional)
+CREATE TABLE IF NOT EXISTS formularios_meta (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    formulario_id INT NOT NULL,
+    codigo_doc VARCHAR(50) NOT NULL DEFAULT '',
+    version VARCHAR(10) NOT NULL DEFAULT '01',
+    nro_acta VARCHAR(20) NOT NULL DEFAULT '',
+    fecha_aprobacion VARCHAR(20) NOT NULL DEFAULT '',
+    titulo_encabezado VARCHAR(255) NOT NULL DEFAULT '',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_formulario (formulario_id)
+) ENGINE=InnoDB;
+
+-- Insertar metadatos por defecto para cada formulario
+INSERT INTO formularios_meta (formulario_id, codigo_doc, version, nro_acta, fecha_aprobacion, titulo_encabezado) VALUES
+(1, 'GTIC.PA.FO.01', '01', '021', '27/01/2026', 'ACUERDO DE CONFIDENCIALIDAD Y NO DIVULGACION DE INFORMACION CON TERCEROS'),
+(2, 'GTIC.PA.FO.02', '01', '021', '27/01/2026', 'SOLICITUD DE ACCESO A SISTEMAS PARA TERCEROS'),
+(3, 'GTIC.PA.FO.03', '01', '021', '27/01/2026', 'SOLICITUD DE ACCESO A LOS SISTEMAS INFORMATICOS'),
+(4, 'GTIC.PA.FO.04', '01', '021', '27/01/2026', 'FORMULARIO DE HABILITACION DE ACCESO A LA RED INTERNA VIA VPN PARA USUARIOS EXTERNOS'),
+(5, 'GTIC.PA.FO.05', '01', '021', '27/01/2026', 'FORMULARIO DE AUTORIZACION DE PRIVILEGIOS ESPECIALES DIRECTORIO ACTIVO'),
+(6, 'GTIC.PA.FO.06', '01', '021', '27/01/2026', 'SOLICITUD DE ACCESOS ESPECIALES PARA EL SERVICIO DE INTERNET')
+ON DUPLICATE KEY UPDATE formulario_id = formulario_id;
+
 -- Crear admin por defecto (password: admin123)
 INSERT INTO admins (username, password, nombre) VALUES
 ('admin', '$2y$10$YourHashedPasswordHere', 'Administrador')

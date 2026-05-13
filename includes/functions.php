@@ -161,6 +161,104 @@ function validarFormulario(array $post): array
 }
 
 /**
+ * Obtiene metadatos de encabezado de un formulario especifico
+ */
+function getFormularioMeta(int $formularioId): array
+{
+    $defaults = [
+        'codigo_doc' => '',
+        'version' => '01',
+        'nro_acta' => '',
+        'fecha_aprobacion' => '',
+        'titulo_encabezado' => '',
+    ];
+    try {
+        $db = getDB();
+        $stmt = $db->prepare("SELECT * FROM formularios_meta WHERE formulario_id = ?");
+        $stmt->execute([$formularioId]);
+        $result = $stmt->fetch();
+        return $result ?: $defaults;
+    } catch (Exception $e) {
+        return $defaults;
+    }
+}
+
+/**
+ * Obtiene metadatos de todos los formularios
+ */
+function getAllFormulariosMeta(): array
+{
+    try {
+        $db = getDB();
+        $stmt = $db->query("SELECT * FROM formularios_meta ORDER BY formulario_id");
+        $result = [];
+        while ($row = $stmt->fetch()) {
+            $result[$row['formulario_id']] = $row;
+        }
+        return $result;
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+/**
+ * Genera el HTML del encabezado institucional para PDF
+ */
+function renderPdfEncabezadoInstitucional(array $config, array $meta, string $logoDataUri, string $logoSecundarioDataUri): string
+{
+    $institucion = htmlspecialchars($config['nombre_institucion'] ?? 'AGENCIA DE REGULACION Y CONTROL DE ELECTRICIDAD');
+    $subtitulo = htmlspecialchars($config['subtitulo_institucion'] ?? 'DIRECCION DE TECNOLOGIAS DE LA INFORMACION Y COMUNICACION');
+    $tituloForm = htmlspecialchars($meta['titulo_encabezado'] ?? '');
+    $codigoDoc = htmlspecialchars($meta['codigo_doc'] ?? '');
+    $version = htmlspecialchars($meta['version'] ?? '01');
+    $nroActa = htmlspecialchars($meta['nro_acta'] ?? '');
+    $fechaAprob = htmlspecialchars($meta['fecha_aprobacion'] ?? '');
+    $colorPrimario = $config['color_primario'] ?? '#003366';
+
+    $logoHtml = '';
+    if (!empty($logoDataUri)) {
+        $logoHtml = '<img src="' . $logoDataUri . '" style="max-height:55px;max-width:90px;">';
+    }
+    $logoSecHtml = '';
+    if (!empty($logoSecundarioDataUri)) {
+        $logoSecHtml = '<img src="' . $logoSecundarioDataUri . '" style="max-height:55px;max-width:90px;">';
+    }
+
+    return '
+    <table style="width:100%;border-collapse:collapse;margin-bottom:12px;border:1px solid #999;">
+        <tr>
+            <td rowspan="3" style="width:120px;text-align:center;vertical-align:middle;border:1px solid #999;padding:5px;">
+                ' . $logoHtml . '
+                ' . ($logoSecHtml ? '<br>' . $logoSecHtml : '') . '
+            </td>
+            <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:4px;font-size:10pt;font-weight:bold;">
+                ' . $institucion . '
+            </td>
+            <td style="width:150px;border:1px solid #999;padding:4px;font-size:8pt;">
+                <strong>Codigo:</strong> ' . $codigoDoc . '
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:4px;font-size:9pt;">
+                ' . $subtitulo . '
+            </td>
+            <td style="border:1px solid #999;padding:4px;font-size:8pt;">
+                <strong>Version:</strong> ' . $version . '
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:6px;font-size:10pt;font-weight:bold;">
+                ' . $tituloForm . '
+            </td>
+            <td style="border:1px solid #999;padding:4px;font-size:8pt;">
+                <strong>N&deg; de Acta:</strong> ' . $nroActa . '<br>
+                <strong>Fecha de aprobacion:</strong><br>' . $fechaAprob . '
+            </td>
+        </tr>
+    </table>';
+}
+
+/**
  * Obtiene la ruta base del logo como data URI para incrustar en el PDF
  */
 function getLogoDataUri(string $configKey): string

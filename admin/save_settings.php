@@ -99,6 +99,31 @@ try {
             $_SESSION['admin_msg_tipo'] = 'success';
             break;
 
+        case 'formularios_meta':
+            $stmt = $db->prepare("
+                INSERT INTO formularios_meta (formulario_id, codigo_doc, version, nro_acta, fecha_aprobacion, titulo_encabezado)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    codigo_doc = VALUES(codigo_doc),
+                    version = VALUES(version),
+                    nro_acta = VALUES(nro_acta),
+                    fecha_aprobacion = VALUES(fecha_aprobacion),
+                    titulo_encabezado = VALUES(titulo_encabezado)
+            ");
+            for ($i = 1; $i <= 6; $i++) {
+                $stmt->execute([
+                    $i,
+                    trim($_POST["meta_{$i}_codigo_doc"] ?? ''),
+                    trim($_POST["meta_{$i}_version"] ?? '01'),
+                    trim($_POST["meta_{$i}_nro_acta"] ?? ''),
+                    trim($_POST["meta_{$i}_fecha_aprobacion"] ?? ''),
+                    trim($_POST["meta_{$i}_titulo_encabezado"] ?? ''),
+                ]);
+            }
+            $_SESSION['admin_msg'] = 'Encabezados de formularios guardados correctamente.';
+            $_SESSION['admin_msg_tipo'] = 'success';
+            break;
+
         case 'encabezado':
             $campos = [
                 'encabezado_extra',

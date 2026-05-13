@@ -60,11 +60,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
         $resultado[] = 'Tabla admins creada.';
 
+        // Crear tabla de metadatos por formulario
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS formularios_meta (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                formulario_id INT NOT NULL,
+                codigo_doc VARCHAR(50) NOT NULL DEFAULT '',
+                version VARCHAR(10) NOT NULL DEFAULT '01',
+                nro_acta VARCHAR(20) NOT NULL DEFAULT '',
+                fecha_aprobacion VARCHAR(20) NOT NULL DEFAULT '',
+                titulo_encabezado VARCHAR(255) NOT NULL DEFAULT '',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_formulario (formulario_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+        $resultado[] = 'Tabla formularios_meta creada.';
+
+        // Insertar metadatos por defecto por formulario
+        $metaDefaults = [
+            [1, 'GTIC.PA.FO.01', '01', '021', '27/01/2026', 'ACUERDO DE CONFIDENCIALIDAD Y NO DIVULGACION DE INFORMACION CON TERCEROS'],
+            [2, 'GTIC.PA.FO.02', '01', '021', '27/01/2026', 'SOLICITUD DE ACCESO A SISTEMAS PARA TERCEROS'],
+            [3, 'GTIC.PA.FO.03', '01', '021', '27/01/2026', 'SOLICITUD DE ACCESO A LOS SISTEMAS INFORMATICOS'],
+            [4, 'GTIC.PA.FO.04', '01', '021', '27/01/2026', 'FORMULARIO DE HABILITACION DE ACCESO VPN PARA USUARIOS EXTERNOS'],
+            [5, 'GTIC.PA.FO.05', '01', '021', '27/01/2026', 'FORMULARIO DE AUTORIZACION DE PRIVILEGIOS ESPECIALES DIRECTORIO ACTIVO'],
+            [6, 'GTIC.PA.FO.06', '01', '021', '27/01/2026', 'SOLICITUD DE ACCESOS ESPECIALES PARA EL SERVICIO DE INTERNET'],
+        ];
+        $stmtMeta = $db->prepare("INSERT IGNORE INTO formularios_meta (formulario_id, codigo_doc, version, nro_acta, fecha_aprobacion, titulo_encabezado) VALUES (?, ?, ?, ?, ?, ?)");
+        foreach ($metaDefaults as $m) {
+            $stmtMeta->execute($m);
+        }
+        $resultado[] = 'Metadatos de formularios insertados.';
+
         // Insertar configuracion por defecto
         $defaults = [
-            'nombre_institucion' => 'INSTITUCION PUBLICA',
-            'subtitulo_institucion' => 'Direccion de Tecnologias de la Informacion',
-            'titulo_formulario' => 'SOLICITUD DE ACCESO VPN',
+            'nombre_institucion' => 'AGENCIA DE REGULACION Y CONTROL DE ELECTRICIDAD',
+            'subtitulo_institucion' => 'DIRECCION DE TECNOLOGIAS DE LA INFORMACION Y COMUNICACION',
+            'titulo_formulario' => 'FORMULARIOS INSTITUCIONALES',
             'logo_path' => '',
             'logo_secundario_path' => '',
             'color_primario' => '#003366',

@@ -12,6 +12,18 @@ $mensaje = $_SESSION['admin_msg'] ?? null;
 $tipoMsg = $_SESSION['admin_msg_tipo'] ?? 'success';
 unset($_SESSION['admin_msg'], $_SESSION['admin_msg_tipo']);
 
+// Obtener metadatos de formularios
+$formulariosMeta = getAllFormulariosMeta();
+
+$nombresFormularios = [
+    1 => 'Acuerdo de Confidencialidad',
+    2 => 'Acceso Sistemas Terceros',
+    3 => 'Acceso Sistemas Informaticos',
+    4 => 'Acceso VPN Externos',
+    5 => 'Privilegios Dir. Activo',
+    6 => 'Accesos Internet',
+];
+
 // Obtener solicitudes recientes
 $solicitudes = [];
 try {
@@ -71,6 +83,9 @@ try {
         </a>
         <a href="#encabezado" class="nav-link" data-tab="encabezado">
             <i class="bi bi-layout-text-window"></i> Encabezado y Pie
+        </a>
+        <a href="#formularios_meta" class="nav-link" data-tab="formularios_meta">
+            <i class="bi bi-card-heading"></i> Encabezados por Form.
         </a>
         <a href="#solicitudes" class="nav-link" data-tab="solicitudes">
             <i class="bi bi-file-earmark-text"></i> Solicitudes
@@ -244,6 +259,69 @@ try {
                                value="<?= htmlspecialchars($config['pie_pagina_linea3'] ?? '') ?>">
                     </div>
                     <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Encabezado/Pie</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Encabezados por Formulario -->
+    <div class="tab-content d-none" id="tab-formularios_meta">
+        <div class="card config-card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-card-heading"></i> Encabezados por Formulario</h5>
+                <small class="text-muted">Configure el codigo, version, N° de acta y fecha de aprobacion de cada formulario</small>
+            </div>
+            <div class="card-body">
+                <form action="save_settings.php" method="POST">
+                    <input type="hidden" name="seccion" value="formularios_meta">
+
+                    <div class="alert alert-info small mb-4">
+                        <i class="bi bi-info-circle"></i> Estos datos aparecen en el encabezado institucional de cada PDF generado (esquina superior derecha del documento).
+                    </div>
+
+                    <?php for ($i = 1; $i <= 6; $i++):
+                        $m = $formulariosMeta[$i] ?? [];
+                    ?>
+                    <div class="border rounded p-3 mb-3">
+                        <h6 class="fw-bold" style="color:#003366;">
+                            <span class="badge bg-secondary"><?= $i ?></span>
+                            <?= htmlspecialchars($nombresFormularios[$i] ?? "Formulario $i") ?>
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small fw-bold">Codigo Documento</label>
+                                <input type="text" name="meta_<?= $i ?>_codigo_doc" class="form-control form-control-sm"
+                                       value="<?= htmlspecialchars($m['codigo_doc'] ?? '') ?>"
+                                       placeholder="Ej: GTIC.PA.FO.0<?= $i ?>">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small fw-bold">Version</label>
+                                <input type="text" name="meta_<?= $i ?>_version" class="form-control form-control-sm"
+                                       value="<?= htmlspecialchars($m['version'] ?? '01') ?>"
+                                       placeholder="01">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small fw-bold">N° de Acta</label>
+                                <input type="text" name="meta_<?= $i ?>_nro_acta" class="form-control form-control-sm"
+                                       value="<?= htmlspecialchars($m['nro_acta'] ?? '') ?>"
+                                       placeholder="021">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small fw-bold">Fecha Aprobacion</label>
+                                <input type="text" name="meta_<?= $i ?>_fecha_aprobacion" class="form-control form-control-sm"
+                                       value="<?= htmlspecialchars($m['fecha_aprobacion'] ?? '') ?>"
+                                       placeholder="27/01/2026">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small fw-bold">Titulo en Encabezado</label>
+                                <input type="text" name="meta_<?= $i ?>_titulo_encabezado" class="form-control form-control-sm"
+                                       value="<?= htmlspecialchars($m['titulo_encabezado'] ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+                    <?php endfor; ?>
+
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Encabezados</button>
                 </form>
             </div>
         </div>

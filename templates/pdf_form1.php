@@ -1,7 +1,7 @@
 <?php
 /**
  * PDF Template: Acuerdo de Confidencialidad y no Divulgación de Información con Terceros
- * Variables: $datos, $config, $logoDataUri, $logoSecundarioDataUri
+ * Variables: $datos, $config, $meta, $logoDataUri, $logoSecundarioDataUri
  */
 
 $colorPrimario = $config['color_primario'] ?? '#003366';
@@ -9,6 +9,7 @@ $institucion = htmlspecialchars($config['nombre_institucion'] ?? 'AGENCIA DE REG
 $piePagina1 = htmlspecialchars($config['pie_pagina_linea1'] ?? '');
 $piePagina2 = htmlspecialchars($config['pie_pagina_linea2'] ?? '');
 $piePagina3 = htmlspecialchars($config['pie_pagina_linea3'] ?? '');
+$encabezadoInstitucional = renderPdfEncabezadoInstitucional($config, $meta, $logoDataUri, $logoSecundarioDataUri);
 
 $oficial = htmlspecialchars($datos['oficial_seguridad'] ?? '');
 $cargoOficial = htmlspecialchars($datos['cargo_oficial'] ?? '');
@@ -27,14 +28,7 @@ ob_start();
 <style>
     @page { margin: 20mm 18mm 25mm 18mm; }
     body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10pt; color: #333; line-height: 1.6; }
-    .header-table { width: 100%; border-bottom: 3px solid <?= $colorPrimario ?>; padding-bottom: 8px; margin-bottom: 10px; }
-    .header-logo { width: 80px; text-align: left; vertical-align: middle; }
-    .header-logo img { max-height: 55px; max-width: 70px; }
-    .header-center { text-align: center; vertical-align: middle; }
-    .header-right { width: 80px; text-align: right; vertical-align: middle; }
-    .header-right img { max-height: 55px; max-width: 70px; }
     .inst-name { font-size: 12pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
-    .titulo { text-align: center; background: <?= $colorPrimario ?>; color: white; padding: 6px 15px; font-size: 10pt; font-weight: bold; margin: 10px 0; border-radius: 3px; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 10px; }
     .clausula-titulo { font-weight: bold; color: <?= $colorPrimario ?>; margin: 12px 0 4px; font-size: 10pt; }
     .clausula-texto { text-align: justify; font-size: 9.5pt; margin-bottom: 6px; }
@@ -48,15 +42,7 @@ ob_start();
 </head>
 <body>
 
-<table class="header-table">
-    <tr>
-        <td class="header-logo"><?php if (!empty($logoDataUri)): ?><img src="<?= $logoDataUri ?>"><?php endif; ?></td>
-        <td class="header-center"><div class="inst-name"><?= $institucion ?></div></td>
-        <td class="header-right"><?php if (!empty($logoSecundarioDataUri)): ?><img src="<?= $logoSecundarioDataUri ?>"><?php endif; ?></td>
-    </tr>
-</table>
-
-<div class="titulo">ACUERDO DE CONFIDENCIALIDAD Y NO DIVULGACION DE INFORMACION CON TERCEROS</div>
+<?= $encabezadoInstitucional ?>
 
 <table class="info-bar">
     <tr><td style="text-align:left;"><strong>Fecha:</strong> <?= $fecha ?></td><td style="text-align:right;"><strong>Codigo:</strong> <span style="font-family:Courier;font-weight:bold;color:<?= $colorPrimario ?>;"><?= $codigo ?></span></td></tr>

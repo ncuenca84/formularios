@@ -61,6 +61,9 @@ $datosDB = extraerDatosPrincipales($tipoFormulario, $datos);
 $logoDataUri = getLogoDataUri('logo_path');
 $logoSecundarioDataUri = getLogoDataUri('logo_secundario_path');
 
+// Obtener metadatos del encabezado institucional para este formulario
+$meta = getFormularioMeta($tipoFormulario);
+
 // Generar HTML del PDF usando el template correspondiente
 $templateFile = __DIR__ . "/templates/pdf_form{$tipoFormulario}.php";
 if (!file_exists($templateFile)) {

@@ -8,6 +8,7 @@ $institucion = htmlspecialchars($config['nombre_institucion'] ?? 'AGENCIA DE REG
 $piePagina1 = htmlspecialchars($config['pie_pagina_linea1'] ?? '');
 $piePagina2 = htmlspecialchars($config['pie_pagina_linea2'] ?? '');
 $piePagina3 = htmlspecialchars($config['pie_pagina_linea3'] ?? '');
+$encabezadoInstitucional = renderPdfEncabezadoInstitucional($config, $meta, $logoDataUri, $logoSecundarioDataUri);
 $codigo = htmlspecialchars($datos['codigo']);
 $fecha = $datos['fecha'];
 
@@ -24,15 +25,7 @@ ob_start();
 <style>
     @page { margin: 15mm 12mm 22mm 12mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 8.5pt; color: #333; line-height: 1.3; }
-    .header-table { width: 100%; border-bottom: 3px solid <?= $colorPrimario ?>; padding-bottom: 5px; margin-bottom: 5px; }
-    .header-logo { width: 65px; text-align: left; vertical-align: middle; }
-    .header-logo img { max-height: 45px; }
-    .header-center { text-align: center; vertical-align: middle; }
-    .header-right { width: 65px; text-align: right; vertical-align: middle; }
-    .header-right img { max-height: 45px; }
     .inst-name { font-size: 10pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
-    .sub-name { font-size: 7.5pt; color: #666; }
-    .titulo { text-align: center; background: <?= $colorPrimario ?>; color: white; padding: 4px 10px; font-size: 9pt; font-weight: bold; margin: 6px 0; border-radius: 2px; }
     .info-bar { width: 100%; font-size: 7.5pt; margin-bottom: 5px; }
     .seccion { color: <?= $colorPrimario ?>; font-size: 8.5pt; font-weight: bold; border-bottom: 2px solid <?= $colorPrimario ?>; padding-bottom: 2px; margin: 8px 0 4px; }
     .dt { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
@@ -49,18 +42,7 @@ ob_start();
 </head>
 <body>
 
-<table class="header-table">
-    <tr>
-        <td class="header-logo"><?php if (!empty($logoDataUri)): ?><img src="<?= $logoDataUri ?>"><?php endif; ?></td>
-        <td class="header-center">
-            <div class="inst-name"><?= $institucion ?></div>
-            <div class="sub-name">DIRECCION DE TECNOLOGIAS DE LA INFORMACION Y COMUNICACION</div>
-        </td>
-        <td class="header-right"><?php if (!empty($logoSecundarioDataUri)): ?><img src="<?= $logoSecundarioDataUri ?>"><?php endif; ?></td>
-    </tr>
-</table>
-
-<div class="titulo">SOLICITUD DE ACCESO A LOS SISTEMAS INFORMATICOS</div>
+<?= $encabezadoInstitucional ?>
 
 <table class="info-bar">
     <tr>
