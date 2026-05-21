@@ -121,14 +121,14 @@ function validarPorTipo(int $tipo, array $post): array
             if (empty($post['nombre_receptor'])) $errores[] = 'El nombre del receptor es obligatorio.';
             if (empty($post['cargo_receptor'])) $errores[] = 'El cargo del receptor es obligatorio.';
             if (empty($post['cedula_receptor'])) $errores[] = 'La cedula del receptor es obligatoria.';
-            if (empty($post['correo']) || !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
+            if (!empty($post['correo']) && !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
             break;
 
         case 2:
             if (empty($post['institucion'])) $errores[] = 'La institucion es obligatoria.';
             if (empty($post['solicitante_nombres'])) $errores[] = 'Los nombres del solicitante son obligatorios.';
             if (empty($post['solicitante_nro_doc'])) $errores[] = 'El numero de documento es obligatorio.';
-            if (empty($post['correo']) || !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
+            if (!empty($post['correo']) && !filter_var(trim($post['correo']), FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
             if (empty($post['sistema_servicio'])) $errores[] = 'El sistema/servicio solicitado es obligatorio.';
             break;
 
@@ -137,28 +137,27 @@ function validarPorTipo(int $tipo, array $post): array
             if (empty($post['nombre1'])) $errores[] = 'El primer nombre es obligatorio.';
             if (empty($post['apellido1'])) $errores[] = 'El primer apellido es obligatorio.';
             if (empty($post['cedula'])) $errores[] = 'La cedula es obligatoria.';
-            if (empty($post['correo_usuario'])) $errores[] = 'El correo es obligatorio.';
             break;
 
         case 4:
             if (empty($post['institucion'])) $errores[] = 'La institucion es obligatoria.';
             if (empty($post['nombre_completo'])) $errores[] = 'El nombre completo es obligatorio.';
             if (empty($post['cedula'])) $errores[] = 'La cedula es obligatoria.';
-            if (empty($post['correo']) || !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
+            if (!empty($post['correo']) && !filter_var(trim($post['correo']), FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
             if (empty($post['justificacion'])) $errores[] = 'La justificacion es obligatoria.';
             break;
 
         case 5:
             if (empty($post['nombre_completo'])) $errores[] = 'El nombre completo es obligatorio.';
             if (empty($post['cedula'])) $errores[] = 'La cedula es obligatoria.';
-            if (empty($post['correo']) || !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
+            if (!empty($post['correo']) && !filter_var(trim($post['correo']), FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
             if (empty($post['justificacion'])) $errores[] = 'La justificacion es obligatoria.';
             break;
 
         case 6:
             if (empty($post['nombre_completo'])) $errores[] = 'El nombre completo es obligatorio.';
             if (empty($post['cedula'])) $errores[] = 'La cedula es obligatoria.';
-            if (empty($post['correo']) || !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
+            if (!empty($post['correo']) && !filter_var(trim($post['correo']), FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
             if (empty($post['justificacion'])) $errores[] = 'La justificacion es obligatoria.';
             break;
     }
