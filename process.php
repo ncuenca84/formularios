@@ -113,6 +113,8 @@ $_SESSION['resultado'] = [
     'pdf_filename' => $pdfFilename,
 ];
 
+session_write_close();
+header('HTTP/1.1 303 See Other');
 header('Location: resultado.php');
 exit;
 

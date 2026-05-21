@@ -49,10 +49,6 @@ ob_start();
 
 <?= $encabezadoInstitucional ?>
 
-<table class="info-bar">
-    <tr><td style="text-align:left;"><strong>Fecha:</strong> <?= $fecha ?></td><td style="text-align:right;"><strong>Codigo:</strong> <span style="font-family:Courier;font-weight:bold;"><?= $codigo ?></span></td></tr>
-</table>
-
 <p class="lugar-fecha">Quito, <?= date('d') ?> de <?= $mesActual ?> de <?= date('Y') ?></p>
 
 <p class="tx">Comparecen al otorgamiento del presente Acuerdo de Confidencialidad y No Divulgacion de Informacion con Terceros, por una parte, la Agencia de Regulacion y Control de Electricidad (ARCONEL), representada por el <?= $oficial ?>, en calidad de Oficial de Seguridad de la Informacion (OSI), a quien en adelante se le denominara como "LA ARCONEL", y, por otra parte, <?= $institucionReceptor ?>, representado por el senor/a <?= $nombreReceptor ?> en calidad de <?= $cargoReceptor ?>, a quien en adelante se le denominara como "EL RECEPTOR".</p>

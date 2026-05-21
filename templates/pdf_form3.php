@@ -26,7 +26,6 @@ ob_start();
     @page { margin: 42mm 15mm 28mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 8.5pt; color: #333; line-height: 1.3; }
     .inst-name { font-size: 10pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
-    .info-bar { width: 100%; font-size: 7.5pt; margin-bottom: 5px; }
     .seccion { color: <?= $colorPrimario ?>; font-size: 8.5pt; font-weight: bold; border-bottom: 2px solid <?= $colorPrimario ?>; padding-bottom: 2px; margin: 8px 0 4px; }
     .dt { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
     .dt td { padding: 3px 6px; border: 1px solid #ddd; font-size: 8pt; }
@@ -42,13 +41,6 @@ ob_start();
 
 <?= $encabezadoInstitucional ?>
 
-<table class="info-bar">
-    <tr>
-        <td style="text-align:left;"><strong>Fecha:</strong> <?= $fecha ?></td>
-        <td style="text-align:center;"><strong>Version:</strong> 1.0</td>
-        <td style="text-align:right;"><strong>Codigo:</strong> <span style="font-family:Courier;font-weight:bold;color:<?= $colorPrimario ?>;"><?= $codigo ?></span></td>
-    </tr>
-</table>
 
 <!-- 1. DATOS DEL AUTORIZADOR -->
 <div class="seccion">1. DATOS DEL AUTORIZADOR</div>

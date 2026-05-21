@@ -24,7 +24,6 @@ ob_start();
     @page { margin: 42mm 15mm 28mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 9pt; color: #333; line-height: 1.4; }
     .inst-name { font-size: 11pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
-    .info-bar { width: 100%; font-size: 8pt; margin-bottom: 8px; }
     .seccion { color: <?= $colorPrimario ?>; font-size: 9pt; font-weight: bold; border-bottom: 2px solid <?= $colorPrimario ?>; padding-bottom: 2px; margin: 10px 0 5px; }
     .dt { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .dt td { padding: 4px 8px; border: 1px solid #ddd; font-size: 8.5pt; }
@@ -41,9 +40,6 @@ ob_start();
 
 <?= $encabezadoInstitucional ?>
 
-<table class="info-bar">
-    <tr><td style="text-align:left;"><strong>Fecha:</strong> <?= $fecha ?></td><td style="text-align:right;"><strong>Codigo:</strong> <span style="font-family:Courier;font-weight:bold;color:<?= $colorPrimario ?>;"><?= $codigo ?></span></td></tr>
-</table>
 
 <!-- INFORMACION GENERAL -->
 <div class="seccion">Informacion General del Servidor</div>
