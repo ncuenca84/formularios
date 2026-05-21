@@ -21,7 +21,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 18mm 15mm 40mm 15mm; }
+    @page { margin: 18mm 15mm 18mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 9pt; color: #333; line-height: 1.4; }
     .inst-name { font-size: 11pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 8px; }
@@ -35,7 +35,7 @@ ob_start();
     .firmas-table td { width: 50%; text-align: center; vertical-align: bottom; padding: 4px 8px; border: 1px solid #ddd; }
     .firma-linea { border-top: 1px solid #333; padding-top: 3px; font-size: 7.5pt; margin-top: 40px; }
     .firma-header { background: #eef2f7; font-weight: 600; font-size: 8pt; color: <?= $colorPrimario ?>; padding: 4px; }
-    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 7pt; color: #666; border-top: 1px solid #999; padding-top: 4px; line-height: 1.4; }
+    .footer { text-align: center; margin-top: 30px; font-size: 7pt; color: #666; border-top: 1px solid #999; padding-top: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
