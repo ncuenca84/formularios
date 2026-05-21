@@ -24,46 +24,48 @@ renderHeader($config, $titulo);
 
                         <div class="section-title"><i class="bi bi-building"></i> DATOS DE LA ARCONEL</div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre del Oficial de Seguridad de la Informacion</label>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nombre del Oficial de Seguridad de la Informacion (OSI) <span class="text-danger">*</span></label>
                                 <input type="text" name="oficial_seguridad" class="form-control" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cedula del OSI <span class="text-danger">*</span></label>
+                                <input type="text" name="cedula_oficial" class="form-control" data-solo-numeros maxlength="13" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Cargo del Oficial</label>
-                                <input type="text" name="cargo_oficial" class="form-control" value="Oficial de Seguridad de la Informacion" required>
+                                <input type="text" name="cargo_oficial" class="form-control" value="Oficial de Seguridad de la Informacion (OSI)" readonly>
                             </div>
                         </div>
 
                         <div class="section-title"><i class="bi bi-person-badge"></i> DATOS DEL RECEPTOR (TERCERO)</div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre/Razon Social del Receptor <span class="text-danger">*</span></label>
-                                <input type="text" name="nombre_receptor" class="form-control" placeholder="Ej: Servicio de Rentas Internas" required>
+                                <label class="form-label">Nombre de la Institucion Receptora <span class="text-danger">*</span></label>
+                                <input type="text" name="institucion_receptor" class="form-control" placeholder="Ej: Servicio de Rentas Internas" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Representante Legal <span class="text-danger">*</span></label>
+                                <label class="form-label">Nombre del Representante Legal <span class="text-danger">*</span></label>
                                 <input type="text" name="representante_legal" class="form-control" required>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Cargo del Representante <span class="text-danger">*</span></label>
                                 <input type="text" name="cargo_representante" class="form-control" placeholder="Ej: Director General" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Cedula del Representante <span class="text-danger">*</span></label>
                                 <input type="text" name="cedula_representante" class="form-control" data-solo-numeros maxlength="13" required>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Correo electronico <span class="text-danger">*</span></label>
                                 <input type="email" name="correo" class="form-control" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Direccion del Receptor</label>
-                                <input type="text" name="direccion_receptor" class="form-control">
-                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Direccion del Receptor</label>
+                            <input type="text" name="direccion_receptor" class="form-control" placeholder="Direccion de la institucion receptora">
                         </div>
 
                         <hr class="my-4">
