@@ -1,14 +1,17 @@
 <?php
-session_start();
 require_once __DIR__ . '/includes/functions.php';
 
-if (empty($_SESSION['resultado'])) {
+if (empty($_GET['codigo'])) {
     header('Location: index.php');
     exit;
 }
 
-$resultado = $_SESSION['resultado'];
-unset($_SESSION['resultado']);
+$resultado = [
+    'codigo' => htmlspecialchars($_GET['codigo'] ?? ''),
+    'tipo_formulario' => htmlspecialchars($_GET['tipo'] ?? ''),
+    'nombre' => htmlspecialchars($_GET['nombre'] ?? ''),
+    'pdf_path' => htmlspecialchars($_GET['pdf'] ?? ''),
+];
 
 $config = getAllConfig();
 $colorPrimario = $config['color_primario'] ?? '#003366';

@@ -104,18 +104,15 @@ guardarSolicitud($datosDB);
 // Enviar correo a soporte
 enviarNotificacionAdmin($datosDB);
 
-// Guardar en sesion para la pagina de resultado
-$_SESSION['resultado'] = [
+// Redirigir con datos por URL (compatible con Edge)
+$params = http_build_query([
     'codigo' => $codigo,
-    'tipo_formulario' => $nombresFormulario[$tipoFormulario],
+    'tipo' => $nombresFormulario[$tipoFormulario],
     'nombre' => $datosDB['nombre_completo'] ?? '',
-    'pdf_path' => "assets/uploads/pdfs/{$pdfFilename}",
-    'pdf_filename' => $pdfFilename,
-];
+    'pdf' => "assets/uploads/pdfs/{$pdfFilename}",
+]);
 
-session_write_close();
-header('HTTP/1.1 303 See Other');
-header('Location: resultado.php');
+header('Location: resultado.php?' . $params);
 exit;
 
 
