@@ -23,7 +23,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 15mm 12mm 18mm 12mm; }
+    @page { margin: 42mm 15mm 28mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 8.5pt; color: #333; line-height: 1.3; }
     .inst-name { font-size: 10pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
     .info-bar { width: 100%; font-size: 7.5pt; margin-bottom: 5px; }
@@ -36,7 +36,6 @@ ob_start();
     .firmas-table td { width: 33%; text-align: center; vertical-align: bottom; padding: 4px 8px; border: 1px solid #ddd; }
     .firma-linea { border-top: 1px solid #333; padding-top: 2px; font-size: 7pt; margin-top: 35px; }
     .firma-header { background: #eef2f7; font-weight: 600; font-size: 7.5pt; color: <?= $colorPrimario ?>; }
-    .footer { text-align: center; margin-top: 30px; font-size: 7pt; color: #666; border-top: 1px solid #999; padding-top: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -67,10 +66,6 @@ ob_start();
     <tr><td class="lb">Cedula:</td><td><?= $d['cedula'] ?></td><td class="lb">Correo:</td><td><?= $d['correo_usuario'] ?>@arconel.gob.ec</td></tr>
     <tr><td class="lb">Cargo:</td><td><?= $d['cargo'] ?></td><td class="lb">Telefono/Ext:</td><td><?= $d['telefono_extension'] ?></td></tr>
 </table>
-<div class="footer">
-    <em>"Este documento es para uso exclusivo de la ARCONEL. Se prohibe su uso no autorizado".</em><br>
-    GESTION GENERAL DE PLANIFICACION Y GESTION ESTRATEGICA
-</div>
 
 </body>
 </html>

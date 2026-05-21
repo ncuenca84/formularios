@@ -202,7 +202,7 @@ function getAllFormulariosMeta(): array
 }
 
 /**
- * Genera el HTML del encabezado institucional para PDF
+ * Genera el HTML del encabezado institucional para PDF (position:fixed para repetir en cada pagina)
  */
 function renderPdfEncabezadoInstitucional(array $config, array $meta, string $logoDataUri, string $logoSecundarioDataUri): string
 {
@@ -213,49 +213,54 @@ function renderPdfEncabezadoInstitucional(array $config, array $meta, string $lo
     $version = htmlspecialchars($meta['version'] ?? '01');
     $nroActa = htmlspecialchars($meta['nro_acta'] ?? '');
     $fechaAprob = htmlspecialchars($meta['fecha_aprobacion'] ?? '');
-    $colorPrimario = $config['color_primario'] ?? '#003366';
 
     $logoHtml = '';
     if (!empty($logoDataUri)) {
-        $logoHtml = '<img src="' . $logoDataUri . '" style="max-height:55px;max-width:90px;">';
+        $logoHtml = '<img src="' . $logoDataUri . '" style="max-height:50px;max-width:85px;">';
     }
     $logoSecHtml = '';
     if (!empty($logoSecundarioDataUri)) {
-        $logoSecHtml = '<img src="' . $logoSecundarioDataUri . '" style="max-height:55px;max-width:90px;">';
+        $logoSecHtml = '<img src="' . $logoSecundarioDataUri . '" style="max-height:50px;max-width:85px;">';
     }
 
     return '
-    <table style="width:100%;border-collapse:collapse;margin-bottom:12px;border:1px solid #999;">
-        <tr>
-            <td rowspan="3" style="width:120px;text-align:center;vertical-align:middle;border:1px solid #999;padding:5px;">
-                ' . $logoHtml . '
-                ' . ($logoSecHtml ? '<br>' . $logoSecHtml : '') . '
-            </td>
-            <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:4px;font-size:10pt;font-weight:bold;">
-                ' . $institucion . '
-            </td>
-            <td style="width:150px;border:1px solid #999;padding:4px;font-size:8pt;">
-                <strong>Codigo:</strong> ' . $codigoDoc . '
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:4px;font-size:9pt;">
-                ' . $subtitulo . '
-            </td>
-            <td style="border:1px solid #999;padding:4px;font-size:8pt;">
-                <strong>Version:</strong> ' . $version . '
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:6px;font-size:10pt;font-weight:bold;">
-                ' . $tituloForm . '
-            </td>
-            <td style="border:1px solid #999;padding:4px;font-size:8pt;">
-                <strong>N&deg; de Acta:</strong> ' . $nroActa . '<br>
-                <strong>Fecha de aprobacion:</strong><br>' . $fechaAprob . '
-            </td>
-        </tr>
-    </table>';
+    <div style="position:fixed;top:-30mm;left:0;right:0;">
+        <table style="width:100%;border-collapse:collapse;border:1px solid #999;">
+            <tr>
+                <td rowspan="3" style="width:110px;text-align:center;vertical-align:middle;border:1px solid #999;padding:4px;">
+                    ' . $logoHtml . '
+                    ' . ($logoSecHtml ? '<br>' . $logoSecHtml : '') . '
+                </td>
+                <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:3px;font-size:9pt;font-weight:bold;">
+                    ' . $institucion . '
+                </td>
+                <td style="width:140px;border:1px solid #999;padding:3px;font-size:7.5pt;">
+                    <strong>Codigo:</strong> ' . $codigoDoc . '
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:3px;font-size:8pt;">
+                    ' . $subtitulo . '
+                </td>
+                <td style="border:1px solid #999;padding:3px;font-size:7.5pt;">
+                    <strong>Version:</strong> ' . $version . '
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:center;vertical-align:middle;border:1px solid #999;padding:4px;font-size:9pt;font-weight:bold;">
+                    ' . $tituloForm . '
+                </td>
+                <td style="border:1px solid #999;padding:3px;font-size:7.5pt;">
+                    <strong>N&deg; de Acta:</strong> ' . $nroActa . '<br>
+                    <strong>Fecha aprob.:</strong> ' . $fechaAprob . '
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="position:fixed;bottom:-20mm;left:0;right:0;text-align:center;font-size:7pt;color:#666;border-top:1px solid #999;padding-top:4px;line-height:1.4;">
+        <em>&quot;Este documento es para uso exclusivo de la ARCONEL. Se prohibe su uso no autorizado&quot;.</em><br>
+        GESTION GENERAL DE PLANIFICACION Y GESTION ESTRATEGICA
+    </div>';
 }
 
 /**
