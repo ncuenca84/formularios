@@ -31,7 +31,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 18mm 18mm 35mm 18mm; }
+    @page { margin: 18mm 18mm 40mm 18mm; }
     body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9pt; color: #333; line-height: 1.5; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 6px; }
     .lugar-fecha { text-align: right; font-size: 9pt; margin-bottom: 8px; }

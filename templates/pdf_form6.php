@@ -29,7 +29,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 20mm 15mm 30mm 15mm; }
+    @page { margin: 20mm 15mm 40mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 9.5pt; color: #333; line-height: 1.5; }
     .inst-name { font-size: 11pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 10px; }

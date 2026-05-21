@@ -21,7 +21,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 18mm 15mm 30mm 15mm; }
+    @page { margin: 18mm 15mm 40mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 9.5pt; color: #333; line-height: 1.4; }
     .inst-name { font-size: 11pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 8px; }
@@ -98,13 +98,45 @@ ob_start();
 <table class="firmas-table">
     <tr><td colspan="2" class="firma-header">Suscripciones de la entidad solicitante</td></tr>
     <tr>
-        <td style="height:80px;"><div class="firma-linea"><strong>f. Solicitante</strong><br>Nombre:<br>C.C.:<br>Fecha:</div></td>
-        <td><div class="firma-linea"><strong>f. Representante Legal/Director/Coordinador/Jefe de Area</strong><br>Nombre:<br>C.C.:<br>Fecha:</div></td>
+        <td style="height:80px;">
+            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de las obligaciones que asumo con la presente solicitud.</p>
+            <div class="firma-linea">
+                <strong>f. Solicitante</strong><br>
+                Nombre: <?= $d['solicitante_nombres'] ?> <?= $d['solicitante_apellidos'] ?><br>
+                C.C.: <?= $d['solicitante_nro_doc'] ?><br>
+                Fecha: <?= $fecha ?>
+            </div>
+        </td>
+        <td>
+            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
+            <div class="firma-linea">
+                <strong>f. Representante Legal/Director/Coordinador/Jefe de Area</strong><br>
+                Nombre: <?= $d['autoridad_nombres'] ?> <?= $d['autoridad_apellidos'] ?><br>
+                C.C.: <?= $d['autoridad_cedula'] ?><br>
+                Fecha: <?= $fecha ?>
+            </div>
+        </td>
     </tr>
     <tr><td colspan="2" class="firma-header">Suscripciones de la ARCONEL</td></tr>
     <tr>
-        <td style="height:80px;"><div class="firma-linea"><strong>f. Director/Coordinador de Area funcional del Sistema</strong><br>Nombre:<br>C.C.:<br>Fecha:</div></td>
-        <td><div class="firma-linea"><strong>f. Director de Tecnologias de la Informacion y Comunicacion</strong><br>Nombre:<br>C.C.:<br>Fecha:</div></td>
+        <td style="height:80px;">
+            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
+            <div class="firma-linea">
+                <strong>f. Director/Coordinador de Area funcional del Sistema/Servicio</strong><br>
+                Nombre:<br>
+                C.C.:<br>
+                Fecha:
+            </div>
+        </td>
+        <td>
+            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
+            <div class="firma-linea">
+                <strong>f. Director de Tecnologias de la Informacion y Comunicacion</strong><br>
+                Nombre:<br>
+                C.C.:<br>
+                Fecha:
+            </div>
+        </td>
     </tr>
 </table>
 

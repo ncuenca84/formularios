@@ -21,7 +21,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 18mm 15mm 30mm 15mm; }
+    @page { margin: 18mm 15mm 40mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 9pt; color: #333; line-height: 1.4; }
     .inst-name { font-size: 11pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 8px; }
@@ -81,7 +81,7 @@ ob_start();
 <table class="firmas-table">
     <tr><td colspan="2" class="firma-header">Suscripciones de la institucion solicitante</td></tr>
     <tr>
-        <td style="height:70px;"><div class="firma-linea"><strong>Solicitado por:</strong><br>f. Solicitante<br>Nombre:<br>C.C.:<br>Fecha:</div></td>
+        <td style="height:70px;"><div class="firma-linea"><strong>Solicitado por:</strong><br>f. Solicitante<br>Nombre: <?= $d['nombre_completo'] ?><br>C.C.: <?= $d['cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
         <td><div class="firma-linea"><strong>Autorizado por:</strong><br>f. Director/Coordinador/Jefe de Area<br>Nombre:<br>C.C.:<br>Fecha:</div></td>
     </tr>
     <tr><td colspan="2" class="firma-header">Suscripciones de ARCONEL</td></tr>
