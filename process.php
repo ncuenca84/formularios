@@ -104,15 +104,15 @@ guardarSolicitud($datosDB);
 // Enviar correo a soporte
 enviarNotificacionAdmin($datosDB);
 
-// Redirigir con datos por URL (compatible con Edge)
-$params = http_build_query([
+// Mostrar resultado directamente (sin redirect, compatible con Edge)
+$resultado = [
     'codigo' => $codigo,
-    'tipo' => $nombresFormulario[$tipoFormulario],
+    'tipo_formulario' => $nombresFormulario[$tipoFormulario],
     'nombre' => $datosDB['nombre_completo'] ?? '',
-    'pdf' => "assets/uploads/pdfs/{$pdfFilename}",
-]);
-
-header('Location: resultado.php?' . $params);
+    'pdf_path' => "assets/uploads/pdfs/{$pdfFilename}",
+];
+$config = getAllConfig();
+require __DIR__ . '/resultado.php';
 exit;
 
 
