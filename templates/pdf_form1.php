@@ -14,12 +14,10 @@ $encabezadoInstitucional = renderPdfEncabezadoInstitucional($config, $meta, $log
 
 $oficial = htmlspecialchars($datos['oficial_seguridad'] ?? '');
 $cedulaOficial = htmlspecialchars($datos['cedula_oficial'] ?? '');
-$cargoOficial = htmlspecialchars($datos['cargo_oficial'] ?? 'Oficial de Seguridad de la Informacion (OSI)');
-$receptor = htmlspecialchars($datos['nombre_receptor'] ?? '');
+$nombreReceptor = htmlspecialchars($datos['nombre_receptor'] ?? '');
+$calidadReceptor = htmlspecialchars($datos['calidad_receptor'] ?? '');
+$cedulaReceptor = htmlspecialchars($datos['cedula_receptor'] ?? '');
 $institucionReceptor = htmlspecialchars($datos['institucion_receptor'] ?? '');
-$representante = htmlspecialchars($datos['representante_legal'] ?? '');
-$cargoRep = htmlspecialchars($datos['cargo_representante'] ?? '');
-$cedulaRep = htmlspecialchars($datos['cedula_representante'] ?? '');
 $direccionReceptor = htmlspecialchars($datos['direccion_receptor'] ?? '');
 $codigo = htmlspecialchars($datos['codigo']);
 $fecha = $datos['fecha'];
@@ -60,7 +58,7 @@ $mesActual = $meses[(int)date('n') - 1];
 ?>
 <p class="lugar-fecha">Quito, <?= date('d') ?> de <?= $mesActual ?> de <?= date('Y') ?></p>
 
-<p class="clausula-texto">Comparecen al otorgamiento del presente Acuerdo de Confidencialidad y No Divulgacion de Informacion con Terceros, por una parte, la Agencia de Regulacion y Control de Electricidad (ARCONEL), representada por el/la <strong><?= $oficial ?></strong>, en calidad de Oficial de Seguridad de la Informacion (OSI), a quien en adelante se le denominara como "LA ARCONEL", y, por otra parte, <strong><?= $institucionReceptor ?></strong>, representado por el senor/a <strong><?= $representante ?></strong> en calidad de <strong><?= $cargoRep ?></strong>, a quien en adelante se le denominara como "EL RECEPTOR".</p>
+<p class="clausula-texto">Comparecen a la suscripcion del presente Acuerdo de Confidencialidad y No Divulgacion de Informacion con terceros, por una parte, la Agencia de Regulacion y Control de Electricidad (ARCONEL) representada por <strong><?= $oficial ?></strong>, en calidad de Oficial de Seguridad de la Informacion (OSI), a quien en adelante se le denominara como "LA ARCONEL", y por otra parte, <strong><?= $nombreReceptor ?></strong> en calidad de (<strong><?= $calidadReceptor ?></strong>), a quien en adelante se le denominara como "EL RECEPTOR".</p>
 
 <p class="clausula-texto">Los comparecientes, libre y voluntariamente, en las calidades que intervienen, suscriben el presente Acuerdo de Confidencialidad y de No Divulgacion de Informacion en base a las siguientes clausulas:</p>
 
@@ -125,19 +123,17 @@ $mesActual = $meses[(int)date('n') - 1];
     <tr>
         <td>
             <div class="firma-linea">
-                <strong>POR EL RECEPTOR</strong><br>
-                Nombres: <?= $representante ?><br>
-                CI: <?= $cedulaRep ?><br>
-                Cargo: <?= $cargoRep ?><br>
+                <strong>POR EL RECEPTOR</strong><br><br>
+                <?= $nombreReceptor ?><br>
+                <?php if (!empty($institucionReceptor)): ?>
                 <?= $institucionReceptor ?>
+                <?php endif; ?>
             </div>
         </td>
         <td>
             <div class="firma-linea">
-                <strong>POR LA ARCONEL</strong><br>
-                Nombres del OSI: <?= $oficial ?><br>
-                CI: <?= $cedulaOficial ?><br>
-                Oficial de Seguridad de la Informacion<br>
+                <strong>POR LA ARCONEL</strong><br><br>
+                <?= $oficial ?><br>
                 Agencia de Regulacion y Control de Electricidad
             </div>
         </td>

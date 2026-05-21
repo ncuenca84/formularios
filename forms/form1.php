@@ -38,34 +38,34 @@ renderHeader($config, $titulo);
                             </div>
                         </div>
 
-                        <div class="section-title"><i class="bi bi-person-badge"></i> DATOS DEL RECEPTOR (TERCERO)</div>
+                        <div class="section-title"><i class="bi bi-person-badge"></i> DATOS DEL RECEPTOR</div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre de la Institucion Receptora <span class="text-danger">*</span></label>
-                                <input type="text" name="institucion_receptor" class="form-control" placeholder="Ej: Servicio de Rentas Internas" required>
+                                <label class="form-label">Nombres y Apellidos del Receptor <span class="text-danger">*</span></label>
+                                <input type="text" name="nombre_receptor" class="form-control" placeholder="Ej: MENA ZAMORA HUGO RODRIGO" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre del Representante Legal <span class="text-danger">*</span></label>
-                                <input type="text" name="representante_legal" class="form-control" required>
+                                <label class="form-label">Calidad / Cargo del Receptor <span class="text-danger">*</span></label>
+                                <input type="text" name="calidad_receptor" class="form-control" placeholder="Ej: El Profesional, Consultor, Contratista" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Cargo del Representante <span class="text-danger">*</span></label>
-                                <input type="text" name="cargo_representante" class="form-control" placeholder="Ej: Director General" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Cedula del Representante <span class="text-danger">*</span></label>
-                                <input type="text" name="cedula_representante" class="form-control" data-solo-numeros maxlength="13" required>
+                                <label class="form-label">Cedula del Receptor <span class="text-danger">*</span></label>
+                                <input type="text" name="cedula_receptor" class="form-control" data-solo-numeros maxlength="13" required>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Correo electronico <span class="text-danger">*</span></label>
                                 <input type="email" name="correo" class="form-control" required>
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Institucion / Empresa (si aplica)</label>
+                                <input type="text" name="institucion_receptor" class="form-control" placeholder="Ej: Agencia de Regulacion y Control de Electricidad">
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Direccion del Receptor</label>
-                            <input type="text" name="direccion_receptor" class="form-control" placeholder="Direccion de la institucion receptora">
+                            <input type="text" name="direccion_receptor" class="form-control" placeholder="Direccion para notificaciones">
                         </div>
 
                         <hr class="my-4">

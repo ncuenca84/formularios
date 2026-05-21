@@ -123,9 +123,9 @@ function validarPorTipo(int $tipo, array $post): array
 
     switch ($tipo) {
         case 1:
-            if (empty($post['institucion_receptor'])) $errores[] = 'El nombre de la institucion receptora es obligatorio.';
-            if (empty($post['representante_legal'])) $errores[] = 'El representante legal es obligatorio.';
-            if (empty($post['cargo_representante'])) $errores[] = 'El cargo del representante es obligatorio.';
+            if (empty($post['nombre_receptor'])) $errores[] = 'El nombre del receptor es obligatorio.';
+            if (empty($post['calidad_receptor'])) $errores[] = 'La calidad/cargo del receptor es obligatoria.';
+            if (empty($post['cedula_receptor'])) $errores[] = 'La cedula del receptor es obligatoria.';
             if (empty($post['correo']) || !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
             break;
 
@@ -185,10 +185,10 @@ function extraerDatosPrincipales(int $tipo, array $datos): array
     switch ($tipo) {
         case 1:
             return array_merge($base, [
-                'nombre_completo' => $datos['representante_legal'] ?? '',
-                'cedula' => $datos['cedula_representante'] ?? '',
+                'nombre_completo' => $datos['nombre_receptor'] ?? '',
+                'cedula' => $datos['cedula_receptor'] ?? '',
                 'correo' => $datos['correo'] ?? '',
-                'cargo' => $datos['cargo_representante'] ?? '',
+                'cargo' => $datos['calidad_receptor'] ?? '',
                 'area' => $datos['institucion_receptor'] ?? '',
             ]);
 
