@@ -31,7 +31,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 18mm 16mm 22mm 16mm; }
+    @page { margin: 18mm 16mm 30mm 16mm; }
     body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9pt; color: #333; line-height: 1.5; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 8px; }
     .lugar-fecha { text-align: right; font-size: 9pt; margin-bottom: 10px; }
@@ -43,8 +43,7 @@ ob_start();
     .firmas-table td { width: 50%; text-align: center; vertical-align: bottom; padding: 0 12px; }
     .firma-linea { border-top: 1px solid #333; padding-top: 3px; font-size: 8pt; }
     .firma-espacio { height: 50px; }
-    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 6.5pt; color: #888; border-top: 2px solid <?= $colorPrimario ?>; padding-top: 3px; }
-    .nota { font-size: 7pt; color: #666; text-align: center; margin-top: 10px; font-style: italic; }
+    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 7pt; color: #666; border-top: 1px solid #999; padding-top: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -55,7 +54,11 @@ ob_start();
     <tr><td style="text-align:left;"><strong>Fecha:</strong> <?= $fecha ?></td><td style="text-align:right;"><strong>Codigo:</strong> <span style="font-family:Courier;font-weight:bold;color:<?= $colorPrimario ?>;"><?= $codigo ?></span></td></tr>
 </table>
 
-<p class="lugar-fecha">Quito, <?= date('d') ?> de <?= strftime('%B', strtotime('now')) ?> de <?= date('Y') ?></p>
+<?php
+$meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+$mesActual = $meses[(int)date('n') - 1];
+?>
+<p class="lugar-fecha">Quito, <?= date('d') ?> de <?= $mesActual ?> de <?= date('Y') ?></p>
 
 <p class="clausula-texto">Comparecen al otorgamiento del presente Acuerdo de Confidencialidad y No Divulgacion de Informacion con Terceros, por una parte, la Agencia de Regulacion y Control de Electricidad (ARCONEL), representada por el/la <strong><?= $oficial ?></strong>, en calidad de Oficial de Seguridad de la Informacion (OSI), a quien en adelante se le denominara como "LA ARCONEL", y, por otra parte, <strong><?= $institucionReceptor ?></strong>, representado por el senor/a <strong><?= $representante ?></strong> en calidad de <strong><?= $cargoRep ?></strong>, a quien en adelante se le denominara como "EL RECEPTOR".</p>
 
@@ -141,12 +144,9 @@ ob_start();
     </tr>
 </table>
 
-<div class="nota">Documento generado automaticamente el <?= $fecha ?> | <?= $codigo ?></div>
-
 <div class="footer">
-    <?php if (!empty($piePagina1)): ?><?= $piePagina1 ?><br><?php endif; ?>
-    <?php if (!empty($piePagina2)): ?><?= $piePagina2 ?><br><?php endif; ?>
-    <?php if (!empty($piePagina3)): ?><?= $piePagina3 ?><?php endif; ?>
+    <em>"Este documento es para uso exclusivo de la ARCONEL. Se prohibe su uso no autorizado".</em><br>
+    GESTION GENERAL DE PLANIFICACION Y GESTION ESTRATEGICA | <?= $codigo ?>
 </div>
 
 </body>

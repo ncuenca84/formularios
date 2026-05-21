@@ -23,7 +23,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 15mm 12mm 22mm 12mm; }
+    @page { margin: 15mm 12mm 30mm 12mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 8.5pt; color: #333; line-height: 1.3; }
     .inst-name { font-size: 10pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
     .info-bar { width: 100%; font-size: 7.5pt; margin-bottom: 5px; }
@@ -36,8 +36,7 @@ ob_start();
     .firmas-table td { width: 33%; text-align: center; vertical-align: bottom; padding: 4px 8px; border: 1px solid #ddd; }
     .firma-linea { border-top: 1px solid #333; padding-top: 2px; font-size: 7pt; margin-top: 35px; }
     .firma-header { background: #eef2f7; font-weight: 600; font-size: 7.5pt; color: <?= $colorPrimario ?>; }
-    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 6.5pt; color: #888; border-top: 2px solid <?= $colorPrimario ?>; padding-top: 3px; }
-    .nota-final { font-size: 7pt; color: #666; text-align: center; margin-top: 6px; font-style: italic; }
+    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 7pt; color: #666; border-top: 1px solid #999; padding-top: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -68,84 +67,9 @@ ob_start();
     <tr><td class="lb">Cedula:</td><td><?= $d['cedula'] ?></td><td class="lb">Correo:</td><td><?= $d['correo_usuario'] ?>@arconel.gob.ec</td></tr>
     <tr><td class="lb">Cargo:</td><td><?= $d['cargo'] ?></td><td class="lb">Telefono/Ext:</td><td><?= $d['telefono_extension'] ?></td></tr>
 </table>
-<div class="nota-box"><strong>Nota:</strong> Todos los permisos anteriores que no se encuentren especificados en este formulario seran desactivados.</div>
-
-<!-- 3. ACCESO A SISTEMAS -->
-<div class="seccion">3. ACCESO A MODULOS DE SISTEMAS</div>
-<table class="dt">
-    <?php if (!empty($d['sisdat_modulos'])): ?>
-    <tr><td class="lb">SISDAT:</td><td colspan="3"><?= $d['sisdat_modulos'] ?></td></tr>
-    <?php endif; ?>
-    <?php if (!empty($d['sigcon_modulos'])): ?>
-    <tr><td class="lb">SIGCON:</td><td colspan="3"><?= $d['sigcon_modulos'] ?></td></tr>
-    <?php endif; ?>
-    <?php if (!empty($d['snispcb_acceso']) && $d['snispcb_acceso'] !== ''): ?>
-    <tr><td class="lb">SNISPCB:</td><td><?= $d['snispcb_acceso'] ?></td><td class="lb">Coord./Dir:</td><td><?= $d['snispcb_coordinacion'] ?></td></tr>
-    <?php endif; ?>
-    <?php if (!empty($d['otros_sistemas'])): ?>
-    <tr><td class="lb">Otros Sistemas:</td><td colspan="3"><?= nl2br($d['otros_sistemas']) ?></td></tr>
-    <?php endif; ?>
-</table>
-
-<!-- 4. CARPETAS COMPARTIDAS -->
-<div class="seccion">4. ACCESO A CARPETAS COMPARTIDAS / REDES</div>
-<table class="dt">
-    <tr style="background:#eef2f7;font-weight:600;"><td>Nombre Carpeta</td><td>Permiso</td><td>Periodo</td><td>Desde / Hasta</td></tr>
-    <?php if (!empty($d['carpeta1_nombre'])): ?>
-    <tr><td><?= $d['carpeta1_nombre'] ?></td><td><?= $d['carpeta1_permiso'] ?></td><td><?= $d['carpeta1_indefinido'] === 'SI' ? 'Indefinido' : 'Definido' ?></td><td><?= $d['carpeta1_desde'] ?> - <?= $d['carpeta1_hasta'] ?></td></tr>
-    <?php endif; ?>
-    <?php if (!empty($d['carpeta2_nombre'])): ?>
-    <tr><td><?= $d['carpeta2_nombre'] ?></td><td><?= $d['carpeta2_permiso'] ?></td><td><?= $d['carpeta2_indefinido'] === 'SI' ? 'Indefinido' : 'Definido' ?></td><td><?= $d['carpeta2_desde'] ?> - <?= $d['carpeta2_hasta'] ?></td></tr>
-    <?php endif; ?>
-</table>
-<?php if (!empty($d['observacion'])): ?>
-<p style="font-size:8pt;"><strong>Observacion:</strong> <?= $d['observacion'] ?></p>
-<?php endif; ?>
-
-<div class="nota-box">La notificacion de acceso sera enviada a la direccion electronica (e-mail) del funcionario solicitante.</div>
-
-<!-- FIRMAS -->
-<div class="seccion">Autorizacion</div>
-<table class="firmas-table">
-    <tr>
-        <td class="firma-header">Solicitado por:</td>
-        <td class="firma-header">Autorizado por:</td>
-        <td class="firma-header">Autorizacion adicional:</td>
-    </tr>
-    <tr>
-        <td style="height:65px;">
-            <div class="firma-linea">
-                <strong>Firma Solicitante</strong><br>
-                Nombres: <?= $nombreCompleto ?><br>
-                C.C.: <?= $d['cedula'] ?><br>
-                Cargo: <?= $d['cargo'] ?>
-            </div>
-        </td>
-        <td>
-            <div class="firma-linea">
-                <strong>Firma Autorizador</strong><br>
-                Nombres: <?= $d['autorizador_nombre'] ?><br>
-                C.C.: <?= $d['autorizador_cedula'] ?><br>
-                Cargo: <?= $d['autorizador_cargo'] ?>
-            </div>
-        </td>
-        <td>
-            <div class="firma-linea">
-                <strong>Firma Autorizacion Adicional</strong><br>
-                Nombres:<br>
-                C.C.:<br>
-                Cargo:
-            </div>
-        </td>
-    </tr>
-</table>
-
-<div class="nota-final">Documento generado automaticamente el <?= $fecha ?> | <?= $codigo ?></div>
-
 <div class="footer">
-    <?php if (!empty($piePagina1)): ?><?= $piePagina1 ?><br><?php endif; ?>
-    <?php if (!empty($piePagina2)): ?><?= $piePagina2 ?><br><?php endif; ?>
-    <?php if (!empty($piePagina3)): ?><?= $piePagina3 ?><?php endif; ?>
+    <em>"Este documento es para uso exclusivo de la ARCONEL. Se prohibe su uso no autorizado".</em><br>
+    GESTION GENERAL DE PLANIFICACION Y GESTION ESTRATEGICA
 </div>
 
 </body>

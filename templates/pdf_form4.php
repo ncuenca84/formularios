@@ -21,7 +21,7 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { margin: 18mm 15mm 25mm 15mm; }
+    @page { margin: 18mm 15mm 30mm 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 9pt; color: #333; line-height: 1.4; }
     .inst-name { font-size: 11pt; font-weight: bold; color: <?= $colorPrimario ?>; text-transform: uppercase; }
     .info-bar { width: 100%; font-size: 8pt; margin-bottom: 8px; }
@@ -35,8 +35,7 @@ ob_start();
     .firmas-table td { width: 50%; text-align: center; vertical-align: bottom; padding: 4px 8px; border: 1px solid #ddd; }
     .firma-linea { border-top: 1px solid #333; padding-top: 3px; font-size: 7.5pt; margin-top: 40px; }
     .firma-header { background: #eef2f7; font-weight: 600; font-size: 8pt; color: <?= $colorPrimario ?>; padding: 4px; }
-    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 7pt; color: #888; border-top: 2px solid <?= $colorPrimario ?>; padding-top: 4px; }
-    .nota { font-size: 7pt; color: #666; text-align: center; margin-top: 8px; font-style: italic; }
+    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 7pt; color: #666; border-top: 1px solid #999; padding-top: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -99,12 +98,9 @@ ob_start();
     <tr><td class="lb">Nro. oficio/memorando autorizacion:</td><td><?= $d['nro_oficio_autorizacion'] ?></td></tr>
 </table>
 
-<div class="nota">Documento generado automaticamente el <?= $fecha ?> | <?= $codigo ?></div>
-
 <div class="footer">
-    <?php if (!empty($piePagina1)): ?><?= $piePagina1 ?><br><?php endif; ?>
-    <?php if (!empty($piePagina2)): ?><?= $piePagina2 ?><br><?php endif; ?>
-    <?php if (!empty($piePagina3)): ?><?= $piePagina3 ?><?php endif; ?>
+    <em>"Este documento es para uso exclusivo de la ARCONEL. Se prohibe su uso no autorizado".</em><br>
+    GESTION GENERAL DE PLANIFICACION Y GESTION ESTRATEGICA
 </div>
 
 </body>
