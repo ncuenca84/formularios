@@ -19,7 +19,7 @@ renderHeader($config, $titulo);
                     <i class="bi bi-key"></i> <?= $titulo ?>
                 </div>
                 <div class="card-body">
-                    <form action="../process.php" method="POST" novalidate>
+                    <form action="/process.php" method="POST" novalidate>
                         <input type="hidden" name="tipo_formulario" value="5">
 
                         <!-- INFORMACION GENERAL DEL SERVIDOR -->

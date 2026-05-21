@@ -19,7 +19,7 @@ renderHeader($config, $titulo);
                     <i class="bi bi-shield-lock"></i> <?= $titulo ?>
                 </div>
                 <div class="card-body">
-                    <form action="../process.php" method="POST" novalidate>
+                    <form action="/process.php" method="POST" novalidate>
                         <input type="hidden" name="tipo_formulario" value="1">
 
                         <div class="section-title"><i class="bi bi-building"></i> DATOS DE LA ARCONEL</div>

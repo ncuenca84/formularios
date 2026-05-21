@@ -19,7 +19,7 @@ renderHeader($config, $titulo);
                     <i class="bi bi-wifi"></i> <?= $titulo ?>
                 </div>
                 <div class="card-body">
-                    <form action="../process.php" method="POST" novalidate>
+                    <form action="/process.php" method="POST" novalidate>
                         <input type="hidden" name="tipo_formulario" value="6">
 
                         <!-- INFORMACION GENERAL DEL SERVIDOR -->

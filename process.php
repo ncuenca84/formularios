@@ -1,24 +1,9 @@
 <?php
-session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/includes/functions.php';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: index.php');
-    exit;
-}
-
-$tipoFormulario = (int)($_POST['tipo_formulario'] ?? 0);
-
-if ($tipoFormulario < 1 || $tipoFormulario > 6) {
-    $_SESSION['mensaje'] = 'Tipo de formulario no valido.';
-    $_SESSION['tipo_mensaje'] = 'error';
-    header('Location: index.php');
-    exit;
-}
 
 // Nombres de los formularios
 $nombresFormulario = [
@@ -30,13 +15,20 @@ $nombresFormulario = [
     6 => 'Accesos Especiales Internet',
 ];
 
+$tipoFormulario = (int)($_POST['tipo_formulario'] ?? 0);
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $tipoFormulario < 1 || $tipoFormulario > 6) {
+    echo '<script>window.location.href="index.php";</script>';
+    exit;
+}
+
 // Validar campos obligatorios segun tipo
 $errores = validarPorTipo($tipoFormulario, $_POST);
 
 if (!empty($errores)) {
-    $_SESSION['mensaje'] = implode('<br>', $errores);
-    $_SESSION['tipo_mensaje'] = 'error';
-    header('Location: index.php');
+    $errorMsg = implode('\n', $errores);
+    $formNum = $tipoFormulario;
+    echo "<script>alert('{$errorMsg}');window.location.href='forms/form{$formNum}.php';</script>";
     exit;
 }
 
