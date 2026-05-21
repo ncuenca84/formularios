@@ -110,9 +110,9 @@ ob_start();
         <td>
             <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
             <div class="firma-linea">
-                <strong>f. Representante Legal/Director/Coordinador/Jefe de Area</strong><br>
-                Nombre: <?= $d['autoridad_nombres'] ?> <?= $d['autoridad_apellidos'] ?><br>
-                C.C.: <?= $d['autoridad_cedula'] ?><br>
+                <strong>f. Representante Legal/Director/Coordinador/Jefe de Area de la entidad solicitante</strong><br>
+                Nombre: <?= $d['firma_entidad_nombre'] ?><br>
+                C.C.: <?= $d['firma_entidad_cedula'] ?><br>
                 Fecha: <?= $fecha ?>
             </div>
         </td>
@@ -123,18 +123,18 @@ ob_start();
             <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
             <div class="firma-linea">
                 <strong>f. Director/Coordinador de Area funcional del Sistema/Servicio</strong><br>
-                Nombre:<br>
-                C.C.:<br>
-                Fecha:
+                Nombre: <?= $d['firma_area_nombre'] ?><br>
+                C.C.: <?= $d['firma_area_cedula'] ?><br>
+                Fecha: <?= $fecha ?>
             </div>
         </td>
         <td>
             <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
             <div class="firma-linea">
                 <strong>f. Director de Tecnologias de la Informacion y Comunicacion</strong><br>
-                Nombre:<br>
-                C.C.:<br>
-                Fecha:
+                Nombre: <?= $d['firma_dtic_nombre'] ?><br>
+                C.C.: <?= $d['firma_dtic_cedula'] ?><br>
+                Fecha: <?= $fecha ?>
             </div>
         </td>
     </tr>

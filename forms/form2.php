@@ -184,6 +184,65 @@ renderHeader($config, $titulo);
                             </ul>
                         </div>
 
+                        <!-- SUSCRIPCIONES / FIRMANTES -->
+                        <div class="section-title"><i class="bi bi-pen"></i> DATOS DE FIRMANTES</div>
+
+                        <p class="text-muted small mb-3">Complete los datos de las 4 personas que firmaran el documento.</p>
+
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="fw-bold" style="color:#006400;">1. Director/Coordinador/Jefe de Area de la entidad solicitante</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_entidad_nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cedula <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_entidad_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cargo</label>
+                                    <input type="text" name="firma_entidad_cargo" class="form-control" placeholder="Ej: Director General">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="fw-bold" style="color:#003366;">2. Director/Coordinador de Area funcional del Sistema (ARCONEL)</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_area_nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cedula <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_area_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cargo</label>
+                                    <input type="text" name="firma_area_cargo" class="form-control" placeholder="Ej: Director de Regulacion">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="fw-bold" style="color:#003366;">3. Director de Tecnologias de la Informacion y Comunicacion (ARCONEL)</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_dtic_nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cedula <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_dtic_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cargo</label>
+                                    <input type="text" name="firma_dtic_cargo" class="form-control" value="Director de TIC">
+                                </div>
+                            </div>
+                        </div>
+
                         <hr class="my-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted"><i class="bi bi-info-circle"></i> La entidad solicitante debera notificar cambios de usuario.</small>
