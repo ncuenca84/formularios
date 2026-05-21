@@ -1,6 +1,5 @@
--- Crear base de datos
-CREATE DATABASE IF NOT EXISTS formularios_pdf CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE formularios_pdf;
+-- NOTA: Ejecutar con: mysql -u root NOMBRE_DE_TU_BD < config/setup.sql
+-- No incluye CREATE DATABASE para evitar conflictos con el nombre real de la BD
 
 -- Tabla de solicitudes
 CREATE TABLE IF NOT EXISTS solicitudes (
