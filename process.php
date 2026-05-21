@@ -123,7 +123,7 @@ function validarPorTipo(int $tipo, array $post): array
 
     switch ($tipo) {
         case 1:
-            if (empty($post['nombre_receptor'])) $errores[] = 'El nombre del receptor es obligatorio.';
+            if (empty($post['institucion_receptor'])) $errores[] = 'El nombre de la institucion receptora es obligatorio.';
             if (empty($post['representante_legal'])) $errores[] = 'El representante legal es obligatorio.';
             if (empty($post['cargo_representante'])) $errores[] = 'El cargo del representante es obligatorio.';
             if (empty($post['correo']) || !filter_var($post['correo'], FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
@@ -189,7 +189,7 @@ function extraerDatosPrincipales(int $tipo, array $datos): array
                 'cedula' => $datos['cedula_representante'] ?? '',
                 'correo' => $datos['correo'] ?? '',
                 'cargo' => $datos['cargo_representante'] ?? '',
-                'area' => $datos['nombre_receptor'] ?? '',
+                'area' => $datos['institucion_receptor'] ?? '',
             ]);
 
         case 2:
