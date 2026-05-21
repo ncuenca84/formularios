@@ -101,16 +101,19 @@ $datosDB['pdf_path'] = "assets/uploads/pdfs/{$pdfFilename}";
 // Guardar en BD
 guardarSolicitud($datosDB);
 
-// Enviar correo al admin
+// Enviar correo a soporte
 enviarNotificacionAdmin($datosDB);
 
-// Preparar sesion para respuesta
-$_SESSION['mensaje'] = 'Solicitud generada exitosamente.';
-$_SESSION['tipo_mensaje'] = 'success';
-$_SESSION['codigo_solicitud'] = $codigo;
-$_SESSION['form_origen'] = $tipoFormulario;
+// Guardar en sesion para la pagina de resultado
+$_SESSION['resultado'] = [
+    'codigo' => $codigo,
+    'tipo_formulario' => $nombresFormulario[$tipoFormulario],
+    'nombre' => $datosDB['nombre_completo'] ?? '',
+    'pdf_path' => "assets/uploads/pdfs/{$pdfFilename}",
+    'pdf_filename' => $pdfFilename,
+];
 
-header('Location: index.php');
+header('Location: resultado.php');
 exit;
 
 

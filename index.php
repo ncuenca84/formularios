@@ -6,13 +6,6 @@ $config = getAllConfig();
 $nombreInstitucion = $config['nombre_institucion'] ?? 'AGENCIA DE REGULACION Y CONTROL DE ELECTRICIDAD';
 $colorPrimario = $config['color_primario'] ?? '#003366';
 
-$mensaje = $_SESSION['mensaje'] ?? null;
-$tipo_mensaje = $_SESSION['tipo_mensaje'] ?? 'success';
-$codigo = $_SESSION['codigo_solicitud'] ?? '';
-$textoPostEnvio = $config['texto_post_envio'] ?? '';
-$formOrigen = $_SESSION['form_origen'] ?? '';
-unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje'], $_SESSION['codigo_solicitud'], $_SESSION['form_origen']);
-
 $formularios = [
     1 => [
         'titulo' => 'Acuerdo de Confidencialidad y no Divulgacion de Informacion con Terceros',
@@ -110,18 +103,6 @@ $formularios = [
             font-weight: 800;
             opacity: 0.08;
         }
-        .alert-success-custom {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 10px;
-            padding: 1.5rem;
-        }
-        .codigo-solicitud {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--color-primario);
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -144,30 +125,6 @@ $formularios = [
 </div>
 
 <div class="container mb-5">
-
-    <?php if ($mensaje): ?>
-        <div class="row justify-content-center mb-4">
-            <div class="col-lg-10">
-                <div class="alert alert-<?= $tipo_mensaje === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show">
-                    <?php if ($tipo_mensaje === 'success'): ?>
-                        <div class="alert-success-custom">
-                            <h4 class="alert-heading"><i class="bi bi-check-circle-fill"></i> Solicitud generada exitosamente</h4>
-                            <p class="codigo-solicitud"><?= htmlspecialchars($codigo) ?></p>
-                            <hr>
-                            <p class="mb-1"><i class="bi bi-file-earmark-pdf-fill text-danger"></i> Su PDF se ha descargado automaticamente.</p>
-                            <p class="mb-0 mt-2">
-                                <i class="bi bi-info-circle-fill"></i>
-                                <strong><?= htmlspecialchars($textoPostEnvio) ?></strong>
-                            </p>
-                        </div>
-                    <?php else: ?>
-                        <i class="bi bi-exclamation-triangle-fill"></i> <?= $mensaje ?>
-                    <?php endif; ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
 
     <div class="text-center mb-4">
         <h3 class="fw-bold" style="color: var(--color-primario);">Formularios Institucionales</h3>
@@ -197,16 +154,5 @@ $formularios = [
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<?php if ($tipo_mensaje === 'success' && !empty($codigo)): ?>
-<script>
-window.addEventListener('load', function() {
-    setTimeout(function() {
-        window.location.href = 'download.php?codigo=<?= urlencode($codigo) ?>';
-    }, 500);
-});
-</script>
-<?php endif; ?>
-
 </body>
 </html>
