@@ -32,7 +32,7 @@ ob_start();
     .consideraciones li { margin-bottom: 3px; }
     .firmas-table { width: 100%; margin-top: 10px; border-collapse: collapse; }
     .firmas-table td { width: 50%; text-align: center; vertical-align: bottom; padding: 4px 8px; border: 1px solid #ddd; }
-    .firma-linea { border-top: 1px solid #333; padding-top: 3px; font-size: 7.5pt; margin-top: 40px; }
+    .firma-linea { border-top: 1px solid #333; padding-top: 3px; font-size: 7.5pt; margin-top: 70px; }
     .firma-header { background: #eef2f7; font-weight: 600; font-size: 8pt; color: <?= $colorPrimario ?>; padding: 4px; }
 </style>
 </head>

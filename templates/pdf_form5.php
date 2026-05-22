@@ -39,7 +39,7 @@ ob_start();
     .consideraciones li { margin-bottom: 4px; }
     .firmas-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
     .firmas-table td { width: 50%; text-align: center; vertical-align: bottom; padding: 5px 12px; border: 1px solid #ddd; }
-    .firma-linea { border-top: 1px solid #333; padding-top: 4px; font-size: 8pt; margin-top: 50px; }
+    .firma-linea { border-top: 1px solid #333; padding-top: 4px; font-size: 8pt; margin-top: 70px; }
 </style>
 </head>
 <body>

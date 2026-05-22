@@ -29,7 +29,7 @@ ob_start();
     .nota-box { font-size: 7.5pt; background: #fff3cd; padding: 4px 8px; border-radius: 3px; margin: 4px 0; }
     .firmas-table { width: 100%; margin-top: 10px; border-collapse: collapse; }
     .firmas-table td { width: 33%; text-align: center; vertical-align: bottom; padding: 4px 8px; border: 1px solid #ddd; }
-    .firma-linea { border-top: 1px solid #333; padding-top: 2px; font-size: 7pt; margin-top: 35px; }
+    .firma-linea { border-top: 1px solid #333; padding-top: 2px; font-size: 7pt; margin-top: 70px; }
     .firma-header { background: #eef2f7; font-weight: 600; font-size: 7.5pt; color: <?= $colorPrimario ?>; }
 </style>
 </head>
