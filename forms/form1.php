@@ -25,12 +25,12 @@ renderHeader($config, $titulo);
                         <div class="section-title"><i class="bi bi-building"></i> DATOS DE LA ARCONEL</div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Nombre del Oficial de Seguridad de la Informacion (OSI) <span class="text-danger">*</span></label>
-                                <input type="text" name="oficial_seguridad" class="form-control" required>
+                                <label class="form-label">Nombre del Oficial de Seguridad de la Informacion (OSI)</label>
+                                <input type="text" name="oficial_seguridad" class="form-control" value="William Lopez" readonly>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Cedula del OSI <span class="text-danger">*</span></label>
-                                <input type="text" name="cedula_oficial" class="form-control" data-solo-numeros maxlength="13" required>
+                                <label class="form-label">Cedula del OSI</label>
+                                <input type="text" name="cedula_oficial" class="form-control" value="1713046827" readonly>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Cargo del Oficial</label>
@@ -64,7 +64,7 @@ renderHeader($config, $titulo);
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Direccion del Receptor (para notificaciones)</label>
+                            <label class="form-label">Direccion domiciliaria del Receptor</label>
                             <input type="text" name="direccion_receptor" class="form-control">
                         </div>
 

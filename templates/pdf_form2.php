@@ -52,7 +52,7 @@ ob_start();
 </table>
 
 <!-- MAXIMA AUTORIDAD -->
-<div class="seccion">Datos de la maxima autoridad de la entidad solicitante</div>
+<div class="seccion">Datos de la autoridad de la entidad solicitante</div>
 <table class="datos-table">
     <tr><td class="label">Nombres:</td><td><?= $d['autoridad_nombres'] ?></td><td class="label">Apellidos:</td><td><?= $d['autoridad_apellidos'] ?></td></tr>
     <tr><td class="label">Cedula:</td><td><?= $d['autoridad_cedula'] ?></td><td class="label">Cargo:</td><td><?= $d['autoridad_cargo'] ?></td></tr>

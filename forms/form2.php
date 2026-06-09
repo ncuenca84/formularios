@@ -64,7 +64,7 @@ renderHeader($config, $titulo);
                         </div>
 
                         <!-- DATOS DE LA MAXIMA AUTORIDAD -->
-                        <div class="section-title"><i class="bi bi-person-check"></i> DATOS DE LA MAXIMA AUTORIDAD DE LA ENTIDAD SOLICITANTE</div>
+                        <div class="section-title"><i class="bi bi-person-check"></i> DATOS DE LA AUTORIDAD DE LA ENTIDAD SOLICITANTE</div>
                         <p class="text-muted small">(Para los GAD's debe coincidir con los datos de la credencial emitida por el CNE)</p>
                         <div class="row">
                             <div class="col-md-4 mb-3">
@@ -190,7 +190,7 @@ renderHeader($config, $titulo);
                         <p class="text-muted small mb-3">Complete los datos de las 4 personas que firmaran el documento.</p>
 
                         <div class="border rounded p-3 mb-3">
-                            <h6 class="fw-bold" style="color:#006400;">1. Director/Coordinador/Jefe de Area de la entidad solicitante</h6>
+                            <h6 class="fw-bold" style="color:#006400;">1. Director/Coordinador/Jefe de Area (Entidad Externa)</h6>
                             <div class="row">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label">Nombre <span class="text-danger">*</span></label>
@@ -225,20 +225,20 @@ renderHeader($config, $titulo);
                             </div>
                         </div>
 
-                        <div class="border rounded p-3 mb-3">
-                            <h6 class="fw-bold" style="color:#003366;">3. Director de Tecnologias de la Informacion y Comunicacion (ARCONEL)</h6>
+                        <div class="border rounded p-3 mb-3" style="background:#f8f9fa;">
+                            <h6 class="fw-bold" style="color:#003366;">3. Directora de Tecnologias de la Informacion y Comunicacion (ARCONEL)</h6>
                             <div class="row">
                                 <div class="col-md-4 mb-2">
-                                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                                    <input type="text" name="firma_dtic_nombre" class="form-control" required>
+                                    <label class="form-label">Nombre</label>
+                                    <input type="text" name="firma_dtic_nombre" class="form-control" value="Veronica Chamorro" readonly>
                                 </div>
                                 <div class="col-md-4 mb-2">
-                                    <label class="form-label">Cedula <span class="text-danger">*</span></label>
-                                    <input type="text" name="firma_dtic_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                                    <label class="form-label">Cedula</label>
+                                    <input type="text" name="firma_dtic_cedula" class="form-control" value="1719366757" readonly>
                                 </div>
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label">Cargo</label>
-                                    <input type="text" name="firma_dtic_cargo" class="form-control" value="Director de TIC">
+                                    <input type="text" name="firma_dtic_cargo" class="form-control" value="Directora de Tecnologias de la Informacion y Comunicacion" readonly>
                                 </div>
                             </div>
                         </div>
