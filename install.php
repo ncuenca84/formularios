@@ -106,6 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'encabezado_extra' => '',
             'email_admin' => 'soporte@tudominio.com',
             'texto_post_envio' => 'Descargue el documento, firmelo con FirmaEC y envielo al correo: soporte@tudominio.com',
+            'osi_nombre' => 'William Lopez',
+            'osi_cedula' => '1713046827',
+            'dtic_nombre' => 'Veronica Chamorro',
+            'dtic_cedula' => '1719366757',
+            'dtic_cargo' => 'Directora de Tecnologias de la Informacion y Comunicacion',
         ];
 
         $stmt = $db->prepare("INSERT IGNORE INTO configuracion (clave, valor) VALUES (?, ?)");

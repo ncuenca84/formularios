@@ -124,6 +124,25 @@ try {
             $_SESSION['admin_msg_tipo'] = 'success';
             break;
 
+        case 'autoridades':
+            $campos = [
+                'osi_nombre',
+                'osi_cedula',
+                'dtic_nombre',
+                'dtic_cedula',
+                'dtic_cargo',
+            ];
+            $stmt = $db->prepare("INSERT INTO configuracion (clave, valor) VALUES (?, ?)
+                                  ON DUPLICATE KEY UPDATE valor = VALUES(valor)");
+            foreach ($campos as $campo) {
+                if (isset($_POST[$campo])) {
+                    $stmt->execute([$campo, trim($_POST[$campo])]);
+                }
+            }
+            $_SESSION['admin_msg'] = 'Datos de autoridades guardados correctamente.';
+            $_SESSION['admin_msg_tipo'] = 'success';
+            break;
+
         case 'encabezado':
             $campos = [
                 'encabezado_extra',

@@ -87,6 +87,9 @@ try {
         <a href="#formularios_meta" class="nav-link" data-tab="formularios_meta">
             <i class="bi bi-card-heading"></i> Encabezados por Form.
         </a>
+        <a href="#autoridades" class="nav-link" data-tab="autoridades">
+            <i class="bi bi-person-vcard"></i> Autoridades (OSI/DTIC)
+        </a>
         <a href="#solicitudes" class="nav-link" data-tab="solicitudes">
             <i class="bi bi-file-earmark-text"></i> Solicitudes
         </a>
@@ -322,6 +325,62 @@ try {
                     <?php endfor; ?>
 
                     <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Encabezados</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Autoridades -->
+    <div class="tab-content d-none" id="tab-autoridades">
+        <div class="card config-card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Autoridades Institucionales</h5>
+                <small class="text-muted">Datos del OSI y de la Direccion de TIC que se prellenan en los formularios. Actualice aqui cuando cambie el personal.</small>
+            </div>
+            <div class="card-body">
+                <form action="save_settings.php" method="POST">
+                    <input type="hidden" name="seccion" value="autoridades">
+
+                    <div class="border rounded p-3 mb-3">
+                        <h6 class="fw-bold" style="color:#003366;"><i class="bi bi-shield-lock"></i> Oficial de Seguridad de la Informacion (OSI)</h6>
+                        <p class="text-muted small">Se usa en el Formulario 1 (Acuerdo de Confidencialidad).</p>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label fw-bold">Nombre Completo</label>
+                                <input type="text" name="osi_nombre" class="form-control"
+                                       value="<?= htmlspecialchars($config['osi_nombre'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label fw-bold">Cedula</label>
+                                <input type="text" name="osi_cedula" class="form-control"
+                                       value="<?= htmlspecialchars($config['osi_cedula'] ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border rounded p-3 mb-3">
+                        <h6 class="fw-bold" style="color:#003366;"><i class="bi bi-pc-display"></i> Director/a de Tecnologias de la Informacion y Comunicacion</h6>
+                        <p class="text-muted small">Se usa en el Formulario 2 (Acceso a Sistemas para Terceros).</p>
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label fw-bold">Nombre Completo</label>
+                                <input type="text" name="dtic_nombre" class="form-control"
+                                       value="<?= htmlspecialchars($config['dtic_nombre'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label fw-bold">Cedula</label>
+                                <input type="text" name="dtic_cedula" class="form-control"
+                                       value="<?= htmlspecialchars($config['dtic_cedula'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label fw-bold">Cargo</label>
+                                <input type="text" name="dtic_cargo" class="form-control"
+                                       value="<?= htmlspecialchars($config['dtic_cargo'] ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Autoridades</button>
                 </form>
             </div>
         </div>
