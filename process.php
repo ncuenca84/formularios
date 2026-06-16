@@ -93,9 +93,6 @@ $datosDB['pdf_path'] = "assets/uploads/pdfs/{$pdfFilename}";
 // Guardar en BD
 guardarSolicitud($datosDB);
 
-// Enviar correo a soporte
-enviarNotificacionAdmin($datosDB);
-
 // Mostrar resultado directamente (sin redirect, compatible con Edge)
 $resultado = [
     'codigo' => $codigo,

@@ -118,14 +118,14 @@ $nombreInstitucion = $config['nombre_institucion'] ?? 'AGENCIA DE REGULACION Y C
                 </span>
             </a>
 
-            <div class="info-box">
-                <i class="bi bi-envelope-check-fill" style="color:var(--color-primario);"></i>
-                <strong>Se ha enviado una notificacion</strong> al correo <strong>soporte@arconel.gob.ec</strong> con los datos de su solicitud.
-            </div>
-
             <div class="info-box" style="background:#fff3cd;border-color:#ffc107;">
                 <i class="bi bi-pen-fill" style="color:#856404;"></i>
-                Descargue el documento, <strong>firmelo con FirmaEC</strong> y envielo al correo: <strong>soporte@arconel.gob.ec</strong>
+                <strong>Pasos a seguir:</strong>
+                <ol class="mb-0 mt-1" style="font-size:0.9rem;">
+                    <li>Descargue el documento PDF.</li>
+                    <li>Fírmelo con <strong>FirmaEC</strong> (todas las personas que correspondan).</li>
+                    <li>Envíe el documento firmado al correo <strong>soporte@arconel.gob.ec</strong> solicitando la activación de accesos.</li>
+                </ol>
             </div>
 
             <div class="text-center mt-4">
