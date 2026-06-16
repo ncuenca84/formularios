@@ -94,9 +94,27 @@ renderHeader($config, $titulo);
                             </ul>
                         </div>
 
+                        <!-- DATOS DEL AUTORIZADOR -->
+                        <div class="section-title"><i class="bi bi-pen"></i> DATOS DEL AUTORIZADOR</div>
+                        <p class="text-muted small"><i class="bi bi-pencil-fill"></i> Director/Coordinador/Jefe de Área que autoriza esta solicitud.</p>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nombre del Autorizador <span class="text-danger">*</span></label>
+                                <input type="text" name="autorizador_nombre" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                                <input type="text" name="autorizador_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cargo</label>
+                                <input type="text" name="autorizador_cargo" class="form-control" placeholder="Ej: Coordinador de Área">
+                            </div>
+                        </div>
+
                         <hr class="my-4">
                         <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted"><i class="bi bi-shield-lock"></i> Los datos seran tratados de forma confidencial.</small>
+                            <small class="text-muted"><i class="bi bi-shield-lock"></i> Los datos serán tratados de forma confidencial.</small>
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="bi bi-file-earmark-pdf"></i> Generar Solicitud PDF
                             </button>

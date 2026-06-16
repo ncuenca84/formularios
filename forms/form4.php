@@ -103,9 +103,73 @@ renderHeader($config, $titulo);
                             </div>
                         </div>
 
+                        <!-- DATOS DE LOS AUTORIZADORES -->
+                        <div class="section-title"><i class="bi bi-pen"></i> DATOS DE LOS AUTORIZADORES</div>
+                        <p class="text-muted small"><i class="bi bi-pencil-fill"></i> Complete los datos de los funcionarios que autorizan esta solicitud.</p>
+
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="fw-bold" style="color:#4B0082;">1. Director/Coordinador/Jefe de Área (Institución Solicitante)</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_inst_nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_inst_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cargo</label>
+                                    <input type="text" name="firma_inst_cargo" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="fw-bold" style="color:#003366;">2. Director/Coordinador/Jefe de Área dueña de la información (ARCONEL)</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_area_nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                                    <input type="text" name="firma_area_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cargo</label>
+                                    <input type="text" name="firma_area_cargo" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3 mb-3" style="background:#f8f9fa;">
+                            <h6 class="fw-bold" style="color:#003366;">3. Director/a de Tecnologías de la Información y Comunicación (ARCONEL)</h6>
+                            <p class="text-muted small mb-2"><i class="bi bi-lock-fill"></i> Datos fijos, no modificables.</p>
+                            <?php
+                            $dticNombre = $config['dtic_nombre'] ?? 'Veronica Chamorro';
+                            $dticCedula = $config['dtic_cedula'] ?? '1719366757';
+                            $dticCargo = $config['dtic_cargo'] ?? 'Directora de Tecnologias de la Informacion y Comunicacion';
+                            ?>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Nombre</label>
+                                    <input type="text" name="firma_dtic_nombre" class="form-control" value="<?= htmlspecialchars($dticNombre) ?>" readonly>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cédula</label>
+                                    <input type="text" name="firma_dtic_cedula" class="form-control" value="<?= htmlspecialchars($dticCedula) ?>" readonly>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Cargo</label>
+                                    <input type="text" name="firma_dtic_cargo" class="form-control" value="<?= htmlspecialchars($dticCargo) ?>" readonly>
+                                </div>
+                            </div>
+                        </div>
+
                         <hr class="my-4">
                         <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted"><i class="bi bi-shield-lock"></i> Los datos seran tratados de forma confidencial.</small>
+                            <small class="text-muted"><i class="bi bi-shield-lock"></i> Los datos serán tratados de forma confidencial.</small>
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="bi bi-file-earmark-pdf"></i> Generar Solicitud PDF
                             </button>

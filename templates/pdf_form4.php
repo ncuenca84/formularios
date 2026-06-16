@@ -77,12 +77,12 @@ ob_start();
     <tr><td colspan="2" class="firma-header">Suscripciones de la institucion solicitante</td></tr>
     <tr>
         <td style="height:70px;"><div class="firma-linea"><strong>Solicitado por:</strong><br>f. Solicitante<br>Nombre: <?= $d['nombre_completo'] ?><br>C.C.: <?= $d['cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
-        <td><div class="firma-linea"><strong>Autorizado por:</strong><br>f. Director/Coordinador/Jefe de Area<br>Nombre:<br>C.C.:<br>Fecha:</div></td>
+        <td><div class="firma-linea"><strong>Autorizado por:</strong><br>f. Director/Coordinador/Jefe de Area<br>Nombre: <?= $d['firma_inst_nombre'] ?><br>C.C.: <?= $d['firma_inst_cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
     </tr>
     <tr><td colspan="2" class="firma-header">Suscripciones de ARCONEL</td></tr>
     <tr>
-        <td style="height:70px;"><div class="firma-linea"><strong>Autorizado por:</strong><br>f. Director/Coordinador/Jefe de Area duena de la informacion<br>Nombre:<br>C.C.:<br>Fecha:</div></td>
-        <td><div class="firma-linea"><strong>Autorizado por:</strong><br>Director de Tecnologias de la Informacion y Comunicacion<br>Nombre:<br>C.C.:<br>Fecha:</div></td>
+        <td style="height:70px;"><div class="firma-linea"><strong>Autorizado por:</strong><br>f. Director/Coordinador/Jefe de Area duena de la informacion<br>Nombre: <?= $d['firma_area_nombre'] ?><br>C.C.: <?= $d['firma_area_cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
+        <td><div class="firma-linea"><strong>Autorizado por:</strong><br>Director de Tecnologias de la Informacion y Comunicacion<br>Nombre: <?= $d['firma_dtic_nombre'] ?><br>C.C.: <?= $d['firma_dtic_cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
     </tr>
 </table>
 

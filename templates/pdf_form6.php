@@ -97,8 +97,8 @@ ob_start();
             <div class="firma-linea">
                 <strong>Autorizado por:</strong><br>
                 f. Director/Coordinador/Jefe de Area<br>
-                Nombre:<br>
-                C.C.:
+                Nombre: <?= $d['autorizador_nombre'] ?><br>
+                C.C.: <?= $d['autorizador_cedula'] ?>
             </div>
         </td>
     </tr>

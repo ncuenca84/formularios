@@ -35,7 +35,7 @@ if (!empty($errores)) {
 // Preparar datos
 $config = getAllConfig();
 $codigo = generarCodigoSolicitud();
-$fecha = date('d/m/Y H:i');
+$fecha = date('d/m/Y');
 
 // Sanitizar todos los campos POST
 $datos = array_map(function ($v) {
