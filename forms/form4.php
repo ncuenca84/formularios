@@ -162,9 +162,9 @@ renderHeader($config, $titulo);
                             </div>
                         </div>
 
-                        <div class="border rounded p-3 mb-3">
+                        <div class="border rounded p-3 mb-3" id="seccionFuncionarioArconel">
                             <h6 class="fw-bold" style="color:#003366;">Funcionario de la ARCONEL responsable de la información <span class="badge bg-secondary">opcional</span></h6>
-                            <p class="text-muted small mb-2">Si conoce al Director o Jefe de Área de la ARCONEL con quien coordina su trabajo, escriba sus datos. Si no lo conoce, deje en blanco y la DTIC lo completará.</p>
+                            <p class="text-muted small mb-2">Solo para personal externo. Si conoce al Director o Jefe de Área de la ARCONEL con quien coordina su trabajo, escriba sus datos. Si no lo conoce, deje en blanco y la DTIC lo completará.</p>
                             <div class="row">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label">Nombre completo</label>
@@ -263,13 +263,19 @@ renderHeader($config, $titulo);
 </div>
 
 <script>
-// Autollenar institucion si es personal de la ARCONEL
+// Autollenar institucion y ocultar seccion de funcionario ARCONEL si es personal interno
 document.getElementById('tipoUsuario').addEventListener('change', function() {
     var inst = document.getElementById('campoInstitucion');
-    if (this.value.indexOf('Personal de la ARCONEL') === 0) {
+    var seccionFunc = document.getElementById('seccionFuncionarioArconel');
+    var esInterno = this.value.indexOf('Personal de la ARCONEL') === 0;
+
+    if (esInterno) {
         inst.value = 'Agencia de Regulación y Control de Electricidad - ARCONEL';
-    } else if (inst.value.indexOf('ARCONEL') !== -1) {
-        inst.value = '';
+        seccionFunc.style.display = 'none';
+        seccionFunc.querySelectorAll('input').forEach(function(el) { el.value = ''; });
+    } else {
+        if (inst.value.indexOf('ARCONEL') !== -1) inst.value = '';
+        seccionFunc.style.display = '';
     }
 });
 
