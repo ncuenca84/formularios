@@ -22,6 +22,7 @@ $nombresFormularios = [
     4 => 'Acceso VPN Externos',
     5 => 'Privilegios Dir. Activo',
     6 => 'Accesos Internet',
+    7 => 'Salida de Equipo de Computo',
 ];
 
 // Obtener solicitudes recientes
@@ -282,7 +283,7 @@ try {
                         <i class="bi bi-info-circle"></i> Estos datos aparecen en el encabezado institucional de cada PDF generado (esquina superior derecha del documento).
                     </div>
 
-                    <?php for ($i = 1; $i <= 6; $i++):
+                    <?php for ($i = 1; $i <= 7; $i++):
                         $m = $formulariosMeta[$i] ?? [];
                     ?>
                     <div class="border rounded p-3 mb-3">

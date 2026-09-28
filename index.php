@@ -43,6 +43,12 @@ $formularios = [
         'color' => '#2F4F4F',
         'descripcion' => 'Solicitud de acceso a sitios web, aplicaciones o servicios restringidos en internet.',
     ],
+    7 => [
+        'titulo' => 'Autorizacion de Salida de Equipo de Computo',
+        'icono' => 'bi-laptop',
+        'color' => '#155724',
+        'descripcion' => 'Autorizacion para sacar un equipo de computo de las instalaciones (teletrabajo, comision de servicios, etc.).',
+    ],
 ];
 ?>
 <!DOCTYPE html>

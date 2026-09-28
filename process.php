@@ -13,11 +13,12 @@ $nombresFormulario = [
     4 => 'Habilitacion de Acceso VPN Externos',
     5 => 'Privilegios Especiales Directorio Activo',
     6 => 'Accesos Especiales Internet',
+    7 => 'Autorizacion de Salida de Equipo de Computo',
 ];
 
 $tipoFormulario = (int)($_POST['tipo_formulario'] ?? 0);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $tipoFormulario < 1 || $tipoFormulario > 6) {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $tipoFormulario < 1 || $tipoFormulario > 7) {
     echo '<script>window.location.href="index.php";</script>';
     exit;
 }
@@ -159,6 +160,21 @@ function validarPorTipo(int $tipo, array $post): array
             if (!empty($post['correo']) && !filter_var(trim($post['correo']), FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
             if (empty($post['justificacion'])) $errores[] = 'La justificacion es obligatoria.';
             break;
+
+        case 7:
+            if (empty($post['nombre_completo'])) $errores[] = 'El nombre completo es obligatorio.';
+            if (empty($post['cedula'])) $errores[] = 'La cedula es obligatoria.';
+            if (empty($post['cargo'])) $errores[] = 'El cargo es obligatorio.';
+            if (empty($post['area'])) $errores[] = 'La coordinacion/direccion es obligatoria.';
+            if (!empty($post['correo']) && !filter_var(trim($post['correo']), FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
+            if (empty($post['equipo_tipo'])) $errores[] = 'El tipo de equipo es obligatorio.';
+            if (empty($post['equipo_marca'])) $errores[] = 'La marca del equipo es obligatoria.';
+            if (empty($post['equipo_serie'])) $errores[] = 'El numero de serie del equipo es obligatorio.';
+            if (empty($post['motivo_salida'])) $errores[] = 'El motivo de la salida es obligatorio.';
+            if (empty($post['fecha_salida'])) $errores[] = 'La fecha de salida es obligatoria.';
+            if (empty($post['autorizador_nombre'])) $errores[] = 'El nombre del jefe inmediato es obligatorio.';
+            if (empty($post['autorizador_cedula'])) $errores[] = 'La cedula del jefe inmediato es obligatoria.';
+            break;
     }
 
     return $errores;
@@ -207,6 +223,7 @@ function extraerDatosPrincipales(int $tipo, array $datos): array
         case 4:
         case 5:
         case 6:
+        case 7:
             return array_merge($base, [
                 'nombre_completo' => $datos['nombre_completo'] ?? '',
                 'cedula' => $datos['cedula'] ?? '',

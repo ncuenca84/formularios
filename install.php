@@ -84,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             [4, 'GTIC.PA.FO.04', '01', '021', '27/01/2026', 'FORMULARIO DE HABILITACION DE ACCESO VPN PARA USUARIOS EXTERNOS'],
             [5, 'GTIC.PA.FO.05', '01', '021', '27/01/2026', 'FORMULARIO DE AUTORIZACION DE PRIVILEGIOS ESPECIALES DIRECTORIO ACTIVO'],
             [6, 'GTIC.PA.FO.06', '01', '021', '27/01/2026', 'SOLICITUD DE ACCESOS ESPECIALES PARA EL SERVICIO DE INTERNET'],
+            [7, 'GTIC.PA.FO.07', '01', '021', '27/01/2026', 'AUTORIZACION DE SALIDA DE EQUIPO DE COMPUTO DE LAS INSTALACIONES'],
         ];
         $stmtMeta = $db->prepare("INSERT IGNORE INTO formularios_meta (formulario_id, codigo_doc, version, nro_acta, fecha_aprobacion, titulo_encabezado) VALUES (?, ?, ?, ?, ?, ?)");
         foreach ($metaDefaults as $m) {
