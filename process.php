@@ -137,10 +137,12 @@ function validarPorTipo(int $tipo, array $post): array
             break;
 
         case 4:
+            if (empty($post['tipo_usuario'])) $errores[] = 'Indique si es personal externo o de la ARCONEL.';
             if (empty($post['institucion'])) $errores[] = 'La institucion es obligatoria.';
             if (empty($post['nombre_completo'])) $errores[] = 'El nombre completo es obligatorio.';
             if (empty($post['cedula'])) $errores[] = 'La cedula es obligatoria.';
             if (!empty($post['correo']) && !filter_var(trim($post['correo']), FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo invalido.';
+            if (empty($post['equipo1_nombre'])) $errores[] = 'Indique al menos un equipo o sistema al que requiere acceder.';
             if (empty($post['justificacion'])) $errores[] = 'La justificacion es obligatoria.';
             break;
 

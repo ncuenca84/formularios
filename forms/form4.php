@@ -21,10 +21,10 @@ renderHeader($config, $titulo);
 
             <div class="alert alert-info">
                 <h6 class="fw-bold"><i class="bi bi-info-circle-fill"></i> ¿Qué es este formulario y cómo llenarlo?</h6>
-                <p class="small mb-2">Use este formulario si usted <strong>no trabaja en la ARCONEL</strong> pero necesita conectarse a su red interna (VPN) para realizar un trabajo autorizado.</p>
+                <p class="small mb-2">Use este formulario si necesita conectarse a la red interna de la ARCONEL por VPN, ya sea porque usted es <strong>personal externo</strong> (de otra institución o empresa) o porque es <strong>personal de la ARCONEL que trabaja fuera de la oficina</strong> (teletrabajo, comisión, etc.).</p>
                 <ol class="mb-0 small">
-                    <li><strong>Paso 1:</strong> Escriba sus datos personales y los de su institución.</li>
-                    <li><strong>Paso 2:</strong> Explique con sus palabras para qué necesita el acceso.</li>
+                    <li><strong>Paso 1:</strong> Indique si es personal externo o de la ARCONEL, y escriba sus datos.</li>
+                    <li><strong>Paso 2:</strong> Indique a qué equipos o sistemas necesita acceder, por cuánto tiempo, y para qué.</li>
                     <li><strong>Paso 3:</strong> Escriba el nombre de su jefe (quien aprueba su pedido) y, si lo conoce, el del funcionario de la ARCONEL responsable.</li>
                     <li><strong>Paso 4:</strong> Presione "Generar Solicitud PDF", descargue el documento, fírmelo con <strong>FirmaEC</strong> junto con las personas indicadas y envíelo a <strong>soporte@arconel.gob.ec</strong> solicitando la activación del acceso.</li>
                 </ol>
@@ -41,11 +41,21 @@ renderHeader($config, $titulo);
 
                         <!-- PASO 1: DATOS DEL SOLICITANTE -->
                         <div class="section-title"><i class="bi bi-1-circle-fill"></i> PASO 1: SUS DATOS</div>
-                        <p class="text-muted small">Información sobre usted y la institución donde trabaja.</p>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">¿Usted es...? <span class="text-danger">*</span></label>
+                                <select name="tipo_usuario" id="tipoUsuario" class="form-select" required>
+                                    <option value="">Seleccione una opción...</option>
+                                    <option value="Personal externo a la ARCONEL">Personal externo a la ARCONEL (otra institución o empresa)</option>
+                                    <option value="Personal de la ARCONEL (trabajo fuera de la oficina)">Personal de la ARCONEL que trabaja fuera de la oficina (teletrabajo, comisión)</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Institución donde trabaja <span class="text-danger">*</span></label>
-                                <input type="text" name="institucion" class="form-control" placeholder="Ej: Ministerio de Energía y Minas" required>
+                                <input type="text" name="institucion" id="campoInstitucion" class="form-control" placeholder="Ej: Ministerio de Energía y Minas" required>
+                                <small class="text-muted">Si es personal de la ARCONEL, este campo se llena automáticamente.</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Área o departamento <span class="text-danger">*</span></label>
@@ -86,19 +96,44 @@ renderHeader($config, $titulo);
                         </div>
 
                         <!-- PASO 2: QUE NECESITA -->
-                        <div class="section-title"><i class="bi bi-2-circle-fill"></i> PASO 2: ¿QUÉ ACCESO NECESITA Y PARA QUÉ?</div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Tipo de acceso <span class="text-danger">*</span></label>
-                                <select name="tipo_acceso" class="form-select" required>
-                                    <option value="">Seleccione una opción...</option>
-                                    <option value="VPN Cliente (conexion desde mi computador)">VPN Cliente (conexión desde mi computador)</option>
-                                    <option value="VPN Sitio a Sitio (conexion entre instituciones)">VPN Sitio a Sitio (conexión entre instituciones)</option>
-                                    <option value="No estoy seguro - requiere asesoria de la DTIC">No estoy seguro (la DTIC me asesorará)</option>
-                                </select>
-                                <small class="text-muted">Si no sabe cuál elegir, seleccione "No estoy seguro".</small>
-                            </div>
+                        <div class="section-title"><i class="bi bi-2-circle-fill"></i> PASO 2: ¿QUÉ ACCESO NECESITA Y POR CUÁNTO TIEMPO?</div>
+                        <p class="text-muted small">Escriba los equipos o sistemas a los que necesita acceder. Si su acceso tiene fecha de fin, elija "Temporal" e indique las fechas; si no, elija "Ilimitado". Puede llenar solo la primera fila si necesita un solo acceso.</p>
+
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered align-middle" style="font-size:0.9rem;">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th rowspan="2" style="width:40%;vertical-align:middle;">Equipo o sistema al que requiere acceder</th>
+                                        <th colspan="3">Periodicidad</th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:16%;">Ilimitado / Temporal</th>
+                                        <th style="width:22%;">Desde</th>
+                                        <th style="width:22%;">Hasta</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php for ($i = 1; $i <= 4; $i++): ?>
+                                    <tr>
+                                        <td>
+                                            <input type="text" name="equipo<?= $i ?>_nombre" class="form-control form-control-sm"
+                                                   placeholder="<?= $i === 1 ? 'Ej: Servidor SISDAT, mi computador de oficina' : 'opcional' ?>"
+                                                   <?= $i === 1 ? 'required' : '' ?>>
+                                        </td>
+                                        <td>
+                                            <select name="equipo<?= $i ?>_periodicidad" class="form-select form-select-sm periodicidad-select" data-fila="<?= $i ?>">
+                                                <option value="Ilimitado">Ilimitado</option>
+                                                <option value="Temporal">Temporal</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="date" name="equipo<?= $i ?>_desde" class="form-control form-control-sm fecha-desde-<?= $i ?>" disabled></td>
+                                        <td><input type="date" name="equipo<?= $i ?>_hasta" class="form-control form-control-sm fecha-hasta-<?= $i ?>" disabled></td>
+                                    </tr>
+                                    <?php endfor; ?>
+                                </tbody>
+                            </table>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">¿Para qué necesita el acceso? (justificación) <span class="text-danger">*</span></label>
                             <textarea name="justificacion" class="form-control" rows="3" placeholder="Explique con sus palabras. Ej: Necesito conectarme al sistema SISDAT para cargar la información mensual de mi empresa distribuidora." required></textarea>
@@ -226,5 +261,30 @@ renderHeader($config, $titulo);
         </div>
     </div>
 </div>
+
+<script>
+// Autollenar institucion si es personal de la ARCONEL
+document.getElementById('tipoUsuario').addEventListener('change', function() {
+    var inst = document.getElementById('campoInstitucion');
+    if (this.value.indexOf('Personal de la ARCONEL') === 0) {
+        inst.value = 'Agencia de Regulación y Control de Electricidad - ARCONEL';
+    } else if (inst.value.indexOf('ARCONEL') !== -1) {
+        inst.value = '';
+    }
+});
+
+// Habilitar fechas solo cuando la periodicidad es Temporal
+document.querySelectorAll('.periodicidad-select').forEach(function(sel) {
+    sel.addEventListener('change', function() {
+        var fila = this.dataset.fila;
+        var desde = document.querySelector('.fecha-desde-' + fila);
+        var hasta = document.querySelector('.fecha-hasta-' + fila);
+        var temporal = this.value === 'Temporal';
+        desde.disabled = !temporal;
+        hasta.disabled = !temporal;
+        if (!temporal) { desde.value = ''; hasta.value = ''; }
+    });
+});
+</script>
 
 <?php renderFooterHtml($config['nombre_institucion'] ?? 'ARCONEL'); ?>

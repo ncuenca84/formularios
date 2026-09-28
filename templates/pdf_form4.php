@@ -14,6 +14,12 @@ $fecha = $datos['fecha'];
 
 $d = array_map(function($v) { return htmlspecialchars($v ?? ''); }, $datos);
 
+// Convierte fechas YYYY-MM-DD de los inputs date a dd/mm/aa
+function fmtFechaCorta(string $f): string {
+    $ts = strtotime($f);
+    return ($f !== '' && $ts !== false) ? date('d/m/y', $ts) : $f;
+}
+
 ob_start();
 ?>
 <!DOCTYPE html>
@@ -44,6 +50,7 @@ ob_start();
 <!-- INFORMACION GENERAL -->
 <div class="seccion">Informacion General del Servidor</div>
 <table class="dt">
+    <tr><td class="lb">Tipo de usuario:</td><td colspan="3"><?= $d['tipo_usuario'] ?></td></tr>
     <tr><td class="lb">Institucion:</td><td colspan="3"><?= $d['institucion'] ?></td></tr>
     <tr><td class="lb">Coordinacion/Direccion/Area:</td><td colspan="3"><?= $d['area'] ?></td></tr>
     <tr><td class="lb">Apellidos y Nombres:</td><td colspan="3"><?= $d['nombre_completo'] ?></td></tr>
@@ -54,8 +61,44 @@ ob_start();
 <!-- REQUERIMIENTO -->
 <div class="seccion">Informacion del Requerimiento</div>
 <table class="dt">
-    <tr><td class="lb">Fecha de solicitud:</td><td colspan="3"><?= $fecha ?></td></tr>
-    <tr><td class="lb">Tipo de Acceso:</td><td colspan="3"><?= $d['tipo_acceso'] ?></td></tr>
+    <tr><td class="lb">Fecha de solicitud:</td><td><?= $fecha ?></td></tr>
+</table>
+
+<!-- TIPO DE ACCESO: TABLA DE EQUIPOS Y PERIODICIDAD -->
+<table class="dt">
+    <tr style="background:#eef2f7;font-weight:600;text-align:center;">
+        <td rowspan="2" style="width:40%;vertical-align:middle;">Equipo al que requiere acceder</td>
+        <td colspan="3">Periodicidad</td>
+    </tr>
+    <tr style="background:#eef2f7;font-weight:600;text-align:center;">
+        <td style="width:16%;">Ilimitado</td>
+        <td style="width:22%;">Desde<br>dd/mm/aa</td>
+        <td style="width:22%;">Hasta<br>dd/mm/aa</td>
+    </tr>
+    <?php
+    $hayEquipos = false;
+    for ($i = 1; $i <= 4; $i++):
+        $eq = $d["equipo{$i}_nombre"] ?? '';
+        if ($eq === '') continue;
+        $hayEquipos = true;
+        $esIlimitado = ($d["equipo{$i}_periodicidad"] ?? 'Ilimitado') === 'Ilimitado';
+        $desde = $d["equipo{$i}_desde"] ?? '';
+        $hasta = $d["equipo{$i}_hasta"] ?? '';
+    ?>
+    <tr>
+        <td><?= $eq ?></td>
+        <td style="text-align:center;"><?= $esIlimitado ? 'X' : '' ?></td>
+        <td style="text-align:center;"><?= $esIlimitado ? '' : fmtFechaCorta($desde) ?></td>
+        <td style="text-align:center;"><?= $esIlimitado ? '' : fmtFechaCorta($hasta) ?></td>
+    </tr>
+    <?php endfor; ?>
+    <?php if (!$hayEquipos): ?>
+    <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+    <?php endif; ?>
+    <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+</table>
+
+<table class="dt">
     <tr><td class="lb" style="vertical-align:top;">Justificacion:</td><td colspan="3"><?= nl2br($d['justificacion']) ?></td></tr>
 </table>
 
