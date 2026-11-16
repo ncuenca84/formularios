@@ -193,18 +193,14 @@ class CmsVerifier
                 $errores[] = 'El certificado de la firma nueva no esta vigente (vencio el ' .
                     date('Y-m-d', $info['validTo_time_t'] ?? 0) . ').';
             }
-            // 6. Cadena (opcional)
+            // 6. Cadena (opcional): todos los archivos de storage/ca/ juntos,
+            // porque las CA ecuatorianas usan raiz + intermedia.
             if ($caRaices) {
-                $tmp = tempnam(sys_get_temp_dir(), 'cert');
-                file_put_contents($tmp, $certNuevo);
-                $okCadena = false;
-                foreach ($caRaices as $ca) {
-                    if (@openssl_x509_checkpurpose($certNuevo, X509_PURPOSE_ANY, [$ca]) === true) {
-                        $okCadena = true; break;
-                    }
+                $okCadena = @openssl_x509_checkpurpose($certNuevo, X509_PURPOSE_ANY, $caRaices) === true;
+                if (!$okCadena) {
+                    $errores[] = 'La cadena de confianza no se pudo validar: el certificado no proviene '
+                        . 'de una entidad certificadora cargada en storage/ca/.';
                 }
-                @unlink($tmp);
-                if (!$okCadena) { $errores[] = 'La cadena de confianza no se pudo validar.'; }
             } else {
                 $advertencias[] = 'Cadena de confianza no validada (no hay CAs raiz configuradas).';
             }
