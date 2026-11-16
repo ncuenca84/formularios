@@ -1,6 +1,12 @@
 # Informe de la Fase 0 — Prueba de concepto de la firma electrónica en línea
 
-**Fecha:** 2026-11-16 · **Estado: COMPLETADA (pendiente de validación del usuario en FirmaEC de escritorio y Adobe Reader)**
+**Fecha:** 2026-11-16 · **Estado: COMPLETADA Y VALIDADA EN FIRMAEC**
+
+> **Resultado de la validación (2026-11-16):** FirmaEC 5.3.0 valida como **Válida (✓)** la firma
+> generada por el sistema con un certificado real de **Lazzate Cía. Ltda. (Persona Natural)**:
+> cédula extraída correctamente del certificado, entidad certificadora reconocida, no revocado.
+> Con los certificados de juguete de la demo, FirmaEC responde "Entidad Certificadora no
+> reconocida", que es lo esperado (la CA de prueba no está acreditada).
 
 ---
 
@@ -62,15 +68,23 @@ Las 16 pruebas pasaron:
 
 ## 5. Qué queda para las siguientes fases
 
-- La extracción de cédula está probada con `serialNumber` del sujeto; falta confirmarla
-  con **certificados reales** de las CA ecuatorianas (paso 5 de arriba).
+- ~~La extracción de cédula con certificados reales~~ **CONFIRMADA** con un certificado
+  real de Lazzate Cía. Ltda. (la cédula se leyó correctamente y FirmaEC validó la firma).
 - El sello de tiempo (TSA) no se incluye: FirmaEC no lo exige para validez, pero puede
   evaluarse más adelante.
 - `poc/` debe **eliminarse o protegerse con clave** al terminar la validación de esta fase.
 
 ## 6. Decisión pendiente del usuario
 
-- [ ] Las 3 firmas se ven y validan en FirmaEC de escritorio.
+- [x] FirmaEC de escritorio valida la firma con certificado real (Lazzate). Con los
+      certificados de juguete responde "Entidad Certificadora no reconocida" (esperado).
 - [ ] Las 3 firmas se ven y validan en Adobe Reader.
 - [ ] La firma funciona en Chrome y Edge del equipo institucional.
 - [ ] Visto bueno para arrancar la Fase 1.
+
+## 7. Ajustes posteriores a la validación
+
+- Se agregó `/Location (Quito - Ecuador)` al diccionario de firma para que FirmaEC
+  no muestre "null" en la columna Razón/Localización.
+- El Sellado de Tiempo aparece "No": no usamos TSA. FirmaEC valida igual; queda
+  anotado como mejora opcional futura.

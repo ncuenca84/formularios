@@ -118,6 +118,7 @@ class PdfSigner
             "/Contents <" . str_repeat('0', $hexLen) . ">\n" .
             "/Name (" . $this->textoPdf($firmante['nombre']) . ")\n" .
             "/Reason (" . $this->textoPdf($firmante['rol']) . ")\n" .
+            "/Location (Quito - Ecuador)\n" .
             "/M (D:" . date('YmdHis') . "+00'00')\n>>";
         $add($objSig, $sigBody);
 
