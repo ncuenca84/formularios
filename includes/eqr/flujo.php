@@ -277,14 +277,6 @@ function eqrPrepararFirma(array $tramite, array $firma): array
     return ['bytesB64' => base64_encode($prep['bytesAFirmar'])];
 }
 
-/** CAs raiz configuradas (storage/ca/*.pem|*.crt), si el admin las cargo. */
-function eqrCaRaices(): array
-{
-    $dir = __DIR__ . '/../../storage/ca';
-    if (!is_dir($dir)) { return []; }
-    return array_merge(glob("$dir/*.pem") ?: [], glob("$dir/*.crt") ?: []);
-}
-
 /**
  * Recibe la firma CMS del navegador, la inserta, VERIFICA (seccion 4.4) y,
  * si pasa, la acepta y avanza el circuito. Si es la ultima, aplica el cambio
@@ -302,7 +294,7 @@ function eqrCompletarFirma(PDO $db, array $tramite, array $firma, string $firmaH
     $signed = $signer->completar($statePath, $firmaHex);
     $anterior = (string)file_get_contents($actaPath);
     $res = $verifier->verificarDocumento((string)file_get_contents($signed), $anterior,
-                                         $firma['cedula'], eqrCaRaices());
+                                         $firma['cedula']);
     if (!$res['ok']) {
         @unlink($signed);
         $db->prepare("UPDATE eqr_firmas SET intentos_fallidos = intentos_fallidos + 1 WHERE id = ?")
@@ -326,7 +318,7 @@ function eqrCompletarFirma(PDO $db, array $tramite, array $firma, string $firmaH
             $cert['cn'] ?? '', (string)($cert['serial'] ?? ''), $cert['emisor'] ?? '',
             !empty($cert['desde']) ? date('Y-m-d H:i:s', strtotime($cert['desde'])) : null,
             !empty($cert['hasta']) ? date('Y-m-d H:i:s', strtotime($cert['hasta'])) : null,
-            eqrCaRaices() ? 1 : 0, $hash,
+            0, $hash,
             $_SERVER['REMOTE_ADDR'] ?? null, substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255),
             (int)$firma['id'],
         ]);

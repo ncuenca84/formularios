@@ -131,7 +131,6 @@ eqrHeader('Trámite ' . $tramite['codigo'], 'tramites');
                     <?php if ($f['estado'] === 'firmado'): ?>
                         Firmado el <?= e((string)$f['fecha_firma']) ?> —
                         certificado: <?= e((string)$f['cert_cn']) ?> (<?= e((string)$f['cert_emisor']) ?>)
-                        <?= $f['cadena_validada'] ? '' : '— cadena no validada' ?>
                     <?php elseif ($f['estado'] === 'pendiente'): ?>
                         Correo: <?= e($f['correo']) ?> ·
                         <?= $f['token_expira'] ? 'El enlace vence el ' . e(substr((string)$f['token_expira'], 0, 16)) : 'Pendiente de firma desde el panel (administrador).' ?>
