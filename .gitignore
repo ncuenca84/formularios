@@ -5,6 +5,7 @@
 !assets/uploads/pdfs/.gitkeep
 .env
 *.log
+/config/mail.php
 # Fase 0
 poc/out/*
 !poc/out/.htaccess
