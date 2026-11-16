@@ -56,12 +56,11 @@ $tipos = ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'devolucion' 
 <title>Firma electrónica de acta — ARCONEL</title>
 <link rel="stylesheet" href="assets/css/firma.css">
 </head>
-<?php if ($problema !== null): ?>
+<?php if ($ctx === null): // token invalido o IP bloqueada: no hay nada que mostrar ?>
 <body>
 <div class="caja">
     <h1>Firma electrónica de actas</h1>
-    <div class="alerta <?= $ctx && in_array($ctx['tramite']['estado'] ?? '', ['completado'], true) ? 'exito' : 'error' ?>">
-        <?= $e($problema) ?></div>
+    <div class="alerta error"><?= $e($problema) ?></div>
 </div>
 </body>
 </html>

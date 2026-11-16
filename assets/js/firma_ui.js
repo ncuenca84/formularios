@@ -41,7 +41,7 @@
         el.style.display = (lineas && lineas.length) ? 'block' : 'none';
     }
 
-    function refrescar() {
+    function refrescar(silencioso) {
         return api('estado').then(function (st) {
             if (!st.ok) { pinta(st.mensaje || 'No se pudo cargar el estado.', 'error'); return; }
             var cont = $('#firmantes');
@@ -63,11 +63,17 @@
             var panelR = $('#panelRechazo');
             if (panelR) { panelR.style.display = st.puede_firmar ? 'block' : 'none'; }
             if (st.completo) {
-                pinta('El acta está completa, con todas sus firmas electrónicas.', 'exito');
                 var volver = $('#btnVolver');
                 if (volver) { volver.style.display = 'inline-block'; }
             }
-            if (st.aviso) { pinta(st.aviso, 'info'); }
+            // Tras firmar o rechazar, el mensaje propio de esa accion se conserva
+            if (!silencioso) {
+                if (st.completo) {
+                    pinta('El acta está completa, con todas sus firmas electrónicas.', 'exito');
+                } else if (st.aviso) {
+                    pinta(st.aviso, 'info');
+                }
+            }
             return st;
         });
     }
@@ -116,7 +122,7 @@
         }).then(function () {
             $('#btnFirmar').disabled = false;
             $('#p12').value = '';
-            return refrescar();
+            return refrescar(true);
         });
     }
 
@@ -127,7 +133,7 @@
         $('#btnRechazar').disabled = true;
         api('rechazar', 'POST', { motivo: motivo }).then(function (r) {
             pinta(r.mensaje || (r.ok ? 'Trámite rechazado.' : 'No se pudo rechazar.'), r.ok ? 'info' : 'error');
-            return refrescar();
+            return refrescar(true);
         }).then(function () { $('#btnRechazar').disabled = false; });
     }
 

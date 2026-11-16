@@ -309,10 +309,12 @@ function eqrCompletarFirma(PDO $db, array $tramite, array $firma, string $firmaH
     $hash = hash_file('sha256', $actaPath);
     $cert = $res['cert'];
 
+    // El token NO se borra al firmar: el enlace sigue sirviendo (hasta su
+    // vencimiento) para ver el acta y el estado, pero ya no permite firmar
+    // de nuevo porque la firma queda en estado 'firmado'.
     $db->prepare("UPDATE eqr_firmas SET estado = 'firmado', fecha_firma = NOW(),
                     cert_cn = ?, cert_serial = ?, cert_emisor = ?, cert_desde = ?, cert_hasta = ?,
-                    cadena_validada = ?, hash_resultante = ?, ip = ?, user_agent = ?,
-                    token_hash = NULL, token_expira = NULL
+                    cadena_validada = ?, hash_resultante = ?, ip = ?, user_agent = ?
                   WHERE id = ?")
        ->execute([
             $cert['cn'] ?? '', (string)($cert['serial'] ?? ''), $cert['emisor'] ?? '',
@@ -407,8 +409,9 @@ function eqrRechazarFirma(PDO $db, array $tramite, array $firma, string $motivo,
 {
     $db->beginTransaction();
     try {
+        // El token se conserva: al reabrir el enlace vera "Usted rechazó este trámite".
         $db->prepare("UPDATE eqr_firmas SET estado = 'rechazado', motivo_rechazo = ?,
-                        token_hash = NULL, token_expira = NULL, fecha_firma = NOW() WHERE id = ?")
+                        fecha_firma = NOW() WHERE id = ?")
            ->execute([$motivo, (int)$firma['id']]);
         $db->prepare("UPDATE eqr_tramites SET estado = 'rechazado', motivo_rechazo_anulacion = ? WHERE id = ?")
            ->execute(['Rechazado por ' . $firma['nombre'] . ': ' . $motivo, (int)$tramite['id']]);
