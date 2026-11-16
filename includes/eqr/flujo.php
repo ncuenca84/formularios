@@ -243,6 +243,27 @@ function eqrRutaActaAbs(array $tramite): string
     return eqrActaPath($tramite['codigo']);
 }
 
+/**
+ * Matriz del QR del sello visible (estilo FirmaEC): contiene los datos del
+ * firmante y la referencia oficial de validacion www.firmadigital.gob.ec
+ * (el sitio de FirmaEC del MINTEL).
+ */
+function eqrQrSelloFirma(array $firma): array
+{
+    $texto = "FIRMADO POR: " . mb_strtoupper($firma['nombre']) . "\n"
+        . "RAZON: \nLOCALIZACION: \n"
+        . "FECHA: " . date('c') . "\n"
+        . "VALIDAR CON: www.firmadigital.gob.ec";
+    $opts = new \chillerlan\QRCode\QROptions([
+        'addQuietzone' => true,
+        'quietzoneSize' => 2,
+        'eccLevel' => \chillerlan\QRCode\Common\EccLevel::L,
+    ]);
+    $qr = new \chillerlan\QRCode\QRCode($opts);
+    $qr->addByteSegment($texto);
+    return $qr->getQRMatrix()->getMatrix(true);
+}
+
 /** Prepara la firma del firmante de turno. Devuelve bytes a firmar (B64). */
 function eqrPrepararFirma(array $tramite, array $firma): array
 {
@@ -251,6 +272,7 @@ function eqrPrepararFirma(array $tramite, array $firma): array
     $prep = $signer->preparar(eqrRutaActaAbs($tramite), eqrActaStatePath($tramite['codigo']), [
         'nombre' => $firma['nombre'], 'cedula' => $firma['cedula'],
         'rol' => $firma['rol'], 'rect' => $rects[(int)$firma['orden']]['rect'],
+        'qrMatrix' => eqrQrSelloFirma($firma),
     ]);
     return ['bytesB64' => base64_encode($prep['bytesAFirmar'])];
 }

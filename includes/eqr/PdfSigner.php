@@ -49,12 +49,14 @@ class PdfSigner
         }
 
         // --- numeros de objeto nuevos -----------------------------------
-        // La fuente se crea una vez; pero NO se persiste en el estado hasta
-        // aceptar(): si una preparacion se descarta (verificacion fallida),
-        // el siguiente intento debe volver a crearla.
+        // Las fuentes y el QR se crean en CADA actualizacion de firma: son
+        // objetos minusculos y asi un intento descartado (verificacion
+        // fallida) nunca deja referencias colgadas en el estado.
         $n = $state['maxObj'];
-        $fontNueva = !isset($state['fontObj']);
-        $objFont  = $fontNueva ? ++$n : $state['fontObj'];
+        $objFontA = ++$n;                        // Courier (texto pequeno)
+        $objFontB = ++$n;                        // Courier-Bold (nombre)
+        $tieneQr  = !empty($firmante['qrMatrix']);
+        $objImg   = $tieneQr ? ++$n : null;      // imagen del QR
         $objAp    = ++$n;                        // apariencia (Form XObject)
         $objField = ++$n;                        // campo de firma + widget
         $objSig   = ++$n;                        // diccionario /Sig
@@ -72,32 +74,85 @@ class PdfSigner
             $update .= "$num 0 obj\n$cuerpo\nendobj\n";
         };
 
-        // --- fuente (una sola vez por cadena aceptada) ------------------
-        if ($fontNueva) {
-            $add($objFont, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+        // --- fuentes estandar (objetos pequenos, una por update) --------
+        $add($objFontA, '<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>');
+        $add($objFontB, '<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>');
+
+        // --- imagen del QR (DeviceGray comprimida) ----------------------
+        if ($tieneQr) {
+            $mz = $firmante['qrMatrix'];
+            $nq = count($mz);
+            $raw = '';
+            foreach ($mz as $fila) {
+                foreach ($fila as $mod) { $raw .= $mod ? "\x00" : "\xff"; }
+            }
+            $comp = gzcompress($raw, 9);
+            $add($objImg,
+                "<< /Type /XObject /Subtype /Image /Width $nq /Height $nq /ColorSpace /DeviceGray\n" .
+                "/BitsPerComponent 8 /Filter /FlateDecode /Length " . strlen($comp) . " >>\n" .
+                "stream\n$comp\nendstream");
         }
 
-        // --- apariencia visible -----------------------------------------
+        // --- apariencia visible (estilo FirmaEC) ------------------------
         [$x1, $y1, $x2, $y2] = $firmante['rect'];
         $w = round($x2 - $x1, 2); $h = round($y2 - $y1, 2);
-        $lineas = [
-            'Firmado electronicamente por:',
-            mb_strtoupper($firmante['nombre']),
-            'C.C. ' . $firmante['cedula'],
-            'Fecha: ' . date('Y-m-d H:i:s') . ' (' . date_default_timezone_get() . ')',
-        ];
-        $stream = "q\nBT\n/F1 8 Tf\n0 0 0 rg\n";
-        $ty = $h - 12;
-        foreach ($lineas as $i => $l) {
-            $tam = ($i === 1) ? 9 : 8;                   // nombre un punto mas grande
-            $txt = $this->textoPdf($l);
-            $stream .= sprintf("/F1 %d Tf\n1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n", $tam, 4, $ty, $txt);
-            $ty -= 12;
+
+        if ($tieneQr) {
+            // QR a la izquierda; a la derecha: dos lineas pequenas y el
+            // nombre en negrita grande (como el sello de FirmaEC).
+            $qrLado = min($h - 6.0, 74.0);
+            $qx = 3.0;
+            $qy = ($h - $qrLado) / 2;
+            $tx = $qx + $qrLado + 6.0;
+            $anchoTexto = $w - $tx - 3.0;
+
+            $nombre = mb_strtoupper($firmante['nombre']);
+            $lineasNombre = [];
+            $fsNombre = 11.0;
+            foreach ([11.0, 9.5, 8.0, 6.5] as $fs) {
+                $porLinea = max(4, (int)floor($anchoTexto / (0.6 * $fs)));
+                $lineasNombre = $this->partirTexto($nombre, $porLinea);
+                $maxLineas = (int)floor(($h - 26) / ($fs + 1.5));
+                if (count($lineasNombre) <= max(1, $maxLineas)) { $fsNombre = $fs; break; }
+            }
+
+            $stream = "q\n";
+            $stream .= sprintf("q %.2f 0 0 %.2f %.2f %.2f cm /Im1 Do Q\n", $qrLado, $qrLado, $qx, $qy);
+            $stream .= "BT\n0 0 0 rg\n";
+            $stream .= sprintf("/F1 7 Tf\n1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n",
+                $tx, $h - 12, $this->textoPdf('Validar únicamente en FirmaEC.'));
+            $stream .= sprintf("1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n",
+                $tx, $h - 21, $this->textoPdf('Firmado electrónicamente por:'));
+            $ty = $h - 24 - $fsNombre;
+            foreach ($lineasNombre as $ln) {
+                $stream .= sprintf("/F2 %.1f Tf\n1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n",
+                    $fsNombre, $tx, $ty, $this->textoPdf($ln));
+                $ty -= $fsNombre + 1.5;
+            }
+            $stream .= "ET\nQ";
+        } else {
+            // respaldo sin QR: texto simple
+            $lineas = [
+                'Firmado electronicamente por:',
+                mb_strtoupper($firmante['nombre']),
+                'C.C. ' . $firmante['cedula'],
+                'Fecha: ' . date('Y-m-d H:i:s'),
+            ];
+            $stream = "q\nBT\n0 0 0 rg\n";
+            $ty = $h - 12;
+            foreach ($lineas as $i => $l) {
+                $f = ($i === 1) ? '/F2 9' : '/F1 8';
+                $stream .= sprintf("%s Tf\n1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n", $f, 4, $ty, $this->textoPdf($l));
+                $ty -= 12;
+            }
+            $stream .= "ET\nQ";
         }
-        $stream .= "ET\nQ";
+
+        $recursos = "/Font << /F1 $objFontA 0 R /F2 $objFontB 0 R >>"
+            . ($tieneQr ? " /XObject << /Im1 $objImg 0 R >>" : '');
         $add($objAp,
             "<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 $w $h]\n" .
-            "/Resources << /Font << /F1 $objFont 0 R >> >>\n" .
+            "/Resources << $recursos >>\n" .
             "/Length " . strlen($stream) . " >>\nstream\n$stream\nendstream");
 
         // --- campo de firma + widget ------------------------------------
@@ -202,7 +257,6 @@ class PdfSigner
             'annots'   => $annots,
             'startxref'=> $xrefPos,
             'size'     => $size,
-            'fontObj'  => $objFont,
             'acroObj'  => $objAcro,
         ];
         file_put_contents($statePath, json_encode($state, JSON_PRETTY_PRINT));
@@ -262,7 +316,6 @@ class PdfSigner
             'annots' => $cand['annots'],
             'startxref' => $cand['startxref'],
             'size' => $cand['size'],
-            'fontObj' => $cand['fontObj'],
         ];
         rename($signedPath, $pdfPath);
         @unlink($state['pendiente']['prepPath']);
@@ -356,6 +409,30 @@ class PdfSigner
         $pos = strrpos($dict, '>>');
         if ($pos === false) { throw new RuntimeException('Dict invalido.'); }
         return substr($dict, 0, $pos) . " $clave $valor >>" . substr($dict, $pos + 2);
+    }
+
+    /** Parte un texto en lineas de a lo sumo $max caracteres, por palabras. */
+    private function partirTexto(string $texto, int $max): array
+    {
+        $palabras = preg_split('/\s+/', trim($texto)) ?: [];
+        $lineas = [];
+        $actual = '';
+        foreach ($palabras as $p) {
+            while (mb_strlen($p) > $max) {           // palabra mas larga que la linea
+                if ($actual !== '') { $lineas[] = $actual; $actual = ''; }
+                $lineas[] = mb_substr($p, 0, $max);
+                $p = mb_substr($p, $max);
+            }
+            $cand = $actual === '' ? $p : "$actual $p";
+            if (mb_strlen($cand) <= $max) {
+                $actual = $cand;
+            } else {
+                $lineas[] = $actual;
+                $actual = $p;
+            }
+        }
+        if ($actual !== '') { $lineas[] = $actual; }
+        return $lineas ?: [''];
     }
 
     /** Texto a literal PDF: WinAnsi (tildes) + escape de ( ) \ */
