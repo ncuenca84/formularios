@@ -80,9 +80,21 @@ function eqrLeerCsv(string $path, PDO $db): array
         elseif (in_array($f['serie'], $seriesBD, true)) { $err[] = 'la serie ya existe en el sistema'; }
         elseif (isset($vistosSerie[$f['serie']])) { $err[] = 'serie repetida en el archivo (fila ' . $vistosSerie[$f['serie']] . ')'; }
 
+        $avisos = [];
         $conCustodio = $f['custodio_cedula'] !== '' || $f['custodio_nombre'] !== '';
         if ($conCustodio) {
-            if (!eqrValidarCedula($f['custodio_cedula'])) { $err[] = 'cédula del custodio inválida'; }
+            if ($f['custodio_cedula'] !== '' && !eqrValidarCedula($f['custodio_cedula'])) {
+                // Excel suele quitar el 0 inicial de las cedulas: probar con el 0 de vuelta.
+                if (strlen($f['custodio_cedula']) === 9 && eqrValidarCedula('0' . $f['custodio_cedula'])) {
+                    $f['custodio_cedula'] = '0' . $f['custodio_cedula'];
+                    $avisos[] = 'se restauró el 0 inicial de la cédula';
+                } else {
+                    $err[] = 'cédula del custodio inválida';
+                }
+            }
+            if ($f['custodio_cedula'] === '') {
+                $avisos[] = 'sin cédula (complétela luego en la ficha del equipo)';
+            }
             if ($f['custodio_nombre'] === '') { $err[] = 'nombre del custodio vacío'; }
             if ($f['custodio_correo'] !== '' && !filter_var($f['custodio_correo'], FILTER_VALIDATE_EMAIL)) {
                 $err[] = 'correo del custodio inválido';
@@ -90,6 +102,7 @@ function eqrLeerCsv(string $path, PDO $db): array
         }
         $f['_fila'] = $n;
         $f['_errores'] = $err;
+        $f['_avisos'] = $avisos;
         $f['_con_custodio'] = $conCustodio;
         $vistosCod[$f['codigo_interno']] = $n;
         $vistosSerie[$f['serie']] = $n;
@@ -173,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             in_array(strtolower($f['cargador_entregado']), ['no','0',''], true) ? 0 : 1,
                             $f['serie_cargador'], $f['estado_fisico'], $f['estado_operativo'],
                             $f['observaciones'], $conC ? 'asignado' : 'en_stock',
-                            $conC ? $f['custodio_cedula'] : null,
+                            ($conC && $f['custodio_cedula'] !== '') ? $f['custodio_cedula'] : null,
                             $conC ? $f['custodio_nombre'] : null,
                             $conC ? $f['custodio_correo'] : null,
                             $conC ? $f['custodio_cargo'] : null,
@@ -182,11 +195,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $eqId = (int)$db->lastInsertId();
                         $trId = null;
                         if ($conC) {
-                            $insPer->execute([$f['custodio_cedula'], $f['custodio_nombre'],
-                                $f['custodio_correo'], $f['custodio_cargo'], $f['custodio_area']]);
+                            if ($f['custodio_cedula'] !== '') {
+                                $insPer->execute([$f['custodio_cedula'], $f['custodio_nombre'],
+                                    $f['custodio_correo'], $f['custodio_cargo'], $f['custodio_area']]);
+                            }
                             $codTr = sprintf('TRM-%s-CI%04d', date('Ymd'), $i + 1);
                             $insTr->execute([$codTr, 'carga_inicial', $eqId, $contratoId, 'completado',
-                                $f['custodio_cedula'], $f['custodio_nombre'], $f['custodio_correo'],
+                                $f['custodio_cedula'] !== '' ? $f['custodio_cedula'] : null,
+                                $f['custodio_nombre'], $f['custodio_correo'],
                                 $f['custodio_cargo'], $f['custodio_area'],
                                 $f['referencia_acta'] !== '' ? $f['referencia_acta'] : null,
                                 'admin:' . ($_SESSION['admin_nombre'] ?? ''),
@@ -227,8 +243,10 @@ eqrHeader('Importar equipos por CSV', 'importar');
     <h6>Paso 1 de 2: suba el archivo CSV</h6>
     <p class="text-muted small">Para la carga inicial de los equipos ya entregados con actas en papel.
     Cada fila con custodio crea el equipo como <strong>Asignado</strong> y un trámite
-    «carga inicial» completado que guarda la referencia del acta física. Las filas sin
-    custodio quedan <strong>En stock</strong>.</p>
+    «carga inicial» completado. Las filas sin custodio quedan <strong>En stock</strong>.
+    La cédula del custodio y la referencia del acta física son <strong>opcionales</strong>:
+    puede importar sin ellas y completar la cédula más adelante en la ficha del equipo
+    (hará falta cuando esa persona deba firmar trámites en línea).</p>
     <p><a class="btn btn-outline-primary btn-sm" href="eqr_plantilla_csv.php">
         <i class="bi bi-download"></i> Descargar plantilla CSV</a></p>
     <?php if (!$contratos): ?>
@@ -258,12 +276,16 @@ eqrHeader('Importar equipos por CSV', 'importar');
 <?php elseif ($paso === 'previsualizar'):
     $conErr = array_filter($filas, fn($f) => !empty($f['_errores']));
     $sinErr = count($filas) - count($conErr);
+    $conAviso = count(array_filter($filas, fn($f) => empty($f['_errores']) && !empty($f['_avisos'])));
 ?>
 <div class="card p-4 mb-3">
     <h6>Paso 2 de 2: revise y confirme</h6>
     <p>
         <span class="badge bg-success"><?= $sinErr ?> fila(s) correctas</span>
         <span class="badge bg-danger"><?= count($conErr) ?> fila(s) con errores</span>
+        <?php if ($conAviso): ?>
+            <span class="badge bg-warning text-dark"><?= $conAviso ?> fila(s) con avisos (se importan igual)</span>
+        <?php endif; ?>
     </p>
     <?php if (!$conErr): ?>
         <form method="post" class="d-inline">
@@ -290,8 +312,16 @@ eqrHeader('Importar equipos por CSV', 'importar');
                 <td><code><?= e($f['serie']) ?></code></td>
                 <td><?= $f['_con_custodio'] ? e($f['custodio_nombre']) . '<br><small>' . e($f['custodio_cedula']) . '</small>' : '<span class="text-muted">en stock</span>' ?></td>
                 <td><?= e($f['referencia_acta']) ?: '—' ?></td>
-                <td><?= $f['_errores'] ? '<span class="text-danger">' . e(implode('; ', $f['_errores'])) . '</span>'
-                                       : '<span class="text-success">OK</span>' ?></td>
+                <td><?php
+                    if ($f['_errores']) {
+                        echo '<span class="text-danger">' . e(implode('; ', $f['_errores'])) . '</span>';
+                    } elseif (!empty($f['_avisos'])) {
+                        echo '<span class="text-success">OK</span> <span class="text-warning-emphasis"><i class="bi bi-exclamation-triangle"></i> '
+                            . e(implode('; ', $f['_avisos'])) . '</span>';
+                    } else {
+                        echo '<span class="text-success">OK</span>';
+                    }
+                ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

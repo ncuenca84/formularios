@@ -43,7 +43,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($campos['codigo_interno'] === '') { $errores[] = 'El código interno es obligatorio (ej: REN-0001).'; }
     if ($campos['serie'] === '') { $errores[] = 'El número de serie es obligatorio.'; }
     if ($campos['estado'] === 'asignado') {
-        if (!eqrValidarCedula($cust['custodio_cedula'])) { $errores[] = 'La cédula del custodio no es válida.'; }
+        // La cedula es opcional (puede completarse despues); si viene, debe ser valida.
+        if ($cust['custodio_cedula'] !== '' && !eqrValidarCedula($cust['custodio_cedula'])) {
+            if (strlen($cust['custodio_cedula']) === 9 && eqrValidarCedula('0' . $cust['custodio_cedula'])) {
+                $cust['custodio_cedula'] = '0' . $cust['custodio_cedula'];
+            } else {
+                $errores[] = 'La cédula del custodio no es válida.';
+            }
+        }
+        if ($cust['custodio_cedula'] === '') { $cust['custodio_cedula'] = null; }
         if ($cust['custodio_nombre'] === '') { $errores[] = 'El nombre del custodio es obligatorio si el equipo está asignado.'; }
     } else {
         $cust = array_fill_keys(array_keys($cust), null);
@@ -57,6 +65,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("UPDATE eqr_equipos SET $set WHERE id = :id");
                 $stmt->execute($campos + ['id' => $id]);
                 eqrBitacora($id, null, 'equipo_editado', ['codigo' => $campos['codigo_interno']]);
+                if (!empty($campos['custodio_cedula'])) {
+                    $db->prepare("INSERT INTO eqr_personas (cedula, nombres, correo, cargo, area)
+                                  VALUES (?,?,?,?,?)
+                                  ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), correo=VALUES(correo),
+                                  cargo=VALUES(cargo), area=VALUES(area)")
+                       ->execute([$campos['custodio_cedula'], $campos['custodio_nombre'],
+                                  $campos['custodio_correo'], $campos['custodio_cargo'], $campos['custodio_area']]);
+                }
                 eqrFlash('Equipo actualizado.');
             } else {
                 $cols = implode(', ', array_keys($campos));
