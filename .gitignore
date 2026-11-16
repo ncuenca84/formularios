@@ -9,3 +9,6 @@
 poc/out/*
 !poc/out/.htaccess
 tools/firma-js/node_modules/
+storage/actas/*
+storage/tmp/*
+!storage/.htaccess

@@ -92,6 +92,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $resultado[] = 'Metadatos de formularios insertados.';
 
+        // Modulo de Equipos Rentados (tablas eqr_*, idempotente)
+        require_once __DIR__ . '/config/eqr_schema.php';
+        foreach (eqrMigrar($db) as $l) {
+            $resultado[] = $l;
+        }
+
         // Insertar configuracion por defecto
         $defaults = [
             'nombre_institucion' => 'AGENCIA DE REGULACION Y CONTROL DE ELECTRICIDAD',

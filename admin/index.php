@@ -23,6 +23,7 @@ $nombresFormularios = [
     5 => 'Privilegios Dir. Activo',
     6 => 'Accesos Internet',
     7 => 'Salida de Equipo de Computo',
+    8 => 'Actas de Equipos Rentados',
 ];
 
 // Obtener solicitudes recientes
@@ -95,6 +96,9 @@ try {
             <i class="bi bi-file-earmark-text"></i> Solicitudes
         </a>
         <hr class="border-light mx-3">
+        <a href="eqr_dashboard.php" class="nav-link" style="background:rgba(25,135,84,.25);">
+            <i class="bi bi-laptop"></i> Equipos Rentados
+        </a>
         <a href="../index.php" class="nav-link"><i class="bi bi-eye"></i> Ver Formulario</a>
         <a href="logout.php" class="nav-link text-warning"><i class="bi bi-box-arrow-left"></i> Cerrar Sesion</a>
     </nav>
@@ -283,7 +287,7 @@ try {
                         <i class="bi bi-info-circle"></i> Estos datos aparecen en el encabezado institucional de cada PDF generado (esquina superior derecha del documento).
                     </div>
 
-                    <?php for ($i = 1; $i <= 7; $i++):
+                    <?php for ($i = 1; $i <= 8; $i++):
                         $m = $formulariosMeta[$i] ?? [];
                     ?>
                     <div class="border rounded p-3 mb-3">
