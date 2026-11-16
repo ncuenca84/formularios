@@ -196,7 +196,11 @@ function eqrTokenNuevo(PDO $db, int $firmaId): array
 function eqrUrlFirma(string $token): string
 {
     $base = rtrim(trim(getConfig('eqr_url_base')), '/');
-    return ($base !== '' ? $base : '') . '/firmar.php?t=' . $token;
+    if ($base === '' && !empty($_SERVER['HTTP_HOST'])) {
+        // Respaldo si falta la URL base en la configuracion: el dominio actual.
+        $base = 'https://' . $_SERVER['HTTP_HOST'];
+    }
+    return $base . '/firmar.php?t=' . $token;
 }
 
 /** Busca la firma por token en claro. Devuelve firma + tramite o null. */

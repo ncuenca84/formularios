@@ -133,6 +133,13 @@ eqrHeader('Nuevo trámite', 'tramites');
 <?php if ($errores): ?>
     <div class="alert alert-danger"><?php foreach ($errores as $er): ?><div><?= e($er) ?></div><?php endforeach; ?></div>
 <?php endif; ?>
+<?php if (trim(getConfig('eqr_url_base')) === ''): ?>
+    <div class="alert alert-warning small">
+        <i class="bi bi-exclamation-triangle"></i> Falta la <strong>URL base</strong> en
+        <a href="eqr_config.php">Configuración</a>: sin ella, los enlaces de firma de los correos
+        pueden salir incompletos.
+    </div>
+<?php endif; ?>
 
 <?php
 $hayDelegado = trim((string)($contrato['delegado_cedula'] ?? '')) !== '';
