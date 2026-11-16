@@ -197,6 +197,13 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
     // ---- recuadros de firma (ultima pagina) ----
     $rects = eqrRectsFirma();
     $etiquetas = eqrEtiquetasFirma($tipo);
+    if (str_starts_with((string)$tramite['admin_contrato_calidad'], 'Delegado')) {
+        $etiquetas[1] = match ($tipo) {
+            'asignacion' => 'ENTREGA MATERIAL POR LA DTIC (DELEGADO)',
+            'devolucion' => 'RECIBE POR LA DTIC (DELEGADO DEL ADMINISTRADOR)',
+            default => 'POR LA DTIC (DELEGADO DEL ADMINISTRADOR DEL CONTRATO)',
+        };
+    }
     $cajas = '';
     foreach ($firmantes as $f) {
         $n = (int)$f['orden'];

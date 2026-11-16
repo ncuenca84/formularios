@@ -39,10 +39,11 @@ $tipos = ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'devolucion' 
         <strong><?= e($tramite['equipo_codigo']) ?></strong>
         (<?= e($tramite['equipo_marca']) ?> <?= e($tramite['equipo_modelo']) ?>,
         serie <?= e($tramite['equipo_serie']) ?>).<br>
-        Debe firmar con el certificado cuya cédula es la del administrador del contrato:
-        <strong><?= e($tramite['admin_contrato_cedula']) ?></strong>
-        (<?= e($tramite['admin_contrato_nombre']) ?>). Mientras no firme, el trámite queda en
-        borrador y no se envía nada a nadie.</p>
+        Debe firmar con el certificado de quien firma por la DTIC en este trámite:
+        <strong><?= e($tramite['admin_contrato_nombre']) ?></strong>
+        (C.C. <strong><?= e($tramite['admin_contrato_cedula']) ?></strong> —
+        <?= e($tramite['admin_contrato_calidad']) ?>). Cualquier otro certificado será rechazado.
+        Mientras no firme, el trámite queda en borrador y no se envía nada a nadie.</p>
 
     <div id="mensajes" class="alerta info" style="display:none"></div>
     <div id="detalle" class="detalle" style="display:none"></div>

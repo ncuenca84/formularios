@@ -31,6 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'contratista_correo' => trim((string)($_POST['contratista_correo'] ?? '')),
         'contratista_telefono' => trim((string)($_POST['contratista_telefono'] ?? '')),
         'contratista_direccion' => trim((string)($_POST['contratista_direccion'] ?? '')),
+        'delegado_nombre' => trim((string)($_POST['delegado_nombre'] ?? '')),
+        'delegado_cedula' => preg_replace('/\D/', '', (string)($_POST['delegado_cedula'] ?? '')),
+        'delegado_cargo' => trim((string)($_POST['delegado_cargo'] ?? '')),
+        'delegado_correo' => trim((string)($_POST['delegado_correo'] ?? '')),
+        'delegado_memorando' => trim((string)($_POST['delegado_memorando'] ?? '')),
         'texto_compromisos' => (string)($_POST['texto_compromisos'] ?? ''),
         'texto_consideraciones' => (string)($_POST['texto_consideraciones'] ?? ''),
         'texto_aceptacion' => (string)($_POST['texto_aceptacion'] ?? ''),
@@ -43,6 +48,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!eqrValidarCedula($campos['admin_cedula'])) { $errores[] = 'La cédula del administrador no es una cédula ecuatoriana válida.'; }
     if ($campos['admin_correo'] === '' || !filter_var($campos['admin_correo'], FILTER_VALIDATE_EMAIL)) {
         $errores[] = 'El correo del administrador no es válido.';
+    }
+    // Delegado de gestion: opcional, pero si se usa debe estar completo
+    if (strlen($campos['delegado_cedula']) === 9 && eqrValidarCedula('0' . $campos['delegado_cedula'])) {
+        $campos['delegado_cedula'] = '0' . $campos['delegado_cedula'];
+    }
+    if ($campos['delegado_nombre'] !== '' || $campos['delegado_cedula'] !== '') {
+        if (!eqrValidarCedula($campos['delegado_cedula'])) { $errores[] = 'La cédula del delegado no es válida (su firma se valida contra ella).'; }
+        if ($campos['delegado_nombre'] === '') { $errores[] = 'Escriba el nombre del delegado.'; }
+        if ($campos['delegado_correo'] === '' || !filter_var($campos['delegado_correo'], FILTER_VALIDATE_EMAIL)) {
+            $errores[] = 'El correo del delegado no es válido (ahí le llegan los avisos de los trámites).';
+        }
     }
 
     if (!$errores) {
@@ -90,6 +106,8 @@ if (!isset($form)) {
             'precio_unitario' => '0', 'valor_total' => '0', 'plazo_dias' => 0,
             'contratista_ruc' => '', 'contratista_representante' => '', 'contratista_correo' => '',
             'contratista_telefono' => '', 'contratista_direccion' => '',
+            'delegado_nombre' => '', 'delegado_cedula' => '', 'delegado_cargo' => '',
+            'delegado_correo' => '', 'delegado_memorando' => '',
             'texto_compromisos' => $textosDefault['compromisos'],
             'texto_consideraciones' => $textosDefault['consideraciones'],
             'texto_aceptacion' => $textosDefault['aceptacion'],
@@ -210,6 +228,37 @@ eqrHeader('Contratos de arrendamiento', 'contratos');
                         <input class="form-check-input" type="checkbox" name="activo" id="activo" <?= !empty($form['activo']) ? 'checked' : '' ?>>
                         <label class="form-check-label" for="activo">Contrato activo</label>
                     </div>
+                </div>
+            </div>
+
+            <h6 class="mt-4">Delegado para las actas de gestión (opcional)</h6>
+            <p class="text-muted small">Si el administrador del contrato delegó por memorando la gestión de
+            los equipos, el delegado es quien <strong>firma las asignaciones, traspasos y devoluciones</strong>
+            (la cédula de su certificado debe coincidir). Los documentos del contrato (actas de
+            entrega-recepción e informes de pago) siguen a nombre del administrador.
+            <strong>Deje estos campos vacíos si no hay delegación.</strong></p>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Nombre del delegado</label>
+                    <input name="delegado_nombre" class="form-control" value="<?= e((string)($form['delegado_nombre'] ?? '')) ?>">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Cédula</label>
+                    <input name="delegado_cedula" class="form-control" maxlength="10" value="<?= e((string)($form['delegado_cedula'] ?? '')) ?>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Cargo</label>
+                    <input name="delegado_cargo" class="form-control" value="<?= e((string)($form['delegado_cargo'] ?? '')) ?>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Correo institucional</label>
+                    <input name="delegado_correo" type="email" class="form-control" value="<?= e((string)($form['delegado_correo'] ?? '')) ?>">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Referencia del memorando de delegación</label>
+                    <input name="delegado_memorando" class="form-control" placeholder="Ej: Memorando Nro. ARCONEL-DTIC-2026-0123-ME"
+                           value="<?= e((string)($form['delegado_memorando'] ?? '')) ?>">
+                    <div class="form-text">Aparece en el acta junto a la calidad del delegado.</div>
                 </div>
             </div>
 

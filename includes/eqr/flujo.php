@@ -75,6 +75,7 @@ function eqrCrearTramite(PDO $db, string $tipo, array $equipo, array $contrato,
 {
     $roles = eqrRolesTramite($tipo);
     $codigo = eqrGenerarCodigoTramite($db);
+    $delegado = trim((string)($contrato['delegado_cedula'] ?? '')) !== '';
 
     $tramite = [
         'codigo' => $codigo, 'tipo' => $tipo,
@@ -90,12 +91,19 @@ function eqrCrearTramite(PDO $db, string $tipo, array $equipo, array $contrato,
         'recibe_correo' => $datos['recibe_correo'] ?? null,
         'recibe_cargo' => $datos['recibe_cargo'] ?? null,
         'recibe_area' => $datos['recibe_area'] ?? null,
-        // datos del administrador VIGENTE copiados al tramite (regla 3.1)
-        'admin_contrato_nombre' => $contrato['admin_nombre'],
-        'admin_contrato_cedula' => $contrato['admin_cedula'],
-        'admin_contrato_cargo' => $contrato['admin_cargo'],
-        'admin_contrato_correo' => $contrato['admin_correo'],
-        'admin_contrato_calidad' => $contrato['admin_calidad'],
+        // Quien firma por la DTIC: el DELEGADO vigente si el contrato tiene uno
+        // (delegacion por memorando, solo actas de gestion); si no, el
+        // administrador del contrato. Se copia al tramite (regla 3.1): un
+        // cambio posterior no altera tramites en curso ni actas emitidas.
+        'admin_contrato_nombre' => $delegado ? $contrato['delegado_nombre'] : $contrato['admin_nombre'],
+        'admin_contrato_cedula' => $delegado ? $contrato['delegado_cedula'] : $contrato['admin_cedula'],
+        'admin_contrato_cargo' => $delegado ? $contrato['delegado_cargo'] : $contrato['admin_cargo'],
+        'admin_contrato_correo' => $delegado ? $contrato['delegado_correo'] : $contrato['admin_correo'],
+        'admin_contrato_calidad' => $delegado
+            ? 'Delegado del Administrador del Contrato'
+              . (trim((string)($contrato['delegado_memorando'] ?? '')) !== ''
+                 ? ' — ' . trim((string)$contrato['delegado_memorando']) : '')
+            : $contrato['admin_calidad'],
         'motivo' => $datos['motivo'] ?? null,
         'estado_fisico_reportado' => $datos['estado_fisico_reportado'] ?? null,
         'accesorios' => $datos['accesorios'] ?? null,

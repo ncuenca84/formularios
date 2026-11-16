@@ -134,11 +134,25 @@ eqrHeader('Nuevo trámite', 'tramites');
     <div class="alert alert-danger"><?php foreach ($errores as $er): ?><div><?= e($er) ?></div><?php endforeach; ?></div>
 <?php endif; ?>
 
+<?php
+$hayDelegado = trim((string)($contrato['delegado_cedula'] ?? '')) !== '';
+$firmanteDtic = $hayDelegado
+    ? ['nombre' => $contrato['delegado_nombre'], 'cedula' => $contrato['delegado_cedula'],
+       'rol' => 'delegado del administrador del contrato']
+    : ['nombre' => $contrato['admin_nombre'], 'cedula' => $contrato['admin_cedula'],
+       'rol' => 'administrador del contrato'];
+?>
 <div class="alert alert-light border small mb-3">
-    <i class="bi bi-info-circle"></i> El trámite lo crea y lo firma primero usted como
-    <strong>administrador del contrato</strong> (<?= e($contrato['admin_nombre']) ?>, C.C. <?= e($contrato['admin_cedula']) ?>);
-    la cédula de su certificado de firma debe coincidir. Después, el sistema envía el enlace
-    de firma a cada persona, una por una y en orden.
+    <i class="bi bi-info-circle"></i> La primera firma del acta es del
+    <strong><?= e($firmanteDtic['rol']) ?></strong>:
+    <strong><?= e($firmanteDtic['nombre']) ?></strong> (C.C. <?= e($firmanteDtic['cedula']) ?>).
+    La cédula de su certificado .p12 debe coincidir, o la firma será rechazada.
+    Después, el sistema envía el enlace de firma a cada persona, una por una y en orden.
+    <?php if ($hayDelegado): ?>
+        <br><span class="text-muted">Delegación configurada en el contrato
+        (<?= e((string)$contrato['delegado_memorando'] ?: 'sin referencia de memorando') ?>).
+        Los documentos de pago del contrato siguen a nombre de <?= e($contrato['admin_nombre']) ?>.</span>
+    <?php endif; ?>
 </div>
 
 <?php if ($paso === 1): ?>

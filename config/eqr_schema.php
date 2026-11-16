@@ -37,6 +37,11 @@ function eqrMigrar(PDO $db): array
                 contratista_correo VARCHAR(255) NOT NULL DEFAULT '',
                 contratista_telefono VARCHAR(50) NOT NULL DEFAULT '',
                 contratista_direccion VARCHAR(255) NOT NULL DEFAULT '',
+                delegado_nombre VARCHAR(255) NOT NULL DEFAULT '',
+                delegado_cedula VARCHAR(10) NOT NULL DEFAULT '',
+                delegado_cargo VARCHAR(255) NOT NULL DEFAULT '',
+                delegado_correo VARCHAR(255) NOT NULL DEFAULT '',
+                delegado_memorando VARCHAR(255) NOT NULL DEFAULT '',
                 texto_compromisos MEDIUMTEXT NULL,
                 texto_consideraciones MEDIUMTEXT NULL,
                 texto_aceptacion MEDIUMTEXT NULL,
@@ -219,7 +224,13 @@ function eqrMigrar(PDO $db): array
         ['eqr_contratos', 'contratista_correo', "VARCHAR(255) NOT NULL DEFAULT ''"],
         ['eqr_contratos', 'contratista_telefono', "VARCHAR(50) NOT NULL DEFAULT ''"],
         ['eqr_contratos', 'contratista_direccion', "VARCHAR(255) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'delegado_nombre', "VARCHAR(255) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'delegado_cedula', "VARCHAR(10) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'delegado_cargo', "VARCHAR(255) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'delegado_correo', "VARCHAR(255) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'delegado_memorando', "VARCHAR(255) NOT NULL DEFAULT ''"],
     ];
+    $delegadoRecienCreado = false;
     $stmtCol = $db->prepare("SELECT COUNT(*) FROM information_schema.COLUMNS
                              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?");
     foreach ($columnasNuevas as [$tabla, $col, $def]) {
@@ -227,7 +238,22 @@ function eqrMigrar(PDO $db): array
         if ((int)$stmtCol->fetchColumn() === 0) {
             $db->exec("ALTER TABLE $tabla ADD COLUMN $col $def");
             $log[] = "Columna $tabla.$col agregada.";
+            if ($col === 'delegado_cedula') { $delegadoRecienCreado = true; }
         }
+    }
+
+    // Delegacion vigente del contrato real (solo UNA VEZ, al crear las columnas;
+    // despues el admin la edita libremente en Contratos).
+    if ($delegadoRecienCreado) {
+        $db->prepare("UPDATE eqr_contratos SET
+                delegado_nombre = 'Irvin Alexander Estevez Ron',
+                delegado_cedula = '1726056706',
+                delegado_cargo = 'Servidor de la DTIC',
+                delegado_correo = 'irvin.estevez@arconel.gob.ec',
+                delegado_memorando = 'Memorando de delegación (completar la referencia)'
+              WHERE numero = 'ARCONEL-005-2026' AND delegado_cedula = ''")
+           ->execute();
+        $log[] = 'Delegado de gestión precargado en el contrato ARCONEL-005-2026 (edítelo en Contratos).';
     }
 
     // Contrato real ARCONEL-005-2026 precargado desde el documento firmado.
@@ -238,8 +264,12 @@ function eqrMigrar(PDO $db): array
          precio_unitario, valor_total, plazo_dias,
          contratista_ruc, contratista_representante, contratista_correo, contratista_telefono, contratista_direccion,
          admin_nombre, admin_cedula, admin_cargo, admin_correo, admin_calidad,
+         delegado_nombre, delegado_cedula, delegado_cargo, delegado_correo, delegado_memorando,
          texto_compromisos, texto_consideraciones, texto_aceptacion, activo)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                'Irvin Alexander Estevez Ron', '1726056706', 'Servidor de la DTIC',
+                'irvin.estevez@arconel.gob.ec', 'Memorando de delegación (completar la referencia)',
+                ?, ?, ?, 1)");
     $stmtC->execute([
         'ARCONEL-005-2026',
         'SIE-ARCONEL-2026-003',
