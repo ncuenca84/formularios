@@ -223,8 +223,6 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
         );
     }
 
-    $qr = eqrQrTramite($tramite['codigo']);
-
     ob_start();
     ?>
 <!DOCTYPE html>
@@ -295,20 +293,13 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
 <!-- ============ ULTIMA PAGINA: FIRMAS ELECTRONICAS ============ -->
 <div style="page-break-before: always;">
     <div class="seccion">7. FIRMAS ELECTRÓNICAS</div>
-    <table style="width:100%; border-collapse:collapse;">
-        <tr>
-            <td style="width:80px; vertical-align:top;">
-                <img src="<?= $qr ?>" style="width:75px; height:75px;">
-            </td>
-            <td style="vertical-align:top; font-size:8pt; color:#444; padding-left:8px;">
-                Trámite Nro. <strong><?= $e($tramite['codigo']) ?></strong><br>
-                Las firmas electrónicas de este documento se estampan por actualización incremental
-                en los recuadros reservados a continuación, en el orden establecido. La autenticidad
-                del acta puede comprobarse escaneando el código QR o consultando el código del trámite
-                en el sistema de formularios institucionales.
-            </td>
-        </tr>
-    </table>
+    <p style="font-size:8pt; color:#444; text-align:justify;">
+        Trámite Nro. <strong><?= $e($tramite['codigo']) ?></strong>.
+        Las firmas electrónicas de este documento se estampan por actualización incremental
+        en los recuadros reservados a continuación, en el orden establecido. La autenticidad
+        del acta puede comprobarse consultando el código del trámite en el sistema de
+        formularios institucionales.
+    </p>
     <?= $cajas ?>
 </div>
 
