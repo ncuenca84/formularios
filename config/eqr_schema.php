@@ -29,6 +29,14 @@ function eqrMigrar(PDO $db): array
                 admin_cargo VARCHAR(255) NOT NULL DEFAULT '',
                 admin_correo VARCHAR(255) NOT NULL DEFAULT '',
                 admin_calidad VARCHAR(255) NOT NULL DEFAULT 'Custodio Administrativo / Servidor autorizado DTIC',
+                precio_unitario DECIMAL(10,2) NOT NULL DEFAULT 0,
+                valor_total DECIMAL(12,2) NOT NULL DEFAULT 0,
+                plazo_dias INT NOT NULL DEFAULT 0,
+                contratista_ruc VARCHAR(13) NOT NULL DEFAULT '',
+                contratista_representante VARCHAR(255) NOT NULL DEFAULT '',
+                contratista_correo VARCHAR(255) NOT NULL DEFAULT '',
+                contratista_telefono VARCHAR(50) NOT NULL DEFAULT '',
+                contratista_direccion VARCHAR(255) NOT NULL DEFAULT '',
                 texto_compromisos MEDIUMTEXT NULL,
                 texto_consideraciones MEDIUMTEXT NULL,
                 texto_aceptacion MEDIUMTEXT NULL,
@@ -199,6 +207,68 @@ function eqrMigrar(PDO $db): array
     foreach ($tablas as $nombre => $sql) {
         $db->exec($sql);
         $log[] = "Tabla $nombre verificada/creada.";
+    }
+
+    // Columnas agregadas despues de la primera version (idempotente: solo si faltan)
+    $columnasNuevas = [
+        ['eqr_contratos', 'precio_unitario', "DECIMAL(10,2) NOT NULL DEFAULT 0"],
+        ['eqr_contratos', 'valor_total', "DECIMAL(12,2) NOT NULL DEFAULT 0"],
+        ['eqr_contratos', 'plazo_dias', "INT NOT NULL DEFAULT 0"],
+        ['eqr_contratos', 'contratista_ruc', "VARCHAR(13) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'contratista_representante', "VARCHAR(255) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'contratista_correo', "VARCHAR(255) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'contratista_telefono', "VARCHAR(50) NOT NULL DEFAULT ''"],
+        ['eqr_contratos', 'contratista_direccion', "VARCHAR(255) NOT NULL DEFAULT ''"],
+    ];
+    $stmtCol = $db->prepare("SELECT COUNT(*) FROM information_schema.COLUMNS
+                             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?");
+    foreach ($columnasNuevas as [$tabla, $col, $def]) {
+        $stmtCol->execute([$tabla, $col]);
+        if ((int)$stmtCol->fetchColumn() === 0) {
+            $db->exec("ALTER TABLE $tabla ADD COLUMN $col $def");
+            $log[] = "Columna $tabla.$col agregada.";
+        }
+    }
+
+    // Contrato real ARCONEL-005-2026 precargado desde el documento firmado.
+    // INSERT IGNORE: si ya existe un contrato con ese numero no se toca nada.
+    $textos = require __DIR__ . '/eqr_textos_default.php';
+    $stmtC = $db->prepare("INSERT IGNORE INTO eqr_contratos
+        (numero, proceso, objeto, proveedor, fecha_inicio, fecha_fin, total_equipos,
+         precio_unitario, valor_total, plazo_dias,
+         contratista_ruc, contratista_representante, contratista_correo, contratista_telefono, contratista_direccion,
+         admin_nombre, admin_cedula, admin_cargo, admin_correo, admin_calidad,
+         texto_compromisos, texto_consideraciones, texto_aceptacion, activo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+    $stmtC->execute([
+        'ARCONEL-005-2026',
+        'SIE-ARCONEL-2026-003',
+        'ARRENDAMIENTO DE EQUIPOS DE CÓMPUTO',
+        'ASITECNO ASESORIA EN SERVICIOS DE INTERNET Y TECNOLOGIA CIA. LTDA.',
+        '2026-09-05',   // dia siguiente a la suscripcion (ultima firma electronica: 04/09/2026)
+        '2027-09-19',   // 380 dias de plazo contractual
+        60,
+        48.88,          // valor unitario mensual por equipo (tabla de cantidades y precios)
+        35193.60,       // monto maximo del contrato sin IVA
+        380,
+        '1792076226001',
+        'Milton Estuardo Espinosa Toapanta',
+        'asitecno.info@gmail.com',
+        '0983199389',
+        'Checa N151 y Juan Salinas, C.P. 170312, Quito, Pichincha',
+        'Verónica Lucía Chamorro Alvarado',
+        '1719366757',
+        'Directora de Tecnologías de la Información y Comunicación',
+        'veronica.chamorro@arconel.gob.ec',
+        'Administradora del Contrato / Custodio Administrativo',
+        $textos['compromisos'],
+        $textos['consideraciones'],
+        $textos['aceptacion'],
+    ]);
+    if ($stmtC->rowCount() > 0) {
+        $log[] = 'Contrato ARCONEL-005-2026 precargado con los datos del documento firmado.';
+    } else {
+        $log[] = 'Contrato ARCONEL-005-2026 ya existía (no se modificó).';
     }
 
     // Encabezado institucional para las actas del modulo (fila 8, editable en admin)

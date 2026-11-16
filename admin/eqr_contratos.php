@@ -23,6 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'admin_cargo' => trim((string)($_POST['admin_cargo'] ?? '')),
         'admin_correo' => trim((string)($_POST['admin_correo'] ?? '')),
         'admin_calidad' => trim((string)($_POST['admin_calidad'] ?? '')),
+        'precio_unitario' => (float)str_replace(',', '.', (string)($_POST['precio_unitario'] ?? '0')),
+        'valor_total' => (float)str_replace(',', '.', (string)($_POST['valor_total'] ?? '0')),
+        'plazo_dias' => (int)($_POST['plazo_dias'] ?? 0),
+        'contratista_ruc' => preg_replace('/\D/', '', (string)($_POST['contratista_ruc'] ?? '')),
+        'contratista_representante' => trim((string)($_POST['contratista_representante'] ?? '')),
+        'contratista_correo' => trim((string)($_POST['contratista_correo'] ?? '')),
+        'contratista_telefono' => trim((string)($_POST['contratista_telefono'] ?? '')),
+        'contratista_direccion' => trim((string)($_POST['contratista_direccion'] ?? '')),
         'texto_compromisos' => (string)($_POST['texto_compromisos'] ?? ''),
         'texto_consideraciones' => (string)($_POST['texto_consideraciones'] ?? ''),
         'texto_aceptacion' => (string)($_POST['texto_aceptacion'] ?? ''),
@@ -79,6 +87,9 @@ if (!isset($form)) {
             'proveedor' => '', 'fecha_inicio' => '', 'fecha_fin' => '', 'total_equipos' => 60,
             'admin_nombre' => '', 'admin_cedula' => '', 'admin_cargo' => '',
             'admin_correo' => '', 'admin_calidad' => 'Custodio Administrativo / Servidor autorizado DTIC',
+            'precio_unitario' => '0', 'valor_total' => '0', 'plazo_dias' => 0,
+            'contratista_ruc' => '', 'contratista_representante' => '', 'contratista_correo' => '',
+            'contratista_telefono' => '', 'contratista_direccion' => '',
             'texto_compromisos' => $textosDefault['compromisos'],
             'texto_consideraciones' => $textosDefault['consideraciones'],
             'texto_aceptacion' => $textosDefault['aceptacion'],
@@ -129,6 +140,44 @@ eqrHeader('Contratos de arrendamiento', 'contratos');
                 <div class="col-md-2">
                     <label class="form-label">Fin</label>
                     <input name="fecha_fin" type="date" class="form-control" value="<?= e((string)$form['fecha_fin']) ?>">
+                </div>
+            </div>
+
+            <h6 class="mt-4">Datos económicos y del contratista</h6>
+            <p class="text-muted small">Se usan para generar las actas de entrega-recepción y los
+            informes de conformidad / solicitud de pago del contrato (cláusula sexta).</p>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Valor unitario mensual (USD)</label>
+                    <input name="precio_unitario" class="form-control" value="<?= e((string)($form['precio_unitario'] ?? '0')) ?>" placeholder="Ej: 48.88">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Valor total sin IVA (USD)</label>
+                    <input name="valor_total" class="form-control" value="<?= e((string)($form['valor_total'] ?? '0')) ?>" placeholder="Ej: 35193.60">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Plazo (días)</label>
+                    <input name="plazo_dias" type="number" min="0" class="form-control" value="<?= (int)($form['plazo_dias'] ?? 0) ?>">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">RUC del contratista</label>
+                    <input name="contratista_ruc" class="form-control" maxlength="13" value="<?= e((string)($form['contratista_ruc'] ?? '')) ?>">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Representante legal</label>
+                    <input name="contratista_representante" class="form-control" value="<?= e((string)($form['contratista_representante'] ?? '')) ?>">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Correo del contratista</label>
+                    <input name="contratista_correo" class="form-control" value="<?= e((string)($form['contratista_correo'] ?? '')) ?>">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Teléfono del contratista</label>
+                    <input name="contratista_telefono" class="form-control" value="<?= e((string)($form['contratista_telefono'] ?? '')) ?>">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Dirección del contratista</label>
+                    <input name="contratista_direccion" class="form-control" value="<?= e((string)($form['contratista_direccion'] ?? '')) ?>">
                 </div>
             </div>
 
