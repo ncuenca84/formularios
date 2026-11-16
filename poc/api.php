@@ -44,6 +44,16 @@ function guardarFlujo(array $f): void
 {
     file_put_contents(POC_FLUJO, json_encode($f));
 }
+/** Firmantes del flujo vigente: los de la demo, o el firmante real configurado. */
+function firmantesActivos(array $f): array
+{
+    if (!empty($f['firmantes'])) {
+        $out = [];
+        foreach ($f['firmantes'] as $k => $v) { $out[(int)$k] = $v; }
+        return $out;
+    }
+    return pocFirmantes();
+}
 function responder(array $d, int $code = 200): never
 {
     http_response_code($code);
@@ -52,8 +62,9 @@ function responder(array $d, int $code = 200): never
 }
 
 $a = $_GET['a'] ?? $_POST['a'] ?? '';
-$firmantes = pocFirmantes();
 $f = flujo();
+$firmantes = firmantesActivos($f);
+$total = count($firmantes);
 
 switch ($a) {
     // ---------------------------------------------------------------- estado
@@ -61,15 +72,17 @@ switch ($a) {
         $lista = [];
         foreach ($firmantes as $n => $fi) {
             $estado = in_array($n, $f['firmados'], true) ? 'firmado'
-                : (($f['paso'] + 1) === $n && $f['paso'] < 3 && is_file(POC_PDF) ? 'turno' : 'en_espera');
+                : (($f['paso'] + 1) === $n && $f['paso'] < $total && is_file(POC_PDF) ? 'turno' : 'en_espera');
             $lista[] = ['n' => $n, 'rol' => $fi['rol'], 'nombre' => $fi['nombre'],
-                        'cedula' => $fi['cedula'], 'p12' => $fi['p12'], 'estado' => $estado];
+                        'cedula' => $fi['cedula'], 'p12' => $fi['p12'] ?? null, 'estado' => $estado];
         }
         responder([
             'ok' => true,
             'pdf' => is_file(POC_PDF),
             'paso' => $f['paso'],
-            'completo' => $f['paso'] >= 3,
+            'total' => $total,
+            'modo' => $f['modo'] ?? 'demo',
+            'completo' => $f['paso'] >= $total,
             'firmantes' => $lista,
         ]);
 
@@ -77,18 +90,42 @@ switch ($a) {
     case 'reiniciar':
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { responder(['ok' => false, 'mensaje' => 'POST requerido'], 405); }
         @mkdir(POC_OUT, 0775, true);
-        array_map('unlink', glob(POC_OUT . '/*') ?: []);
+        array_map('unlink', array_filter(glob(POC_OUT . '/*') ?: [], 'is_file'));
         pocGenerarPdf(POC_PDF);
-        guardarFlujo(['paso' => 0, 'firmados' => []]);
+        guardarFlujo(['paso' => 0, 'firmados' => [], 'modo' => 'demo']);
         copy(POC_PDF, POC_OUT . '/base_v0.pdf');
         responder(['ok' => true, 'mensaje' => 'Acta de prueba generada.']);
+
+    // ----------------------------------------- reiniciar con firma REAL
+    case 'reiniciar_real':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { responder(['ok' => false, 'mensaje' => 'POST requerido'], 405); }
+        $body = json_decode((string)file_get_contents('php://input'), true) ?: [];
+        $cedula = preg_replace('/\D/', '', (string)($body['cedula'] ?? ''));
+        $nombre = trim((string)($body['nombre'] ?? ''));
+        if (strlen($cedula) !== 10) {
+            responder(['ok' => false, 'mensaje' => 'Ingrese su cedula (10 digitos) para configurar el circuito.'], 400);
+        }
+        if ($nombre === '') { $nombre = 'Firmante con certificado real'; }
+        $r = pocRecuadrosFirma();
+        @mkdir(POC_OUT, 0775, true);
+        array_map('unlink', array_filter(glob(POC_OUT . '/*') ?: [], 'is_file'));
+        pocGenerarPdf(POC_PDF);
+        guardarFlujo([
+            'paso' => 0, 'firmados' => [], 'modo' => 'real',
+            'firmantes' => [
+                1 => ['rol' => 'Prueba con certificado real', 'nombre' => $nombre,
+                      'cedula' => $cedula, 'rect' => $r[1]['rect'], 'p12' => null],
+            ],
+        ]);
+        copy(POC_PDF, POC_OUT . '/base_v0.pdf');
+        responder(['ok' => true, 'mensaje' => 'Acta generada. Firme con SU archivo .p12 (cedula ' . $cedula . ').']);
 
     // -------------------------------------------------------------- preparar
     case 'preparar':
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { responder(['ok' => false, 'mensaje' => 'POST requerido'], 405); }
         if (!is_file(POC_PDF)) { responder(['ok' => false, 'mensaje' => 'Primero genere el acta.'], 400); }
         $n = $f['paso'] + 1;
-        if ($n > 3) { responder(['ok' => false, 'mensaje' => 'El acta ya tiene las 3 firmas.'], 400); }
+        if ($n > $total) { responder(["ok" => false, "mensaje" => "El acta ya tiene todas sus firmas."], 400); }
         $fi = $firmantes[$n];
         try {
             $signer = new PdfSigner();
@@ -114,7 +151,7 @@ switch ($a) {
             responder(['ok' => false, 'mensaje' => 'Firma ausente o invalida.'], 400);
         }
         $n = $f['paso'] + 1;
-        if ($n > 3) { responder(['ok' => false, 'mensaje' => 'El acta ya esta completa.'], 400); }
+        if ($n > $total) { responder(["ok" => false, "mensaje" => "El acta ya esta completa."], 400); }
         $fi = $firmantes[$n];
         try {
             $signer = new PdfSigner();
@@ -135,7 +172,7 @@ switch ($a) {
             responder(['ok' => true,
                 'mensaje' => 'Firma ' . $n . ' aceptada: ' . ($res['cert']['cn'] ?? ''),
                 'advertencias' => $res['advertencias'],
-                'completo' => $n >= 3]);
+                "completo" => $n >= $total]);
         } catch (Throwable $e) {
             responder(['ok' => false, 'mensaje' => 'Error al completar: ' . $e->getMessage()], 500);
         }

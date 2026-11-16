@@ -30,6 +30,23 @@ header('X-Content-Type-Options: nosniff');
         <a id="btnDescargar" href="ver.php?dl=1" style="display:none" class="boton">Descargar el acta</a>
     </div>
 
+    <div class="cajareal">
+        <h2>Prueba con SU firma real (para validar en FirmaEC)</h2>
+        <p class="nota">Genera un acta cuyo único firmante es usted: ingrese su cédula tal como consta
+        en su certificado, y luego firme con su archivo .p12 real. El archivo y su clave
+        <strong>no salen de su navegador</strong>. El acta resultante sí debería validar en
+        FirmaEC de escritorio, porque su certificado es de una entidad acreditada.</p>
+        <div class="campo">
+            <label for="cedulaReal">Su cédula (10 dígitos)</label>
+            <input type="text" id="cedulaReal" maxlength="10" inputmode="numeric" autocomplete="off">
+        </div>
+        <div class="campo">
+            <label for="nombreReal">Su nombre (opcional, aparece en el recuadro de firma)</label>
+            <input type="text" id="nombreReal" autocomplete="off">
+        </div>
+        <button id="btnReal" type="button">Generar acta para firmarla con mi certificado real</button>
+    </div>
+
     <div id="mensajes" class="alerta info" style="display:none"></div>
     <div id="detalle" class="detalle" style="display:none"></div>
 

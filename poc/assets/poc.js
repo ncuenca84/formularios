@@ -51,7 +51,9 @@ async function refrescar() {
         if (f.estado === 'turno') {
             const nota = document.createElement('div');
             nota.className = 'nota';
-            nota.textContent = 'Para la prueba use el archivo ' + f.p12 + ' (clave: prueba123)';
+            nota.textContent = f.p12
+                ? 'Para la prueba use el archivo ' + f.p12 + ' (clave: prueba123)'
+                : 'Use SU archivo .p12 real: la cédula del certificado debe ser ' + f.cedula;
             div.appendChild(nota);
         }
         cont.appendChild(div);
@@ -65,8 +67,21 @@ async function refrescar() {
         $('#marco').src = 'ver.php?v=' + Date.now();
     }
     if (estadoActual.completo) {
-        pinta('El acta tiene las 3 firmas. Descárguela y pruébela en FirmaEC de escritorio y Adobe Reader.', 'exito');
+        pinta(estadoActual.modo === 'real'
+            ? 'Acta firmada con su certificado real. Descárguela y valídela en FirmaEC de escritorio y Adobe Reader.'
+            : 'El acta tiene las 3 firmas. Descárguela y pruébela en FirmaEC de escritorio y Adobe Reader.', 'exito');
     }
+}
+
+async function reiniciarReal() {
+    const cedula = $('#cedulaReal').value.replace(/\D/g, '');
+    const nombre = $('#nombreReal').value.trim();
+    if (cedula.length !== 10) { pinta('Ingrese su cédula de 10 dígitos.', 'error'); return; }
+    pinta('Generando acta para firma real…', 'info');
+    pintaDetalle([]);
+    const r = await api('reiniciar_real', 'POST', { cedula, nombre });
+    pinta(r.mensaje || 'Listo.', r.ok ? 'exito' : 'error');
+    await refrescar();
 }
 
 async function reiniciar() {
@@ -142,6 +157,7 @@ async function verificar() {
 
 document.addEventListener('DOMContentLoaded', () => {
     $('#btnReiniciar').addEventListener('click', reiniciar);
+    $('#btnReal').addEventListener('click', reiniciarReal);
     $('#btnFirmar').addEventListener('click', firmar);
     $('#btnVerificar').addEventListener('click', verificar);
     refrescar();
