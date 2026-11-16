@@ -5,7 +5,11 @@
  */
 declare(strict_types=1);
 
-session_start();
+// Cookie de sesion HttpOnly: debe fijarse ANTES de iniciar la sesion.
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', '1');
+    session_start();
+}
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../config/eqr_schema.php';
 
@@ -13,9 +17,6 @@ if (empty($_SESSION['admin_logged'])) {
     header('Location: login.php');
     exit;
 }
-
-// ---------------------------------------------------------------- seguridad
-ini_set('session.cookie_httponly', '1');
 
 /** Escapa para HTML. */
 function e(?string $s): string
