@@ -5,3 +5,7 @@
 !assets/uploads/pdfs/.gitkeep
 .env
 *.log
+# Fase 0
+poc/out/*
+!poc/out/.htaccess
+tools/firma-js/node_modules/
