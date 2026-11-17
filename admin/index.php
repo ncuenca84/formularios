@@ -448,7 +448,8 @@ try {
                                     </td>
                                     <td>
                                         <?php if (!empty($sol['pdf_path'])): ?>
-                                            <a href="../<?= htmlspecialchars($sol['pdf_path']) ?>" target="_blank" class="btn btn-sm btn-outline-danger">
+                                            <a href="descargar_solicitud.php?id=<?= (int)$sol['id'] ?>" target="_blank"
+                                               class="btn btn-sm btn-outline-danger" title="Ver PDF (con las firmas que tenga)">
                                                 <i class="bi bi-file-pdf"></i>
                                             </a>
                                         <?php endif; ?>

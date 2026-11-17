@@ -70,6 +70,17 @@ function firMigrar(PDO $db): array
         $log[] = 'Columna eqr_notificaciones.documento_id agregada.';
     }
 
+    // Regularizar el estado de solicitudes segun sus circuitos de firma
+    $db->exec("UPDATE solicitudes s JOIN fir_documentos d ON d.solicitud_id = s.id
+               SET s.estado = 'aprobada' WHERE d.estado = 'completado' AND s.estado = 'pendiente'");
+    $db->exec("UPDATE solicitudes s JOIN fir_documentos d ON d.solicitud_id = s.id
+               SET s.estado = 'rechazada' WHERE d.estado IN ('rechazado','anulado') AND s.estado = 'pendiente'");
+    $db->exec("UPDATE solicitudes s JOIN eqr_tramites t ON t.solicitud_id = s.id
+               SET s.estado = 'aprobada' WHERE t.tipo = 'salida' AND t.estado = 'completado' AND s.estado = 'pendiente'");
+    $db->exec("UPDATE solicitudes s JOIN eqr_tramites t ON t.solicitud_id = s.id
+               SET s.estado = 'rechazada' WHERE t.tipo = 'salida' AND t.estado IN ('rechazado','anulado') AND s.estado = 'pendiente'");
+    $log[] = 'Estados de solicitudes sincronizados con sus circuitos de firma.';
+
     // Correos de las autoridades prellenadas (editables en el admin)
     $stmt = $db->prepare("INSERT IGNORE INTO configuracion (clave, valor) VALUES (?, ?)");
     foreach (['osi_correo' => '', 'dtic_correo' => ''] as $k => $v) {

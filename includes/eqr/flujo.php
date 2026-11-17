@@ -426,6 +426,10 @@ function eqrCerrarTramiteCompleto(PDO $db, int $tramiteId, string $actor): void
             $db->prepare("UPDATE eqr_equipos SET fuera_instalaciones = 1,
                             fecha_retorno_estimada = ? WHERE id = ?")
                ->execute([$t['salida_fecha_retorno'] ?: null, (int)$t['equipo_id']]);
+            if (!empty($t['solicitud_id'])) {
+                $db->prepare("UPDATE solicitudes SET estado = 'aprobada' WHERE id = ?")
+                   ->execute([(int)$t['solicitud_id']]);
+            }
         }
         eqrFlujoBitacora($db, (int)$t['equipo_id'], $tramiteId, 'tramite_completado',
             ['codigo' => $t['codigo'], 'tipo' => $t['tipo']], $actor);
@@ -457,6 +461,10 @@ function eqrRechazarFirma(PDO $db, array $tramite, array $firma, string $motivo,
         $db->rollBack();
         throw $ex;
     }
+    if (!empty($tramite['solicitud_id'])) {
+        $db->prepare("UPDATE solicitudes SET estado = 'rechazada' WHERE id = ?")
+           ->execute([(int)$tramite['solicitud_id']]);
+    }
     (new Notificador())->notificarRechazo($db, $tramite, $firma, $motivo);
 }
 
@@ -467,6 +475,10 @@ function eqrAnularTramite(PDO $db, array $tramite, string $motivo, string $actor
     $db->prepare("UPDATE eqr_firmas SET token_hash = NULL, token_expira = NULL
                   WHERE tramite_id = ? AND estado IN ('pendiente','en_espera')")
        ->execute([(int)$tramite['id']]);
+    if (!empty($tramite['solicitud_id'])) {
+        $db->prepare("UPDATE solicitudes SET estado = 'rechazada' WHERE id = ?")
+           ->execute([(int)$tramite['solicitud_id']]);
+    }
     eqrFlujoBitacora($db, (int)$tramite['equipo_id'], (int)$tramite['id'], 'tramite_anulado',
         ['motivo' => $motivo], $actor);
 }

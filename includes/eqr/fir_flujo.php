@@ -118,6 +118,15 @@ function firCrearDocumento(PDO $db, string $codigo, int $formularioId, string $t
     }
 }
 
+/** Refleja el resultado del circuito en la solicitud original del formulario. */
+function firSincronizarSolicitud(PDO $db, array $doc, string $estado): void
+{
+    if (!empty($doc['solicitud_id'])) {
+        $db->prepare("UPDATE solicitudes SET estado = ? WHERE id = ?")
+           ->execute([$estado, (int)$doc['solicitud_id']]);
+    }
+}
+
 function firDocumentoPorId(PDO $db, int $id): ?array
 {
     $stmt = $db->prepare("SELECT * FROM fir_documentos WHERE id = ?");
@@ -255,6 +264,7 @@ function firCompletarFirma(PDO $db, array $doc, array $firma, string $firmaHex, 
     // ultima firma: documento completo
     $db->prepare("UPDATE fir_documentos SET estado = 'completado', completado_en = NOW() WHERE id = ?")
        ->execute([(int)$doc['id']]);
+    firSincronizarSolicitud($db, $doc, 'aprobada');
     eqrFlujoBitacora($db, null, null, 'fir_documento_completado', ['codigo' => $doc['codigo']], $actor);
     $docFinal = firDocumentoPorId($db, (int)$doc['id']);
     $r = $notif->notificarCierreDoc($db, $docFinal, firFirmasDe($db, (int)$doc['id']), $pdfPath);
@@ -281,6 +291,7 @@ function firRechazarFirma(PDO $db, array $doc, array $firma, string $motivo, str
         $db->rollBack();
         throw $ex;
     }
+    firSincronizarSolicitud($db, $doc, 'rechazada');
     (new Notificador())->notificarRechazoDoc($db, $doc, $firma, $motivo, firFirmasDe($db, (int)$doc['id']));
 }
 
@@ -291,6 +302,7 @@ function firAnularDocumento(PDO $db, array $doc, string $motivo, string $actor):
     $db->prepare("UPDATE fir_firmas SET token_hash = NULL, token_expira = NULL
                   WHERE documento_id = ? AND estado IN ('pendiente','en_espera')")
        ->execute([(int)$doc['id']]);
+    firSincronizarSolicitud($db, $doc, 'rechazada');
     eqrFlujoBitacora($db, null, null, 'fir_documento_anulado',
         ['codigo' => $doc['codigo'], 'motivo' => $motivo], $actor);
 }
