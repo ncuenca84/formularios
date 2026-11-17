@@ -58,6 +58,7 @@ function eqrEtiquetasFirma(string $tipo): array
 {
     return match ($tipo) {
         'asignacion' => [1 => 'ENTREGA MATERIAL POR LA DTIC', 2 => 'RECIBE COMO USUARIO FINAL'],
+        'reposicion' => [1 => 'ENTREGA MATERIAL POR LA DTIC', 2 => 'RECIBE COMO USUARIO FINAL'],
         'traspaso'   => [1 => 'ADMINISTRADOR DEL CONTRATO (DTIC)', 2 => 'ENTREGA — CUSTODIO ANTERIOR', 3 => 'RECIBE — NUEVO CUSTODIO'],
         'devolucion' => [1 => 'RECIBE POR LA DTIC (ADMINISTRADOR DEL CONTRATO)', 2 => 'ENTREGA — CUSTODIO QUE DEVUELVE'],
         'salida'     => [1 => 'SOLICITA — CUSTODIO DEL EQUIPO', 2 => 'AUTORIZA — JEFE INMEDIATO'],
@@ -129,6 +130,7 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
         'asignacion' => 'ACTA DE ASIGNACIÓN, ENTREGA Y RECEPCIÓN DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO',
         'traspaso'   => 'ACTA DE TRASPASO DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO',
         'devolucion' => 'ACTA DE DEVOLUCIÓN DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO',
+        'reposicion' => 'ACTA DE REPOSICIÓN, ENTREGA Y RECEPCIÓN DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO',
     ];
     $metaDoc = $meta;
     if (!empty($titulos[$tipo])) { $metaDoc['titulo_encabezado'] = $titulos[$tipo]; }
@@ -162,6 +164,17 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
             . 'y lo recibe ' . $e($tramite['recibe_nombre']) . ' (C.C. ' . $e($tramite['recibe_cedula']) . '), '
             . 'quien asume desde la suscripción de esta acta la calidad de usuario final y custodio del equipo, '
             . 'en las condiciones físicas y operativas que constan en este documento.',
+        'reposicion' => 'En la ciudad de Quito, a los ' . $e($fechaLarga) . ', la Dirección de Tecnologías de la '
+            . 'Información y Comunicación (DTIC), a través de ' . $e($tramite['admin_contrato_nombre'])
+            . ', en su calidad de ' . $e($tramite['admin_contrato_calidad'] ?: 'Administrador del Contrato')
+            . ', hace la entrega formal del equipo de cómputo detallado en la presente acta, entregado por el '
+            . 'proveedor EN REPOSICIÓN del equipo anteriormente asignado, dentro del Contrato Nro. '
+            . $e($contrato['numero'])
+            . ($tramite['motivo'] ? ' (' . $e($tramite['motivo']) . ')' : '') . ', a '
+            . $e($tramite['recibe_nombre']) . ', con cédula de ciudadanía Nro. ' . $e($tramite['recibe_cedula'])
+            . ', quien lo recibe en calidad de usuario final y custodio, en las condiciones físicas y operativas '
+            . 'que constan en este documento. La presente acta sustituye, respecto del equipo repuesto, al acta '
+            . 'de asignación anterior; los compromisos y responsabilidades del usuario se mantienen.',
         'devolucion' => 'En la ciudad de Quito, a los ' . $e($fechaLarga) . ', '
             . $e($tramite['entrega_nombre']) . ', con cédula de ciudadanía Nro. ' . $e($tramite['entrega_cedula'])
             . ', devuelve a la Dirección de Tecnologías de la Información y Comunicación (DTIC) el equipo de '

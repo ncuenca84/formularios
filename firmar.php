@@ -39,7 +39,7 @@ if (eqrIpBloqueada($db)) {
     $problema = 'Demasiados intentos desde su conexión. Espere unos minutos e intente de nuevo.';
 } else {
     $tipos = ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'devolucion' => 'Devolución',
-              'salida' => 'Salida de las instalaciones'];
+              'reposicion' => 'Reposición', 'salida' => 'Salida de las instalaciones'];
     if (($ctx = eqrFirmaPorToken($db, $token)) !== null) {
         $t = $ctx['tramite'];
         $vista = [

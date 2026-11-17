@@ -24,13 +24,14 @@ $tiposTramite = [
     'asignacion' => ['Asignación', 'La DTIC entrega un equipo EN STOCK a un funcionario. Firman: administrador y nuevo custodio.'],
     'traspaso'   => ['Traspaso', 'Un equipo asignado pasa de un funcionario a otro. Firman: administrador, custodio anterior y nuevo custodio.'],
     'devolucion' => ['Devolución', 'El custodio devuelve el equipo a la DTIC (vuelve a stock). Firman: administrador y custodio que devuelve.'],
+    'reposicion' => ['Reposición', 'El proveedor repuso el equipo (robo o daño) y se re-emite el acta al MISMO custodio con los datos nuevos. Actualice primero la ficha del equipo (modelo y serie). Firman: administrador y custodio.'],
 ];
 
 $dominio = getConfig('eqr_dominio_correo', 'arconel.gob.ec');
 
 // ----------------------------------------------------- equipos elegibles
 $equipos = $db->prepare("SELECT e.*, (SELECT COUNT(*) FROM eqr_tramites t WHERE t.equipo_id = e.id
-                            AND t.tipo IN ('asignacion','traspaso','devolucion')
+                            AND t.tipo IN ('asignacion','traspaso','devolucion','reposicion')
                             AND t.estado IN ('borrador','en_firma')) abiertos
                          FROM eqr_equipos e WHERE e.contrato_id = ? AND e.estado IN ('en_stock','asignado')
                          ORDER BY e.codigo_interno");
@@ -57,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errores[] = 'Ese equipo ya tiene un trámite de custodia abierto. Ciérrelo o anúlelo primero.';
         } elseif ($tipo === 'asignacion' && $equipoSel['estado'] !== 'en_stock') {
             $errores[] = 'Para una asignación el equipo debe estar EN STOCK.';
-        } elseif (in_array($tipo, ['traspaso', 'devolucion'], true) && $equipoSel['estado'] !== 'asignado') {
-            $errores[] = 'Para un ' . $tipo . ' el equipo debe estar ASIGNADO.';
+        } elseif (in_array($tipo, ['traspaso', 'devolucion', 'reposicion'], true) && $equipoSel['estado'] !== 'asignado') {
+            $errores[] = 'Para un trámite de ' . $tipo . ' el equipo debe estar ASIGNADO.';
         } elseif (in_array($tipo, ['traspaso', 'devolucion'], true) && empty($equipoSel['custodio_cedula'])) {
             $errores[] = 'El custodio actual de ese equipo no tiene cédula registrada. Complétela primero en la ficha del equipo (Equipos → Editar), porque la firma se valida contra la cédula.';
         }
@@ -99,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($tipo === 'asignacion') {
             $datos += $validaPersona('recibe_', 'Nuevo custodio');
+        } elseif ($tipo === 'reposicion') {
+            $datos += $validaPersona('recibe_', 'Custodio que recibe la reposición');
         } elseif ($tipo === 'traspaso') {
             $datos += $validaPersona('entrega_', 'Custodio anterior');
             $datos += $validaPersona('recibe_', 'Nuevo custodio');
@@ -260,23 +263,29 @@ $firmanteDtic = $hayDelegado
             </div>
         <?php endif; ?>
 
-        <?php if (in_array($tipo, ['asignacion', 'traspaso'], true)): ?>
-            <h6 class="mt-4 text-success">Nuevo custodio (recibe)</h6>
+        <?php if (in_array($tipo, ['asignacion', 'traspaso', 'reposicion'], true)):
+            // En una reposicion el que recibe es el MISMO custodio actual (prellenado)
+            $pre = fn($k) => $_POST ? $v('recibe_' . $k)
+                : ($tipo === 'reposicion' ? e($custodioActual[$k] ?? '') : '');
+        ?>
+            <h6 class="mt-4 text-success"><?= $tipo === 'reposicion'
+                ? 'Custodio que recibe la reposición (prellenado con el custodio actual)'
+                : 'Nuevo custodio (recibe)' ?></h6>
             <p class="text-muted small mb-2">Escriba la cédula: si la persona ya existe en el sistema,
                 sus datos se completan solos.</p>
             <div class="row g-2">
                 <div class="col-md-2"><label class="form-label">Cédula *</label>
                     <input name="recibe_cedula" id="recibe_cedula" class="form-control" maxlength="10"
-                           inputmode="numeric" required value="<?= $v('recibe_cedula') ?>"></div>
+                           inputmode="numeric" required value="<?= $pre('cedula') ?>"></div>
                 <div class="col-md-4"><label class="form-label">Apellidos y nombres *</label>
-                    <input name="recibe_nombre" id="recibe_nombre" class="form-control" required value="<?= $v('recibe_nombre') ?>"></div>
+                    <input name="recibe_nombre" id="recibe_nombre" class="form-control" required value="<?= $pre('nombre') ?>"></div>
                 <div class="col-md-3"><label class="form-label">Correo institucional *</label>
                     <input name="recibe_correo" id="recibe_correo" type="email" class="form-control" required
-                           placeholder="usuario@<?= e($dominio) ?>" value="<?= $v('recibe_correo') ?>"></div>
+                           placeholder="usuario@<?= e($dominio) ?>" value="<?= $pre('correo') ?>"></div>
                 <div class="col-md-3"><label class="form-label">Cargo</label>
-                    <input name="recibe_cargo" id="recibe_cargo" class="form-control" value="<?= $v('recibe_cargo') ?>"></div>
+                    <input name="recibe_cargo" id="recibe_cargo" class="form-control" value="<?= $pre('cargo') ?>"></div>
                 <div class="col-md-6"><label class="form-label">Coordinación / Dirección</label>
-                    <input name="recibe_area" id="recibe_area" class="form-control" value="<?= $v('recibe_area') ?>"></div>
+                    <input name="recibe_area" id="recibe_area" class="form-control" value="<?= $pre('area') ?>"></div>
             </div>
         <?php endif; ?>
 
@@ -288,8 +297,9 @@ $firmanteDtic = $hayDelegado
             <div class="col-md-6"><label class="form-label">Accesorios que se entregan</label>
                 <input name="accesorios" class="form-control"
                        value="<?= $_POST ? $v('accesorios') : (!empty($equipoSel['cargador_entregado']) ? 'Cargador' : '') ?>"></div>
-            <div class="col-md-6"><label class="form-label">Motivo (opcional)</label>
-                <input name="motivo" class="form-control" value="<?= $v('motivo') ?>"
+            <div class="col-md-6"><label class="form-label">Motivo <?= $tipo === 'reposicion' ? '(aparece en el acta)' : '(opcional)' ?></label>
+                <input name="motivo" class="form-control"
+                       value="<?= $_POST ? $v('motivo') : ($tipo === 'reposicion' ? 'Reposición por robo del equipo anterior, serie: ' : '') ?>"
                        placeholder="Ej: cambio de área del funcionario"></div>
             <div class="col-md-6"><label class="form-label">Observaciones (opcional)</label>
                 <input name="observaciones" class="form-control" value="<?= $v('observaciones') ?>"></div>

@@ -60,7 +60,7 @@ $notifs->execute([$id]);
 $notifs = $notifs->fetchAll();
 
 $tipos = ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'devolucion' => 'Devolución',
-          'salida' => 'Salida', 'carga_inicial' => 'Carga inicial'];
+          'reposicion' => 'Reposición', 'salida' => 'Salida', 'carga_inicial' => 'Carga inicial'];
 $rolesLegibles = [
     'administrador' => 'Administrador del contrato', 'custodio_anterior' => 'Custodio anterior (entrega)',
     'nuevo_custodio' => 'Nuevo custodio (recibe)', 'custodio' => 'Custodio que devuelve',

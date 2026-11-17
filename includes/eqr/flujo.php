@@ -47,6 +47,7 @@ function eqrRolesTramite(string $tipo): array
         'traspaso'   => [1 => ['administrador', 'admin_contrato_'], 2 => ['custodio_anterior', 'entrega_'],
                          3 => ['nuevo_custodio', 'recibe_']],
         'devolucion' => [1 => ['administrador', 'admin_contrato_'], 2 => ['custodio', 'entrega_']],
+        'reposicion' => [1 => ['administrador', 'admin_contrato_'], 2 => ['nuevo_custodio', 'recibe_']],
         'salida'     => [1 => ['custodio', 'entrega_'], 2 => ['jefe_inmediato', 'jefe_']],
         default => throw new InvalidArgumentException('Tipo de trámite no soportado.'),
     };
@@ -78,7 +79,7 @@ function eqrGenerarCodigoTramite(PDO $db): string
 function eqrTramiteAbierto(PDO $db, int $equipoId): ?array
 {
     $stmt = $db->prepare("SELECT id, codigo, tipo, estado FROM eqr_tramites
-                          WHERE equipo_id = ? AND tipo IN ('asignacion','traspaso','devolucion')
+                          WHERE equipo_id = ? AND tipo IN ('asignacion','traspaso','devolucion','reposicion')
                           AND estado IN ('borrador','en_firma') LIMIT 1");
     $stmt->execute([$equipoId]);
     return $stmt->fetch() ?: null;
@@ -402,7 +403,7 @@ function eqrCerrarTramiteCompleto(PDO $db, int $tramiteId, string $actor): void
         $t = eqrTramitePorId($db, $tramiteId);
         $db->prepare("UPDATE eqr_tramites SET estado = 'completado', completado_en = NOW() WHERE id = ?")
            ->execute([$tramiteId]);
-        if (in_array($t['tipo'], ['asignacion', 'traspaso'], true)) {
+        if (in_array($t['tipo'], ['asignacion', 'traspaso', 'reposicion'], true)) {
             $db->prepare("UPDATE eqr_equipos SET estado = 'asignado',
                             custodio_cedula = ?, custodio_nombre = ?, custodio_correo = ?,
                             custodio_cargo = ?, custodio_area = ? WHERE id = ?")

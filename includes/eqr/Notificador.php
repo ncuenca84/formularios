@@ -116,7 +116,7 @@ class Notificador
 
     private static function tipoLegible(string $tipo): string
     {
-        return ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso',
+        return ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'reposicion' => 'Reposición',
                 'devolucion' => 'Devolución', 'salida' => 'Salida de las instalaciones'][$tipo] ?? $tipo;
     }
 

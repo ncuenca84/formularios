@@ -21,7 +21,7 @@ header('X-Frame-Options: DENY');
 header('Referrer-Policy: no-referrer');
 header('X-Content-Type-Options: nosniff');
 
-$tipos = ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'devolucion' => 'Devolución'];
+$tipos = ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'devolucion' => 'Devolución', 'reposicion' => 'Reposición'];
 ?>
 <!DOCTYPE html>
 <html lang="es">

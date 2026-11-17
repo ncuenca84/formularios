@@ -99,7 +99,7 @@ function eqrMigrar(PDO $db): array
             CREATE TABLE IF NOT EXISTS eqr_tramites (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 codigo VARCHAR(30) NOT NULL UNIQUE,
-                tipo ENUM('asignacion','traspaso','devolucion','salida','carga_inicial') NOT NULL,
+                tipo ENUM('asignacion','traspaso','devolucion','salida','carga_inicial','reposicion') NOT NULL,
                 equipo_id INT NOT NULL,
                 contrato_id INT NOT NULL,
                 estado ENUM('borrador','en_firma','completado','rechazado','anulado') NOT NULL DEFAULT 'borrador',
@@ -240,6 +240,18 @@ function eqrMigrar(PDO $db): array
             $log[] = "Columna $tabla.$col agregada.";
             if ($col === 'delegado_cedula') { $delegadoRecienCreado = true; }
         }
+    }
+
+    // Tipo de tramite 'reposicion' (equipos repuestos por el proveedor tras
+    // robo o dano): se agrega al ENUM si la instalacion aun no lo tiene.
+    $stmt = $db->prepare("SELECT COLUMN_TYPE FROM information_schema.COLUMNS
+                          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'eqr_tramites' AND COLUMN_NAME = 'tipo'");
+    $stmt->execute();
+    $tipoCol = (string)$stmt->fetchColumn();
+    if ($tipoCol !== '' && strpos($tipoCol, 'reposicion') === false) {
+        $db->exec("ALTER TABLE eqr_tramites MODIFY tipo
+            ENUM('asignacion','traspaso','devolucion','salida','carga_inicial','reposicion') NOT NULL");
+        $log[] = "Tipo de trámite 'reposicion' agregado.";
     }
 
     // Delegacion vigente del contrato real (solo UNA VEZ, al crear las columnas;

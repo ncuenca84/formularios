@@ -42,7 +42,7 @@ if ($tab === 'carga_inicial') {
 $tramites = $stmt->fetchAll();
 
 $tipos = ['asignacion' => 'Asignación', 'traspaso' => 'Traspaso', 'devolucion' => 'Devolución',
-          'salida' => 'Salida', 'carga_inicial' => 'Carga inicial'];
+          'reposicion' => 'Reposición', 'salida' => 'Salida', 'carga_inicial' => 'Carga inicial'];
 
 eqrHeader('Trámites de equipos', 'tramites');
 ?>
