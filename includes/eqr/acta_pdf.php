@@ -34,11 +34,12 @@ function eqrRectsFirma(): array
 {
     // [left_css, top_css, ancho, alto] respecto del area de contenido
     // Hasta 4 firmantes (cuadricula 2x2); las actas usan 1-3.
+    // Tamano reducido 15% a pedido del usuario (similar al sello de FirmaEC).
     $defs = [
-        1 => [8,   150, 235, 80],
-        2 => [268, 150, 235, 80],
-        3 => [8,   290, 235, 80],
-        4 => [268, 290, 235, 80],
+        1 => [20,  150, 200, 68],
+        2 => [290, 150, 200, 68],
+        3 => [20,  285, 200, 68],
+        4 => [290, 285, 200, 68],
     ];
     $out = [];
     foreach ($defs as $n => [$l, $t, $w, $h]) {
