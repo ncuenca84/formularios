@@ -49,6 +49,12 @@ $formularios = [
         'color' => '#155724',
         'descripcion' => 'Autorizacion para sacar su equipo en arrendamiento de las instalaciones (teletrabajo, comision, etc.). Se firma EN LINEA con su archivo .p12, junto con su jefe inmediato.',
     ],
+    8 => [
+        'titulo' => 'Solicitud de Cuenta Adicional de Correo',
+        'icono' => 'bi-envelope-plus',
+        'color' => '#B45309',
+        'descripcion' => 'Solicitud de una cuenta adicional de correo electronico institucional (ej: cuentas de area o de servicio). Se firma EN LINEA junto con su jefe inmediato.',
+    ],
 ];
 ?>
 <!DOCTYPE html>
@@ -107,7 +113,8 @@ $formularios = [
             right: 15px;
             font-size: 2rem;
             font-weight: 800;
-            opacity: 0.08;
+            color: var(--color-primario);
+            opacity: 0.45;
         }
     </style>
 </head>

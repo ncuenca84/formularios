@@ -313,12 +313,21 @@ function eqrMigrar(PDO $db): array
         $log[] = 'Contrato ARCONEL-005-2026 ya existía (no se modificó).';
     }
 
-    // Encabezado institucional para las actas del modulo (fila 8, editable en admin)
+    // Encabezado de las actas del modulo: fila 20 (la fila 8 paso a ser el
+    // formulario publico de cuenta de correo). Migracion del dato existente:
+    $db->exec("UPDATE formularios_meta SET formulario_id = 20
+               WHERE formulario_id = 8 AND codigo_doc = 'GTIC.PA.FO.08'");
     $stmt = $db->prepare("INSERT IGNORE INTO formularios_meta
         (formulario_id, codigo_doc, version, nro_acta, fecha_aprobacion, titulo_encabezado)
-        VALUES (8, 'GTIC.PA.FO.08', '01', '', '', 'ACTA DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO')");
+        VALUES (20, 'GTIC.PA.FO.08', '01', '', '', 'ACTA DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO')");
     $stmt->execute();
-    $log[] = 'Encabezado institucional (fila 8) verificado/creado.';
+    // Formulario 8 publico: solicitud de cuenta adicional de correo
+    $stmt = $db->prepare("INSERT IGNORE INTO formularios_meta
+        (formulario_id, codigo_doc, version, nro_acta, fecha_aprobacion, titulo_encabezado)
+        VALUES (8, 'GGPGE.GTIC.02.FO.06', '01', '', '29/07/2024',
+                'SOLICITUD DE CUENTA ADICIONAL DE CORREO ELECTRÓNICO')");
+    $stmt->execute();
+    $log[] = 'Encabezados institucionales (fila 8: correo, fila 20: actas) verificados.';
 
     // Configuracion del modulo (claves nuevas, sin tocar las existentes)
     $defaults = [

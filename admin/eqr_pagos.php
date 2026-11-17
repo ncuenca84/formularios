@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         $config = getAllConfig();
-        $meta = getFormularioMeta(8);
+        $meta = getFormularioMeta(20);
         $logoDataUri = getLogoDataUri('logo_path');
         $logoSecundarioDataUri = getLogoDataUri('logo_secundario_path');
 

@@ -415,6 +415,7 @@ function firFirmantesPorTipo(int $tipo, array $d, array $config, string $dominio
 
         case 5:
         case 6:
+        case 8:
             $agrega('solicitante', 'Solicitante (Servidor)', $d['nombre_completo'] ?? '',
                 $d['cedula'] ?? '', $d['correo'] ?? '', '', true);
             $agrega('autorizador', 'Director/Coordinador/Jefe de Area (autoriza)',

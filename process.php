@@ -15,11 +15,12 @@ $nombresFormulario = [
     5 => 'Privilegios Especiales Directorio Activo',
     6 => 'Accesos Especiales Internet',
     7 => 'Autorizacion de Salida de Equipo de Computo',
+    8 => 'Solicitud de Cuenta Adicional de Correo Electronico',
 ];
 
 $tipoFormulario = (int)($_POST['tipo_formulario'] ?? 0);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $tipoFormulario < 1 || $tipoFormulario > 7) {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $tipoFormulario < 1 || $tipoFormulario > 8) {
     echo '<script>window.location.href="index.php";</script>';
     exit;
 }
@@ -34,7 +35,7 @@ $fecha = date('d/m/Y');
 
 // Firmantes del circuito de firma en linea (formularios 1 a 6)
 $firmantes = [];
-if ($tipoFormulario >= 1 && $tipoFormulario <= 6) {
+if ($tipoFormulario >= 1 && $tipoFormulario <= 8 && $tipoFormulario !== 7) {
     [$firmantes, $erroresFirmantes] = firFirmantesPorTipo($tipoFormulario, $_POST, $config,
         getConfig('eqr_dominio_correo', 'arconel.gob.ec'));
     $errores = array_merge($errores, $erroresFirmantes);
@@ -209,6 +210,15 @@ function validarPorTipo(int $tipo, array $post): array
             if (empty($post['autorizador_nombre'])) $errores[] = 'El nombre del jefe inmediato es obligatorio.';
             if (empty($post['autorizador_cedula'])) $errores[] = 'La cedula del jefe inmediato es obligatoria.';
             break;
+
+        case 8:
+            if (empty($post['nombre_completo'])) $errores[] = 'El nombre completo es obligatorio.';
+            if (empty($post['cedula'])) $errores[] = 'La cedula es obligatoria.';
+            if (empty($post['cargo'])) $errores[] = 'El cargo es obligatorio.';
+            if (empty($post['area'])) $errores[] = 'El departamento/direccion es obligatorio.';
+            if (empty($post['cuenta_sugerida'])) $errores[] = 'El nombre sugerido para la nueva cuenta es obligatorio.';
+            if (empty($post['justificacion'])) $errores[] = 'La justificacion es obligatoria.';
+            break;
     }
 
     return $errores;
@@ -258,6 +268,7 @@ function extraerDatosPrincipales(int $tipo, array $datos): array
         case 5:
         case 6:
         case 7:
+        case 8:
             return array_merge($base, [
                 'nombre_completo' => $datos['nombre_completo'] ?? '',
                 'cedula' => $datos['cedula'] ?? '',

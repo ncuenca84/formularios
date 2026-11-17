@@ -95,7 +95,7 @@ function eqrGenerarActa(array $tramite, array $equipo, array $contrato, array $f
     @mkdir($dir, 0775, true);
 
     $config = getAllConfig();
-    $meta = getFormularioMeta(8);
+    $meta = getFormularioMeta(20);
     $logoDataUri = getLogoDataUri('logo_path');
     $logoSecundarioDataUri = getLogoDataUri('logo_secundario_path');
     $html = eqrActaHtml($tramite, $equipo, $contrato, $firmantes, $config, $meta,

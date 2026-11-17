@@ -110,7 +110,7 @@ try {
                     fecha_aprobacion = VALUES(fecha_aprobacion),
                     titulo_encabezado = VALUES(titulo_encabezado)
             ");
-            for ($i = 1; $i <= 8; $i++) {
+            foreach ([1, 2, 3, 4, 5, 6, 7, 8, 20] as $i) {
                 $stmt->execute([
                     $i,
                     trim($_POST["meta_{$i}_codigo_doc"] ?? ''),
