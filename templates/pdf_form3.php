@@ -95,44 +95,7 @@ ob_start();
 
 <div class="nota-box">La notificacion de acceso sera enviada a la direccion electronica (e-mail) del funcionario solicitante.</div>
 
-<!-- FIRMAS -->
-<div class="seccion">Autorizacion</div>
-<table class="firmas-table">
-    <tr>
-        <td class="firma-header">Solicitado por:</td>
-        <td class="firma-header">Autorizado por:</td>
-        <td class="firma-header">Autorizacion adicional:</td>
-    </tr>
-    <tr>
-        <td style="height:55px;">
-            <p style="font-size:7pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al acceder a los permisos y sistemas solicitados.</p>
-            <div class="firma-linea">
-                <strong>Firma Solicitante</strong><br>
-                Nombres: <?= $nombreCompleto ?><br>
-                C.C.: <?= $d['cedula'] ?><br>
-                Cargo: <?= $d['cargo'] ?>
-            </div>
-        </td>
-        <td>
-            <p style="font-size:7pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
-            <div class="firma-linea">
-                <strong>Firma Autorizador</strong><br>
-                Nombres: <?= $d['autorizador_nombre'] ?><br>
-                C.C.: <?= $d['autorizador_cedula'] ?><br>
-                Cargo: <?= $d['autorizador_cargo'] ?>
-            </div>
-        </td>
-        <td>
-            <p style="font-size:7pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
-            <div class="firma-linea">
-                <strong>Firma Autorizacion Adicional</strong><br>
-                Nombres:<br>
-                C.C.:<br>
-                Cargo:
-            </div>
-        </td>
-    </tr>
-</table>
+<?= $paginaFirmasHtml ?? '' ?>
 
 </body>
 </html>

@@ -110,13 +110,18 @@ renderHeader($config, $titulo);
                                 <label class="form-label">Cargo</label>
                                 <input type="text" name="autorizador_cargo" class="form-control" placeholder="Ej: Coordinador de Área">
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Correo del Autorizador <span class="text-danger">*</span></label>
+                                <input type="email" name="autorizador_correo" class="form-control" required placeholder="Ej: nombre.apellido@arconel.gob.ec">
+                                <small class="text-muted">Ahí le llegará su enlace para firmar en línea.</small>
+                            </div>
                         </div>
 
                         <hr class="my-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted"><i class="bi bi-shield-lock"></i> Los datos serán tratados de forma confidencial.</small>
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-file-earmark-pdf"></i> Generar Solicitud PDF
+                                <i class="bi bi-pen"></i> Continuar y firmar en línea
                             </button>
                         </div>
                     </form>

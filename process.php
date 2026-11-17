@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/eqr/fir_flujo.php';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -26,17 +27,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $tipoFormulario < 1 || $tipoFormula
 // Validar campos obligatorios segun tipo
 $errores = validarPorTipo($tipoFormulario, $_POST);
 
-if (!empty($errores)) {
-    $errorMsg = implode('\n', $errores);
-    $formNum = $tipoFormulario;
-    echo "<script>alert('{$errorMsg}');window.location.href='forms/form{$formNum}.php';</script>";
-    exit;
-}
-
 // Preparar datos
 $config = getAllConfig();
 $codigo = generarCodigoSolicitud();
 $fecha = date('d/m/Y');
+
+// Firmantes del circuito de firma en linea (formularios 1 a 6)
+$firmantes = [];
+if ($tipoFormulario >= 1 && $tipoFormulario <= 6) {
+    [$firmantes, $erroresFirmantes] = firFirmantesPorTipo($tipoFormulario, $_POST, $config,
+        getConfig('eqr_dominio_correo', 'arconel.gob.ec'));
+    $errores = array_merge($errores, $erroresFirmantes);
+}
+
+if (!empty($errores)) {
+    $errorMsg = implode('\n', array_map(fn($e) => addslashes($e), $errores));
+    $formNum = $tipoFormulario;
+    echo "<script>alert('{$errorMsg}');window.location.href='forms/form{$formNum}.php';</script>";
+    exit;
+}
 
 // Sanitizar todos los campos POST
 $datos = array_map(function ($v) {
@@ -66,6 +75,13 @@ if (!file_exists($templateFile)) {
     exit;
 }
 
+// Pagina final con los recuadros de firma reservados (formularios 1-6)
+$paginaFirmasHtml = $firmantes
+    ? firPaginaFirmasHtml($codigo, array_map(
+        fn($f, $i) => $f + ['orden' => $i + 1], $firmantes, array_keys($firmantes)),
+        $config['color_primario'] ?? '#003366')
+    : '';
+
 $html = require $templateFile;
 
 // Configurar DomPDF
@@ -80,21 +96,39 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
-// Guardar PDF en servidor
+$pdfBytes = $dompdf->output();
+
+if ($firmantes) {
+    // ---- FLUJO NUEVO (formularios 1-6): firma en linea ----
+    // El PDF se guarda UNA sola vez fuera de la carpeta publica; el
+    // solicitante pasa directo a firmarlo y los demas reciben su enlace.
+    try {
+        $datosDB['pdf_path'] = 'storage/documentos/' . $codigo . '/doc.pdf';
+        guardarSolicitud($datosDB);
+        $solicitudId = (int)getDB()->lastInsertId();
+
+        $r = firCrearDocumento(getDB(), $codigo, $tipoFormulario,
+            $nombresFormulario[$tipoFormulario], $solicitudId ?: null, $firmantes, $pdfBytes);
+        echo "<script>window.location.href='/firmar.php?t={$r['token']}';</script>";
+        exit;
+    } catch (Throwable $ex) {
+        $msg = addslashes('No se pudo crear el documento: ' . $ex->getMessage());
+        echo "<script>alert('{$msg}');window.location.href='forms/form{$tipoFormulario}.php';</script>";
+        exit;
+    }
+}
+
+// ---- FLUJO ANTERIOR (solo respaldo, p. ej. tipo 7 heredado) ----
 $pdfDir = __DIR__ . '/assets/uploads/pdfs';
 if (!is_dir($pdfDir)) {
     mkdir($pdfDir, 0755, true);
 }
 $pdfFilename = "formulario{$tipoFormulario}_{$codigo}.pdf";
-$pdfPath = "{$pdfDir}/{$pdfFilename}";
-file_put_contents($pdfPath, $dompdf->output());
+file_put_contents("{$pdfDir}/{$pdfFilename}", $pdfBytes);
 
 $datosDB['pdf_path'] = "assets/uploads/pdfs/{$pdfFilename}";
-
-// Guardar en BD
 guardarSolicitud($datosDB);
 
-// Mostrar resultado directamente (sin redirect, compatible con Edge)
 $resultado = [
     'codigo' => $codigo,
     'tipo_formulario' => $nombresFormulario[$tipoFormulario],

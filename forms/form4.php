@@ -26,7 +26,7 @@ renderHeader($config, $titulo);
                     <li><strong>Paso 1:</strong> Indique si es personal externo o de la ARCONEL, y escriba sus datos.</li>
                     <li><strong>Paso 2:</strong> Indique a qué equipos o sistemas necesita acceder, por cuánto tiempo, y para qué.</li>
                     <li><strong>Paso 3:</strong> Escriba el nombre de su jefe (quien aprueba su pedido) y, si lo conoce, el del funcionario de la ARCONEL responsable.</li>
-                    <li><strong>Paso 4:</strong> Presione "Generar Solicitud PDF", descargue el documento, fírmelo con <strong>FirmaEC</strong> junto con las personas indicadas y envíelo a <strong>soporte@arconel.gob.ec</strong> solicitando la activación del acceso.</li>
+                    <li><strong>Paso 4:</strong> Presione <strong>"Continuar y firmar en línea"</strong>: usted firmará ahí mismo con su archivo .p12 y las personas que autorizan recibirán su enlace de firma por correo, en orden. Al completarse, el documento firmado les llega a todos y a la DTIC para activar el acceso. <strong>No necesita enviar nada manualmente.</strong></li>
                 </ol>
                 <p class="small mb-0 mt-2 text-muted">Los campos marcados con <span class="text-danger">*</span> son obligatorios. Los demás son opcionales.</p>
             </div>
@@ -75,7 +75,7 @@ renderHeader($config, $titulo);
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label">Correo electrónico</label>
-                                <input type="email" name="correo" class="form-control" placeholder="opcional">
+                                <input type="email" name="correo" class="form-control" required placeholder="Ej: nombre@institucion.gob.ec">
                             </div>
                         </div>
                         <div class="row">
@@ -159,6 +159,11 @@ renderHeader($config, $titulo);
                                     <label class="form-label">Cargo</label>
                                     <input type="text" name="firma_inst_cargo" class="form-control" placeholder="opcional">
                                 </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+                                    <input type="email" name="firma_inst_correo" class="form-control" required placeholder="Ej: jefe@institucion.gob.ec">
+                                    <small class="text-muted">Ahí le llegará su enlace de firma.</small>
+                                </div>
                             </div>
                         </div>
 
@@ -177,6 +182,11 @@ renderHeader($config, $titulo);
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label">Cargo</label>
                                     <input type="text" name="firma_area_cargo" class="form-control" placeholder="opcional">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Correo electrónico</label>
+                                    <input type="email" name="firma_area_correo" class="form-control" placeholder="Obligatorio si indica a esta persona">
+                                    <small class="text-muted">Si indica a esta persona, también firmará en línea.</small>
                                 </div>
                             </div>
                         </div>
@@ -252,7 +262,7 @@ renderHeader($config, $titulo);
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted"><i class="bi bi-shield-lock"></i> Sus datos serán tratados de forma confidencial.</small>
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-file-earmark-pdf"></i> Generar Solicitud PDF
+                                <i class="bi bi-pen"></i> Continuar y firmar en línea
                             </button>
                         </div>
                     </form>

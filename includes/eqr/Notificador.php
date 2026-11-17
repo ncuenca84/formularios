@@ -39,7 +39,8 @@ class Notificador
      * @return array ['ok'=>bool, 'error'=>?string]
      */
     public function enviar(PDO $db, ?int $tramiteId, string $para, string $asunto,
-                           string $html, string $texto, array $adjuntos = []): array
+                           string $html, string $texto, array $adjuntos = [],
+                           ?int $documentoId = null): array
     {
         $resultado = 'fallido';
         $error = null;
@@ -80,9 +81,16 @@ class Notificador
             }
         }
 
-        $stmt = $db->prepare("INSERT INTO eqr_notificaciones (tramite_id, destinatario, asunto, resultado, error)
-                              VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$tramiteId, $para, $asunto, $resultado, $error]);
+        try {
+            $stmt = $db->prepare("INSERT INTO eqr_notificaciones (tramite_id, documento_id, destinatario, asunto, resultado, error)
+                                  VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$tramiteId, $documentoId, $para, $asunto, $resultado, $error]);
+        } catch (Throwable $e) {
+            // instalacion sin la columna documento_id (migracion pendiente)
+            $stmt = $db->prepare("INSERT INTO eqr_notificaciones (tramite_id, destinatario, asunto, resultado, error)
+                                  VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$tramiteId, $para, $asunto, $resultado, $error]);
+        }
 
         return ['ok' => $resultado === 'enviado', 'error' => $error];
     }
@@ -189,6 +197,95 @@ class Notificador
         $ultimo = ['ok' => true, 'error' => null];
         foreach ($destinos as $d) {
             $r = $this->enviar($db, (int)$tramite['id'], $d, $asunto, $html, $texto, $adjunto);
+            if (!$r['ok']) { $ultimo = $r; }
+        }
+        return $ultimo;
+    }
+
+    // =================================================================
+    //  Correos de la firma en linea de los formularios 1-6 (fir_*)
+    // =================================================================
+
+    /** Como enviar(), pero registrando el documento_id del formulario. */
+    public function enviarDoc(PDO $db, ?int $documentoId, string $para, string $asunto,
+                              string $html, string $texto, array $adjuntos = []): array
+    {
+        return $this->enviar($db, null, $para, $asunto, $html, $texto, $adjuntos, $documentoId);
+    }
+
+    /** Correo al firmante de turno de un formulario. */
+    public function notificarTurnoDoc(PDO $db, array $doc, array $firma, string $urlFirma, string $expira): array
+    {
+        $e = fn($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+        $html = $this->plantilla('Firma pendiente — ' . $doc['titulo'], '
+            <p>Estimado/a <strong>' . $e($firma['nombre']) . '</strong>:</p>
+            <p>Tiene pendiente su firma electrónica en el documento
+               <strong>' . $e($doc['titulo']) . '</strong>
+               (solicitud <strong>' . $e($doc['codigo']) . '</strong>), en calidad de
+               <strong>' . $e($firma['etiqueta'] ?: $firma['rol']) . '</strong>.</p>
+            <p>Para revisar el documento y firmarlo con su archivo de firma electrónica (.p12), ingrese aquí:</p>
+            <p style="text-align:center;margin:18px 0;">
+              <a href="' . $e($urlFirma) . '" style="background:#14532d;color:#fff;padding:12px 26px;
+                 border-radius:6px;text-decoration:none;font-weight:bold;">Revisar y firmar</a></p>
+            <p style="font-size:12px;color:#666;">El enlace es personal y vence el ' . $e($expira) . '.
+               Su archivo .p12 y su clave se procesan únicamente en su navegador; nunca se envían al servidor.</p>');
+        $texto = "Tiene pendiente su firma en: {$doc['titulo']} (solicitud {$doc['codigo']}).\n"
+            . "Firme en: $urlFirma\nEl enlace vence el $expira.";
+        return $this->enviarDoc($db, (int)$doc['id'], $firma['correo'],
+            "Firma pendiente: {$doc['titulo']} — {$doc['codigo']}", $html, $texto);
+    }
+
+    /** Documento completado: PDF firmado a todos los firmantes y a la DTIC. */
+    public function notificarCierreDoc(PDO $db, array $doc, array $firmas, string $pdfPath): array
+    {
+        $e = fn($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+        $lista = '';
+        $destinos = [];
+        foreach ($firmas as $f) {
+            $lista .= '<li>' . $e($f['nombre']) . ' (C.C. ' . $e($f['cedula']) . ') — ' . $e($f['fecha_firma']) . '</li>';
+            if ($f['correo'] !== '' && !in_array($f['correo'], $destinos, true)) { $destinos[] = $f['correo']; }
+        }
+        $adminCorreo = trim(getConfig('email_admin'));
+        if ($adminCorreo !== '' && !in_array($adminCorreo, $destinos, true)) { $destinos[] = $adminCorreo; }
+
+        $html = $this->plantilla('Documento firmado — ' . $doc['titulo'], '
+            <p>El documento <strong>' . $e($doc['titulo']) . '</strong>
+               (solicitud <strong>' . $e($doc['codigo']) . '</strong>) se
+               <strong style="color:#14532d;">completó</strong> con todas sus firmas electrónicas.
+               Se adjunta el PDF final firmado; valídelo únicamente en FirmaEC.</p>
+            <p><strong>Firmas:</strong></p><ul>' . $lista . '</ul>');
+        $texto = "El documento {$doc['titulo']} (solicitud {$doc['codigo']}) se completó con todas sus firmas.\n"
+            . "Se adjunta el PDF final firmado.";
+        $adjunto = [['path' => $pdfPath, 'nombre' => $doc['codigo'] . '_firmado.pdf']];
+        $asunto = "Documento firmado — {$doc['codigo']}: {$doc['titulo']}";
+        $ultimo = ['ok' => true, 'error' => null];
+        foreach ($destinos as $d) {
+            $r = $this->enviarDoc($db, (int)$doc['id'], $d, $asunto, $html, $texto, $adjunto);
+            if (!$r['ok']) { $ultimo = $r; }
+        }
+        return $ultimo;
+    }
+
+    /** Rechazo de un formulario: aviso al solicitante (firma 1) y a la DTIC. */
+    public function notificarRechazoDoc(PDO $db, array $doc, array $firma, string $motivo, array $firmas): array
+    {
+        $e = fn($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+        $html = $this->plantilla('Documento rechazado', '
+            <p>El documento <strong>' . $e($doc['titulo']) . '</strong>
+               (solicitud <strong>' . $e($doc['codigo']) . '</strong>) fue
+               <strong style="color:#b02a37;">rechazado</strong> por
+               ' . $e($firma['nombre']) . ' (' . $e($firma['etiqueta'] ?: $firma['rol']) . ').</p>
+            <p><strong>Motivo indicado:</strong></p>
+            <p style="background:#fdecec;padding:10px;border-radius:6px;">' . $e($motivo) . '</p>
+            <p>La solicitud no continúa. Si corresponde, puede llenarse un nuevo formulario.</p>');
+        $texto = "El documento {$doc['titulo']} ({$doc['codigo']}) fue RECHAZADO por {$firma['nombre']}.\nMotivo: $motivo";
+        $destinos = [];
+        if (!empty($firmas[0]['correo'])) { $destinos[] = $firmas[0]['correo']; }
+        $adminCorreo = trim(getConfig('email_admin'));
+        if ($adminCorreo !== '' && !in_array($adminCorreo, $destinos, true)) { $destinos[] = $adminCorreo; }
+        $ultimo = ['ok' => true, 'error' => null];
+        foreach ($destinos as $d) {
+            $r = $this->enviarDoc($db, (int)$doc['id'], $d, "Documento rechazado — {$doc['codigo']}", $html, $texto);
             if (!$r['ok']) { $ultimo = $r; }
         }
         return $ultimo;

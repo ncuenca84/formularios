@@ -76,31 +76,7 @@ ob_start();
 </ul>
 </div>
 
-<!-- FIRMAS -->
-<div class="seccion">Suscripciones</div>
-<table class="firmas-table">
-    <tr>
-        <td style="height:80px;">
-            <p style="font-size:8pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo por la correcta utilizacion de los privilegios asignados como herramienta de trabajo, asi como de las implicaciones que conlleva un uso inadecuado del mismo.</p>
-            <div class="firma-linea">
-                <strong>Solicitado por:</strong><br>
-                f. Servidor<br>
-                Nombre: <?= $d['nombre_completo'] ?><br>
-                C.C.: <?= $d['cedula'] ?>
-            </div>
-        </td>
-        <td>
-            <p style="font-size:8pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
-            <div class="firma-linea">
-                <strong>Autorizado por:</strong><br>
-                f. Director/Coordinador/Jefe de Area<br>
-                Nombre: <?= $d['autorizador_nombre'] ?><br>
-                C.C.: <?= $d['autorizador_cedula'] ?>
-            </div>
-        </td>
-    </tr>
-</table>
-
+<?= $paginaFirmasHtml ?? '' ?>
 
 </body>
 </html>

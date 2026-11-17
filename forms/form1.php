@@ -23,8 +23,8 @@ renderHeader($config, $titulo);
                 <ol class="mb-0 small">
                     <li>Complete los <strong>datos del receptor</strong>: la persona externa que recibirá información de la ARCONEL.</li>
                     <li>Verifique que el nombre y la cédula estén escritos correctamente, tal como constan en el documento de identidad.</li>
-                    <li>Presione <strong>"Generar Acuerdo PDF"</strong>: el documento se creará con todas las cláusulas legales.</li>
-                    <li>Descargue el PDF, fírmelo con <strong>FirmaEC</strong> y envíelo al correo <strong>soporte@arconel.gob.ec</strong>.</li>
+                    <li>Presione <strong>"Continuar y firmar en línea"</strong>: el documento se creará con todas las cláusulas legales y usted lo firmará ahí mismo con su archivo de firma electrónica (.p12).</li>
+                    <li>Después de su firma, el Oficial de Seguridad de la Información firmará en línea. Al completarse, el documento firmado les llegará por correo a ambos y a la DTIC. <strong>No necesita enviar nada manualmente.</strong></li>
                 </ol>
             </div>
 
@@ -77,8 +77,9 @@ renderHeader($config, $titulo);
                                 <input type="text" name="cedula_receptor" class="form-control" data-solo-numeros maxlength="13" placeholder="Solo números, sin guiones" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Correo electrónico</label>
-                                <input type="email" name="correo" class="form-control" placeholder="Ej: nombre@institucion.gob.ec">
+                                <label class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+                                <input type="email" name="correo" class="form-control" placeholder="Ej: nombre@institucion.gob.ec" required>
+                                <small class="text-muted">Ahí le llegará el enlace para firmar en línea y el documento final.</small>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -91,7 +92,7 @@ renderHeader($config, $titulo);
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted"><i class="bi bi-info-circle"></i> El documento se generará con todas las cláusulas legales completas.</small>
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-file-earmark-pdf"></i> Generar Acuerdo PDF
+                                <i class="bi bi-pen"></i> Continuar y firmar en línea
                             </button>
                         </div>
                     </form>

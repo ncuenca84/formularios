@@ -33,10 +33,12 @@ const EQR_MARGEN_IZQ = 42.52;    // 15 mm
 function eqrRectsFirma(): array
 {
     // [left_css, top_css, ancho, alto] respecto del area de contenido
+    // Hasta 4 firmantes (cuadricula 2x2); las actas usan 1-3.
     $defs = [
         1 => [8,   150, 235, 80],
         2 => [268, 150, 235, 80],
-        3 => [138, 290, 235, 80],
+        3 => [8,   290, 235, 80],
+        4 => [268, 290, 235, 80],
     ];
     $out = [];
     foreach ($defs as $n => [$l, $t, $w, $h]) {
@@ -60,22 +62,6 @@ function eqrEtiquetasFirma(string $tipo): array
         'salida'     => [1 => 'SOLICITA — CUSTODIO DEL EQUIPO', 2 => 'AUTORIZA — JEFE INMEDIATO'],
         default => [],
     };
-}
-
-/** Data URI del QR de verificacion del tramite. */
-function eqrQrTramite(string $codigo): string
-{
-    $base = trim(getConfig('eqr_url_base'));
-    $contenido = $base !== ''
-        ? rtrim($base, '/') . '/verificar.php?c=' . rawurlencode($codigo)
-        : 'Tramite ' . $codigo;
-    $opts = new QROptions([
-        'outputType' => QROutputInterface::GDIMAGE_PNG,
-        'scale' => 3,
-        'imageBase64' => true,
-        'eccLevel' => \chillerlan\QRCode\Common\EccLevel::M,
-    ]);
-    return (new QRCode($opts))->render($contenido);
 }
 
 /** Carpeta del acta de un tramite (fuera de la carpeta publica). */
@@ -301,9 +287,8 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
     <p style="font-size:8pt; color:#444; text-align:justify;">
         Trámite Nro. <strong><?= $e($tramite['codigo']) ?></strong>.
         Las firmas electrónicas de este documento se estampan por actualización incremental
-        en los recuadros reservados a continuación, en el orden establecido. La autenticidad
-        del acta puede comprobarse consultando el código del trámite en el sistema de
-        formularios institucionales.
+        en los recuadros reservados a continuación, en el orden establecido, y se validan
+        únicamente en FirmaEC.
     </p>
     <?= $cajas ?>
 </div>

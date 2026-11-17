@@ -114,21 +114,6 @@ ob_start();
 </ul>
 </div>
 
-<!-- FIRMAS -->
-<div class="seccion">Suscripciones</div>
-<table class="firmas-table">
-    <tr><td colspan="2" class="firma-header">Suscripciones de la institucion solicitante</td></tr>
-    <tr>
-        <td style="height:70px;"><div class="firma-linea"><strong>Solicitado por:</strong><br>f. Solicitante<br>Nombre: <?= $d['nombre_completo'] ?><br>C.C.: <?= $d['cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
-        <td><div class="firma-linea"><strong>Autorizado por:</strong><br>f. Director/Coordinador/Jefe de Area<br>Nombre: <?= $d['firma_inst_nombre'] ?><br>C.C.: <?= $d['firma_inst_cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
-    </tr>
-    <tr><td colspan="2" class="firma-header">Suscripciones de ARCONEL</td></tr>
-    <tr>
-        <td style="height:70px;"><div class="firma-linea"><strong>Autorizado por:</strong><br>f. Director/Coordinador/Jefe de Area duena de la informacion<br>Nombre: <?= $d['firma_area_nombre'] ?><br>C.C.: <?= $d['firma_area_cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
-        <td><div class="firma-linea"><strong>Autorizado por:</strong><br>Director de Tecnologias de la Informacion y Comunicacion<br>Nombre: <?= $d['firma_dtic_nombre'] ?><br>C.C.: <?= $d['firma_dtic_cedula'] ?><br>Fecha: <?= $fecha ?></div></td>
-    </tr>
-</table>
-
 <!-- DOCUMENTOS RESPALDO -->
 <div class="seccion">Documentos de respaldo (uso interno de la DTIC)</div>
 <table class="dt">
@@ -136,6 +121,8 @@ ob_start();
     <tr><td class="lb">Nro. oficio/memorando autorizacion:</td><td><?= $d['nro_oficio_autorizacion'] ?></td></tr>
 </table>
 
+
+<?= $paginaFirmasHtml ?? '' ?>
 
 </body>
 </html>

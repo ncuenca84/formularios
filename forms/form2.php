@@ -26,7 +26,7 @@ renderHeader($config, $titulo);
                     <li>Registre los datos de la <strong>autoridad</strong> de esa entidad y de la <strong>persona que usará el acceso</strong> (solicitante).</li>
                     <li>En <strong>información técnica</strong> indique el sistema o servicio al que necesita acceder y el rol requerido.</li>
                     <li>Complete los <strong>datos de los firmantes</strong> que autorizarán la solicitud.</li>
-                    <li>Genere el PDF, fírmelo con <strong>FirmaEC</strong> y envíelo al correo <strong>soporte@arconel.gob.ec</strong>.</li>
+                    <li>Presione <strong>"Continuar y firmar en línea"</strong>: usted firmará ahí mismo con su .p12 y luego, en orden y por correo, firmarán el director de su entidad, el área responsable de la ARCONEL y la Dirección TIC. Al completarse, el documento les llega a todos. <strong>No necesita enviar nada manualmente.</strong></li>
                 </ol>
             </div>
 
@@ -223,6 +223,11 @@ renderHeader($config, $titulo);
                                     <label class="form-label">Cargo</label>
                                     <input type="text" name="firma_entidad_cargo" class="form-control" placeholder="Ej: Director General">
                                 </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+                                    <input type="email" name="firma_entidad_correo" class="form-control" required placeholder="Ej: director@entidad.gob.ec">
+                                    <small class="text-muted">Ahí le llegará su enlace de firma.</small>
+                                </div>
                             </div>
                         </div>
 
@@ -241,6 +246,11 @@ renderHeader($config, $titulo);
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label">Cargo</label>
                                     <input type="text" name="firma_area_cargo" class="form-control" placeholder="Ej: Director de Regulación">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+                                    <input type="email" name="firma_area_correo" class="form-control" required placeholder="Ej: nombre.apellido@arconel.gob.ec">
+                                    <small class="text-muted">Ahí le llegará su enlace de firma.</small>
                                 </div>
                             </div>
                         </div>
@@ -268,7 +278,7 @@ renderHeader($config, $titulo);
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted"><i class="bi bi-info-circle"></i> La entidad solicitante deberá notificar a la ARCONEL el cambio del usuario solicitante.</small>
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-file-earmark-pdf"></i> Generar Solicitud PDF
+                                <i class="bi bi-pen"></i> Continuar y firmar en línea
                             </button>
                         </div>
                     </form>

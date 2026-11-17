@@ -88,53 +88,7 @@ ob_start();
 </ul>
 </div>
 
-<!-- FIRMAS (4 secciones) -->
-<div class="seccion">Suscripciones</div>
-<table class="firmas-table">
-    <tr><td colspan="2" class="firma-header">Suscripciones de la entidad solicitante</td></tr>
-    <tr>
-        <td style="height:80px;">
-            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de las obligaciones que asumo con la presente solicitud.</p>
-            <div class="firma-linea">
-                <strong>f. Solicitante</strong><br>
-                Nombre: <?= $d['solicitante_nombres'] ?> <?= $d['solicitante_apellidos'] ?><br>
-                C.C.: <?= $d['solicitante_nro_doc'] ?><br>
-                Fecha: <?= $fecha ?>
-            </div>
-        </td>
-        <td>
-            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
-            <div class="firma-linea">
-                <strong>f. Representante Legal/Director/Coordinador/Jefe de Area de la entidad solicitante</strong><br>
-                Nombre: <?= $d['firma_entidad_nombre'] ?><br>
-                C.C.: <?= $d['firma_entidad_cedula'] ?><br>
-                Fecha: <?= $fecha ?>
-            </div>
-        </td>
-    </tr>
-    <tr><td colspan="2" class="firma-header">Suscripciones de la ARCONEL</td></tr>
-    <tr>
-        <td style="height:80px;">
-            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
-            <div class="firma-linea">
-                <strong>f. Director/Coordinador de Area funcional del Sistema/Servicio</strong><br>
-                Nombre: <?= $d['firma_area_nombre'] ?><br>
-                C.C.: <?= $d['firma_area_cedula'] ?><br>
-                Fecha: <?= $fecha ?>
-            </div>
-        </td>
-        <td>
-            <p style="font-size:7.5pt;text-align:justify;">Declaro conocer y hacerme cargo de los compromisos que asumo al autorizar la presente solicitud.</p>
-            <div class="firma-linea">
-                <strong>f. Director de Tecnologias de la Informacion y Comunicacion</strong><br>
-                Nombre: <?= $d['firma_dtic_nombre'] ?><br>
-                C.C.: <?= $d['firma_dtic_cedula'] ?><br>
-                Fecha: <?= $fecha ?>
-            </div>
-        </td>
-    </tr>
-</table>
-
+<?= $paginaFirmasHtml ?? '' ?>
 
 </body>
 </html>

@@ -141,35 +141,7 @@ ob_start();
 
 <p class="tx">Las partes establecen que la fecha de suscripcion del presente Acuerdo es la fecha de la ultima firma electronica estampada al pie del presente instrumento.</p>
 
-<!-- FIRMAS -->
-<table class="firmas">
-    <tr>
-        <td><strong>POR EL RECEPTOR</strong></td>
-        <td><strong>POR LA ARCONEL</strong></td>
-    </tr>
-    <tr>
-        <td style="height:60px;"></td>
-        <td style="height:60px;"></td>
-    </tr>
-    <tr>
-        <td>
-            <div class="firma-linea">
-                Nombres: <?= $nombreReceptor ?><br>
-                CI: <?= $cedulaReceptor ?><br>
-                Cargo: <?= $cargoReceptor ?><br>
-                <?= $institucionReceptor ?>
-            </div>
-        </td>
-        <td>
-            <div class="firma-linea">
-                Nombres del OSI: <?= $oficial ?><br>
-                CI: <?= $cedulaOficial ?><br>
-                Oficial de Seguridad de la Informacion<br>
-                Agencia de Regulacion y Control de Electricidad
-            </div>
-        </td>
-    </tr>
-</table>
+<?= $paginaFirmasHtml ?? '' ?>
 
 </body>
 </html>

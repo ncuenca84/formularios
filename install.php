@@ -98,6 +98,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $resultado[] = $l;
         }
 
+        // Firma en linea de formularios (tablas fir_*, idempotente)
+        require_once __DIR__ . '/config/fir_schema.php';
+        foreach (firMigrar($db) as $l) {
+            $resultado[] = $l;
+        }
+
         // Insertar configuracion por defecto
         $defaults = [
             'nombre_institucion' => 'AGENCIA DE REGULACION Y CONTROL DE ELECTRICIDAD',

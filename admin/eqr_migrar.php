@@ -7,7 +7,8 @@ $error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     eqrCsrfVerificar();
     try {
-        $log = eqrMigrar(getDB());
+        require_once __DIR__ . '/../config/fir_schema.php';
+        $log = array_merge(eqrMigrar(getDB()), firMigrar(getDB()));
     } catch (Throwable $ex) {
         $error = $ex->getMessage();
     }

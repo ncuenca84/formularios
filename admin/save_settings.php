@@ -128,9 +128,11 @@ try {
             $campos = [
                 'osi_nombre',
                 'osi_cedula',
+                'osi_correo',
                 'dtic_nombre',
                 'dtic_cedula',
                 'dtic_cargo',
+                'dtic_correo',
             ];
             $stmt = $db->prepare("INSERT INTO configuracion (clave, valor) VALUES (?, ?)
                                   ON DUPLICATE KEY UPDATE valor = VALUES(valor)");

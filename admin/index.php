@@ -360,6 +360,12 @@ try {
                                 <input type="text" name="osi_cedula" class="form-control"
                                        value="<?= htmlspecialchars($config['osi_cedula'] ?? '') ?>">
                             </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label fw-bold">Correo institucional</label>
+                                <input type="email" name="osi_correo" class="form-control"
+                                       value="<?= htmlspecialchars($config['osi_correo'] ?? '') ?>">
+                                <small class="text-muted">Ahi le llega su enlace de firma en linea del Formulario 1.</small>
+                            </div>
                         </div>
                     </div>
 
@@ -381,6 +387,12 @@ try {
                                 <label class="form-label fw-bold">Cargo</label>
                                 <input type="text" name="dtic_cargo" class="form-control"
                                        value="<?= htmlspecialchars($config['dtic_cargo'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label fw-bold">Correo institucional</label>
+                                <input type="email" name="dtic_correo" class="form-control"
+                                       value="<?= htmlspecialchars($config['dtic_correo'] ?? '') ?>">
+                                <small class="text-muted">Ahi le llega su enlace de firma en linea (Formularios 2 y 4).</small>
                             </div>
                         </div>
                     </div>

@@ -116,6 +116,7 @@ function eqrHeader(string $titulo, string $activo = ''): void
         'contratos' => ['eqr_contratos.php', 'bi-file-earmark-ruled', 'Contratos'],
         'equipos'   => ['eqr_equipos.php', 'bi-laptop', 'Equipos'],
         'tramites'  => ['eqr_tramites.php', 'bi-pen', 'Trámites'],
+        'documentos' => ['eqr_documentos.php', 'bi-file-earmark-check', 'Formularios en firma'],
         'importar'  => ['eqr_importar.php', 'bi-upload', 'Importar CSV'],
         'pagos'     => ['eqr_pagos.php', 'bi-cash-coin', 'Actas y pagos'],
         'config'    => ['eqr_config.php', 'bi-gear', 'Configuración'],
