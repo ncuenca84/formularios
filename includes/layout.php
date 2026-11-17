@@ -100,3 +100,66 @@ function renderFooterHtml(string $nombreInstitucion): void
     </html>
     <?php
 }
+
+/**
+ * Guarda en sesion los errores de validacion y lo que el usuario tecleo,
+ * para que el formulario los muestre y RELLENE los campos al volver.
+ */
+function formGuardarErrores(array $errores, array $post): void
+{
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+    unset($post['csrf']);
+    $_SESSION['form_err'] = $errores;
+    $_SESSION['form_old'] = $post;
+}
+
+/**
+ * Muestra los errores pendientes (si los hay) y rellena el formulario con lo
+ * que el usuario habia tecleado. Llamar UNA vez dentro de la pagina del
+ * formulario, despues del encabezado. Limpia la sesion al usarse.
+ */
+function renderFormErroresYPrevios(): void
+{
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+    $errores = $_SESSION['form_err'] ?? [];
+    $old = $_SESSION['form_old'] ?? [];
+    unset($_SESSION['form_err'], $_SESSION['form_old']);
+    if (!$errores && !$old) { return; }
+
+    if ($errores) {
+        echo '<div class="container"><div class="row justify-content-center"><div class="col-lg-9">';
+        echo '<div class="alert alert-danger"><h6 class="fw-bold mb-2">';
+        echo '<i class="bi bi-exclamation-triangle-fill"></i> Revise lo siguiente (sus datos se conservaron):</h6><ul class="mb-0">';
+        foreach ($errores as $e) {
+            echo '<li>' . htmlspecialchars((string)$e, ENT_QUOTES, 'UTF-8') . '</li>';
+        }
+        echo '</ul></div></div></div></div>';
+    }
+
+    if ($old) {
+        $json = json_encode($old, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var OLD = <?= $json ?>;
+    var form = document.querySelector('form');
+    if (!form) { return; }
+    Object.keys(OLD).forEach(function (nombre) {
+        if (nombre === 'tipo_formulario') { return; }
+        var valor = OLD[nombre];
+        var els = form.querySelectorAll('[name="' + nombre + '"]');
+        els.forEach(function (el) {
+            if (el.type === 'radio' || el.type === 'checkbox') {
+                el.checked = (el.value === valor);
+                if (el.checked) { el.dispatchEvent(new Event('change', { bubbles: true })); }
+            } else {
+                el.value = valor;
+                if (el.tagName === 'SELECT') { el.dispatchEvent(new Event('change', { bubbles: true })); }
+            }
+        });
+    });
+});
+</script>
+        <?php
+    }
+}

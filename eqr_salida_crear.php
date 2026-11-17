@@ -114,23 +114,7 @@ if (!$errores) {
     }
 }
 
-// ------------------------------------------------ pagina de errores
-$config = getAllConfig();
-renderHeadHtml('Salida de equipo', $config['color_primario'] ?? '#003366');
-renderHeader($config, 'Autorización de Salida de Equipo');
-?>
-<div class="container mb-5">
-    <div class="row justify-content-center"><div class="col-lg-8">
-        <div class="alert alert-danger">
-            <h6 class="fw-bold"><i class="bi bi-exclamation-triangle"></i> No se pudo crear la autorización</h6>
-            <ul class="mb-0">
-                <?php foreach ($errores as $er): ?>
-                    <li><?= htmlspecialchars($er, ENT_QUOTES, 'UTF-8') ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-        <a href="javascript:history.back()" class="btn btn-primary"><i class="bi bi-arrow-left"></i>
-            Volver al formulario (sus datos se conservan)</a>
-    </div></div>
-</div>
-<?php renderFooterHtml($config['nombre_institucion'] ?? 'ARCONEL');
+// ---------------------------------- errores: volver al formulario con todo
+formGuardarErrores($errores, $_POST);
+header('Location: forms/form7.php');
+exit;

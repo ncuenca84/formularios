@@ -1,6 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/eqr/fir_flujo.php';
 
 use Dompdf\Dompdf;
@@ -42,9 +44,9 @@ if ($tipoFormulario >= 1 && $tipoFormulario <= 8 && $tipoFormulario !== 7) {
 }
 
 if (!empty($errores)) {
-    $errorMsg = implode('\n', array_map(fn($e) => addslashes($e), $errores));
-    $formNum = $tipoFormulario;
-    echo "<script>alert('{$errorMsg}');window.location.href='forms/form{$formNum}.php';</script>";
+    // Los errores se muestran EN el formulario y lo tecleado se conserva.
+    formGuardarErrores($errores, $_POST);
+    echo "<script>window.location.href='forms/form{$tipoFormulario}.php';</script>";
     exit;
 }
 
@@ -113,8 +115,8 @@ if ($firmantes) {
         echo "<script>window.location.href='/firmar.php?t={$r['token']}';</script>";
         exit;
     } catch (Throwable $ex) {
-        $msg = addslashes('No se pudo crear el documento: ' . $ex->getMessage());
-        echo "<script>alert('{$msg}');window.location.href='forms/form{$tipoFormulario}.php';</script>";
+        formGuardarErrores(['No se pudo crear el documento: ' . $ex->getMessage()], $_POST);
+        echo "<script>window.location.href='forms/form{$tipoFormulario}.php';</script>";
         exit;
     }
 }

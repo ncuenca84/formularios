@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/layout.php';
 
@@ -12,6 +12,7 @@ $osiCedula = $config['osi_cedula'] ?? '1713046827';
 
 renderHeadHtml($titulo, $colorPrimario);
 renderHeader($config, $titulo);
+renderFormErroresYPrevios();
 ?>
 
 <div class="container mb-5">

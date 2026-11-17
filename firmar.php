@@ -114,6 +114,7 @@ if (eqrIpBloqueada($db)) {
             <strong><?= $e($firma['cedula']) ?></strong>.</p>
     </div>
 
+    <?php if ((int)$firma['orden'] > 1): // quien INICIA el tramite no rechaza ?>
     <div id="panelRechazo" style="display:none">
         <h2>¿No está de acuerdo?</h2>
         <p class="nota">Si no corresponde firmar, puede rechazar indicando el motivo.
@@ -124,6 +125,7 @@ if (eqrIpBloqueada($db)) {
         </div>
         <button id="btnRechazar" type="button">Rechazar</button>
     </div>
+    <?php endif; ?>
 
     <h2>Documento</h2>
     <iframe id="marco" title="Documento en PDF" data-src="firmar_acta.php?t=<?= $e($token) ?>"></iframe>

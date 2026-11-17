@@ -100,6 +100,9 @@ switch ($a) {
     case 'rechazar':
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { responder(['ok' => false, 'mensaje' => 'POST requerido'], 405); }
         if ($problema !== null) { responder(['ok' => false, 'mensaje' => $problema], 400); }
+        if ((int)$firma['orden'] === 1) {
+            responder(['ok' => false, 'mensaje' => 'Quien inicia el trámite no puede rechazarlo. Si ya no corresponde, simplemente no lo firme y pida su anulación.'], 400);
+        }
         $body = json_decode((string)file_get_contents('php://input'), true) ?: [];
         $motivo = trim((string)($body['motivo'] ?? ''));
         if (mb_strlen($motivo) < 5) { responder(['ok' => false, 'mensaje' => 'Escriba el motivo del rechazo.'], 400); }

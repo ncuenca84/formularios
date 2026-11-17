@@ -15,6 +15,7 @@ $dominio = getConfig('eqr_dominio_correo', 'arconel.gob.ec');
 
 renderHeadHtml($titulo, $colorPrimario);
 renderHeader($config, $titulo);
+renderFormErroresYPrevios();
 ?>
 
 <div class="container mb-5">

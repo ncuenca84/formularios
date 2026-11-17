@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/layout.php';
 
@@ -13,6 +13,7 @@ $dticCargo = $config['dtic_cargo'] ?? 'Directora de Tecnologias de la Informacio
 
 renderHeadHtml($titulo, $colorPrimario);
 renderHeader($config, $titulo);
+renderFormErroresYPrevios();
 ?>
 
 <div class="container mb-5">
