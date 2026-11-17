@@ -70,6 +70,10 @@ function firMigrar(PDO $db): array
         $log[] = 'Columna eqr_notificaciones.documento_id agregada.';
     }
 
+    // Reparar enlaces perdidos documento<->solicitud (comparten el codigo)
+    $db->exec("UPDATE fir_documentos d JOIN solicitudes s ON s.codigo = d.codigo
+               SET d.solicitud_id = s.id WHERE d.solicitud_id IS NULL");
+
     // Regularizar el estado de solicitudes segun sus circuitos de firma
     $db->exec("UPDATE solicitudes s JOIN fir_documentos d ON d.solicitud_id = s.id
                SET s.estado = 'aprobada' WHERE d.estado = 'completado' AND s.estado = 'pendiente'");

@@ -31,6 +31,25 @@ $nombresFormularios = [
 $solicitudes = [];
 try {
     $db = getDB();
+
+    // Sincronizacion ligera: el estado de cada solicitud refleja su circuito
+    // de firmas (completado = aprobada; rechazado/anulado = rechazada).
+    // Idempotente y barata; si las tablas fir_/eqr_ no existen, se ignora.
+    try {
+        $db->exec("UPDATE fir_documentos d JOIN solicitudes s ON s.codigo = d.codigo
+                   SET d.solicitud_id = s.id WHERE d.solicitud_id IS NULL");
+        $db->exec("UPDATE solicitudes s JOIN fir_documentos d ON d.solicitud_id = s.id
+                   SET s.estado = 'aprobada' WHERE d.estado = 'completado' AND s.estado = 'pendiente'");
+        $db->exec("UPDATE solicitudes s JOIN fir_documentos d ON d.solicitud_id = s.id
+                   SET s.estado = 'rechazada' WHERE d.estado IN ('rechazado','anulado') AND s.estado = 'pendiente'");
+        $db->exec("UPDATE solicitudes s JOIN eqr_tramites t ON t.solicitud_id = s.id
+                   SET s.estado = 'aprobada' WHERE t.tipo = 'salida' AND t.estado = 'completado' AND s.estado = 'pendiente'");
+        $db->exec("UPDATE solicitudes s JOIN eqr_tramites t ON t.solicitud_id = s.id
+                   SET s.estado = 'rechazada' WHERE t.tipo = 'salida' AND t.estado IN ('rechazado','anulado') AND s.estado = 'pendiente'");
+    } catch (Throwable $e) {
+        // modulos de firma aun sin migrar
+    }
+
     $stmt = $db->query("SELECT * FROM solicitudes ORDER BY created_at DESC LIMIT 50");
     $solicitudes = $stmt->fetchAll();
 } catch (Exception $e) {
