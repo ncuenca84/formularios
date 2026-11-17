@@ -57,6 +57,7 @@ function eqrEtiquetasFirma(string $tipo): array
         'asignacion' => [1 => 'ENTREGA MATERIAL POR LA DTIC', 2 => 'RECIBE COMO USUARIO FINAL'],
         'traspaso'   => [1 => 'ADMINISTRADOR DEL CONTRATO (DTIC)', 2 => 'ENTREGA — CUSTODIO ANTERIOR', 3 => 'RECIBE — NUEVO CUSTODIO'],
         'devolucion' => [1 => 'RECIBE POR LA DTIC (ADMINISTRADOR DEL CONTRATO)', 2 => 'ENTREGA — CUSTODIO QUE DEVUELVE'],
+        'salida'     => [1 => 'SOLICITA — CUSTODIO DEL EQUIPO', 2 => 'AUTORIZA — JEFE INMEDIATO'],
         default => [],
     };
 }
@@ -133,6 +134,10 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
                      array $config, array $meta, string $logoDataUri, string $logoSecundarioDataUri): string
 {
     $tipo = $tramite['tipo'];
+    if ($tipo === 'salida') {
+        return eqrActaSalidaHtml($tramite, $equipo, $contrato, $firmantes, $config, $meta,
+                                 $logoDataUri, $logoSecundarioDataUri);
+    }
     $titulos = [
         'asignacion' => 'ACTA DE ASIGNACIÓN, ENTREGA Y RECEPCIÓN DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO',
         'traspaso'   => 'ACTA DE TRASPASO DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO',
@@ -299,6 +304,148 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
         en los recuadros reservados a continuación, en el orden establecido. La autenticidad
         del acta puede comprobarse consultando el código del trámite en el sistema de
         formularios institucionales.
+    </p>
+    <?= $cajas ?>
+</div>
+
+</body>
+</html>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Acta de SALIDA de equipo (formulario 7), basada en templates/pdf_form7.php.
+ * Dos firmantes: custodio (solicita) y jefe inmediato (autoriza).
+ */
+function eqrActaSalidaHtml(array $tramite, array $equipo, array $contrato, array $firmantes,
+                           array $config, array $meta, string $logoDataUri, string $logoSecundarioDataUri): string
+{
+    $metaDoc = $meta;
+    $metaDoc['titulo_encabezado'] = 'AUTORIZACIÓN DE SALIDA DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO';
+    $encabezado = renderPdfEncabezadoInstitucional($config, $metaDoc, $logoDataUri, $logoSecundarioDataUri);
+    $colorPrimario = $config['color_primario'] ?? '#003366';
+    $e = fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
+
+    $fmtFecha = function ($f) {
+        $ts = strtotime((string)$f);
+        return ($f && $ts) ? date('d/m/Y', $ts) : (string)$f;
+    };
+    $retorno = $tramite['salida_fecha_retorno'] ? $fmtFecha($tramite['salida_fecha_retorno']) : 'Indefinida';
+
+    // recuadros de firma (2) en la ultima pagina
+    $rects = eqrRectsFirma();
+    $etiquetas = eqrEtiquetasFirma('salida');
+    $cajas = '';
+    foreach ($firmantes as $f) {
+        $n = (int)$f['orden'];
+        $c = $rects[$n]['css'];
+        $cajas .= sprintf(
+            '<div style="position:absolute; left:%.2fpt; top:%.2fpt; width:%.2fpt; height:%.2fpt;
+                 border:0.8pt solid #777;"></div>
+             <div style="position:absolute; left:%.2fpt; top:%.2fpt; width:%.2fpt; text-align:center;
+                 font-size:7.5pt; font-weight:bold; color:#333;">%s</div>
+             <div style="position:absolute; left:%.2fpt; top:%.2fpt; width:%.2fpt; text-align:center;
+                 font-size:8pt; color:#333;">%s<br>C.C. %s%s</div>',
+            $c['left'], $c['top'], $c['w'], $c['h'],
+            $c['left'], $c['top'] + $c['h'] + 4, $c['w'], $e($etiquetas[$n] ?? ''),
+            $c['left'], $c['top'] + $c['h'] + 16, $c['w'],
+            $e($f['nombre']), $e($f['cedula']),
+            $f['cargo'] !== '' ? '<br>' . $e($f['cargo']) : ''
+        );
+    }
+
+    ob_start();
+    ?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { margin: 42mm 15mm 28mm 15mm; }
+    body { font-family: 'Helvetica', sans-serif; font-size: 9pt; color: #333; line-height: 1.4; }
+    .seccion { color: <?= $colorPrimario ?>; font-size: 9pt; font-weight: bold; border-bottom: 2px solid <?= $colorPrimario ?>; padding-bottom: 2px; margin: 10px 0 5px; }
+    .dt { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .dt td { padding: 3px 7px; border: 1px solid #ddd; font-size: 8.5pt; }
+    .dt .lb { background: #eef2f7; font-weight: 600; color: <?= $colorPrimario ?>; width: 30%; }
+    .intro { text-align: justify; font-size: 8.8pt; margin-bottom: 6px; }
+    .compromisos { font-size: 8pt; text-align: justify; margin: 6px 0; padding: 6px 6px 6px 2px; background: #f8f9fa; border-left: 3px solid <?= $colorPrimario ?>; }
+    .compromisos li { margin-bottom: 3px; }
+    .codigo-tramite { text-align: right; font-size: 8pt; color: #555; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<?= $encabezado ?>
+
+<div class="codigo-tramite">Trámite Nro. <strong><?= $e($tramite['codigo']) ?></strong> ·
+    Contrato <?= $e($contrato['numero']) ?></div>
+
+<p class="intro">Mediante el presente documento se registra y autoriza la salida del equipo de cómputo en
+arrendamiento detallado a continuación fuera de las instalaciones de la Agencia de Regulación y Control de
+Electricidad — ARCONEL, conforme a lo previsto en el acta de asignación, entrega y recepción del equipo.
+El equipo se encuentra bajo la custodia del usuario solicitante, quien debe contar con esta autorización
+firmada antes de retirarlo.</p>
+
+<div class="seccion">1. DATOS DEL CUSTODIO (USUARIO FINAL)</div>
+<table class="dt">
+    <tr><td class="lb">Apellidos y nombres:</td><td colspan="3"><?= $e($tramite['entrega_nombre']) ?></td></tr>
+    <tr><td class="lb">Cédula:</td><td><?= $e($tramite['entrega_cedula']) ?></td>
+        <td class="lb">Correo institucional:</td><td><?= $e($tramite['entrega_correo']) ?></td></tr>
+    <tr><td class="lb">Cargo:</td><td><?= $e($tramite['entrega_cargo']) ?></td>
+        <td class="lb">Coordinación / Dirección:</td><td><?= $e($tramite['entrega_area']) ?></td></tr>
+</table>
+
+<div class="seccion">2. DATOS DEL EQUIPO</div>
+<table class="dt">
+    <tr><td class="lb">Código interno:</td><td><?= $e($equipo['codigo_interno']) ?></td>
+        <td class="lb">Tipo:</td><td><?= $e($equipo['tipo']) ?></td></tr>
+    <tr><td class="lb">Marca / Modelo:</td><td><?= $e($equipo['marca']) ?> <?= $e($equipo['modelo']) ?></td>
+        <td class="lb">Serie:</td><td><?= $e($equipo['serie']) ?></td></tr>
+    <tr><td class="lb">Cargador:</td><td><?= !empty($equipo['cargador_entregado']) ? 'Sí' : 'No' ?></td>
+        <td class="lb">Otros accesorios:</td><td><?= $e($tramite['accesorios']) ?></td></tr>
+    <?php if (trim((string)$tramite['observaciones']) !== ''): ?>
+    <tr><td class="lb">Observaciones:</td><td colspan="3"><?= $e($tramite['observaciones']) ?></td></tr>
+    <?php endif; ?>
+</table>
+
+<div class="seccion">3. MOTIVO Y PERÍODO DE LA SALIDA</div>
+<table class="dt">
+    <tr><td class="lb">Motivo de la salida:</td><td colspan="3"><?= $e($tramite['salida_motivo']) ?></td></tr>
+    <tr><td class="lb">Fecha de salida:</td><td><?= $e($fmtFecha($tramite['salida_fecha'])) ?></td>
+        <td class="lb">Fecha estimada de retorno:</td><td><?= $e($retorno) ?></td></tr>
+    <tr><td class="lb">Lugar donde estará el equipo:</td><td colspan="3"><?= $e($tramite['salida_lugar']) ?></td></tr>
+</table>
+
+<div class="seccion">4. COMPROMISOS DEL USUARIO</div>
+<div class="compromisos">
+<ul style="margin:0;padding-left:15px;">
+    <li>Utilizar el equipo exclusivamente para el cumplimiento de sus actividades institucionales.</li>
+    <li>Mantener el equipo bajo condiciones adecuadas de cuidado, custodia y conservación, evitando acciones que puedan ocasionar daño, pérdida o afectación a su funcionamiento.</li>
+    <li>No dejar el equipo desatendido en vehículos, lugares públicos o zonas vulnerables que representen un riesgo previsible de pérdida, hurto, robo o daño.</li>
+    <li>Cumplir las políticas institucionales de seguridad de la información, buenas prácticas informáticas y normativas sobre confidencialidad y protección de datos vigentes en la ARCONEL.</li>
+    <li>No abrir, reparar, modificar el hardware ni alterar sellos de garantía. Toda atención técnica deberá canalizarse formal y exclusivamente a través de la DTIC.</li>
+    <li>En caso de falla o daño del equipo, reportar inmediatamente la novedad a la DTIC mediante la Mesa de Ayuda (soporte@arconel.gob.ec) y entregar el equipo para su revisión.</li>
+    <li>En caso de producirse un siniestro de robo o asalto, notificar de forma inmediata a la DTIC y a su jefe inmediato, presentar la denuncia correspondiente ante la Fiscalía General del Estado o autoridad competente dentro de los plazos legales, y remitir copia certificada de la misma.</li>
+    <li>Devolver el equipo y la totalidad de sus accesorios a la DTIC al finalizar el período de salida, en condiciones físicas y operativas equivalentes a las registradas, salvo el desgaste normal derivado de su uso adecuado.</li>
+</ul>
+</div>
+
+<div class="seccion">5. ACEPTACIÓN Y AUTORIZACIÓN</div>
+<p class="intro">El custodio declara conocer y aceptar los compromisos detallados en el presente documento y
+asume la responsabilidad del cuidado, buen uso, custodia y conservación del equipo mientras permanezca
+fuera de las instalaciones de la ARCONEL. El jefe inmediato autoriza la salida del equipo para el motivo y
+período indicados. Esta autorización no modifica las responsabilidades establecidas en el acta de
+asignación, entrega y recepción del equipo ni la custodia registrada en el sistema.</p>
+
+<!-- ============ ULTIMA PAGINA: FIRMAS ELECTRONICAS ============ -->
+<div style="page-break-before: always;">
+    <div class="seccion">6. FIRMAS ELECTRÓNICAS</div>
+    <p style="font-size:8pt; color:#444; text-align:justify;">
+        Trámite Nro. <strong><?= $e($tramite['codigo']) ?></strong>.
+        Las firmas electrónicas de este documento se estampan por actualización incremental
+        en los recuadros reservados a continuación, en el orden establecido: primero el custodio
+        que solicita la salida y luego el jefe inmediato que la autoriza.
     </p>
     <?= $cajas ?>
 </div>

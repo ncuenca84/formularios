@@ -51,20 +51,22 @@ function eqrCsrfVerificar(): void
 }
 
 /** Valida una cedula ecuatoriana (10 digitos, modulo 10). */
-function eqrValidarCedula(string $c): bool
-{
-    if (!preg_match('/^\d{10}$/', $c)) { return false; }
-    $prov = (int)substr($c, 0, 2);
-    if (($prov < 1 || $prov > 24) && $prov !== 30) { return false; }
-    if ((int)$c[2] > 5) { return false; }
-    $suma = 0;
-    for ($i = 0; $i < 9; $i++) {
-        $d = (int)$c[$i];
-        if ($i % 2 === 0) { $d *= 2; if ($d > 9) { $d -= 9; } }
-        $suma += $d;
+if (!function_exists('eqrValidarCedula')) {
+    function eqrValidarCedula(string $c): bool
+    {
+        if (!preg_match('/^\d{10}$/', $c)) { return false; }
+        $prov = (int)substr($c, 0, 2);
+        if (($prov < 1 || $prov > 24) && $prov !== 30) { return false; }
+        if ((int)$c[2] > 5) { return false; }
+        $suma = 0;
+        for ($i = 0; $i < 9; $i++) {
+            $d = (int)$c[$i];
+            if ($i % 2 === 0) { $d *= 2; if ($d > 9) { $d -= 9; } }
+            $suma += $d;
+        }
+        $ver = (10 - ($suma % 10)) % 10;
+        return $ver === (int)$c[9];
     }
-    $ver = (10 - ($suma % 10)) % 10;
-    return $ver === (int)$c[9];
 }
 
 /** Registra una accion en la bitacora (solo inserciones). */

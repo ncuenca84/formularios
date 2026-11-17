@@ -21,6 +21,24 @@ date_default_timezone_set('America/Guayaquil');
 
 const EQR_MAX_INTENTOS_FIRMA = 8;
 
+/** Valida una cedula ecuatoriana (10 digitos, modulo 10). Compartida con el admin. */
+if (!function_exists('eqrValidarCedula')) {
+    function eqrValidarCedula(string $c): bool
+    {
+        if (!preg_match('/^\d{10}$/', $c)) { return false; }
+        $prov = (int)substr($c, 0, 2);
+        if (($prov < 1 || $prov > 24) && $prov !== 30) { return false; }
+        if ((int)$c[2] > 5) { return false; }
+        $suma = 0;
+        for ($i = 0; $i < 9; $i++) {
+            $d = (int)$c[$i];
+            if ($i % 2 === 0) { $d *= 2; if ($d > 9) { $d -= 9; } }
+            $suma += $d;
+        }
+        return ((10 - ($suma % 10)) % 10) === (int)$c[9];
+    }
+}
+
 /** Roles de firma por tipo de tramite: orden => [rol, prefijo de datos en el tramite]. */
 function eqrRolesTramite(string $tipo): array
 {
@@ -29,6 +47,7 @@ function eqrRolesTramite(string $tipo): array
         'traspaso'   => [1 => ['administrador', 'admin_contrato_'], 2 => ['custodio_anterior', 'entrega_'],
                          3 => ['nuevo_custodio', 'recibe_']],
         'devolucion' => [1 => ['administrador', 'admin_contrato_'], 2 => ['custodio', 'entrega_']],
+        'salida'     => [1 => ['custodio', 'entrega_'], 2 => ['jefe_inmediato', 'jefe_']],
         default => throw new InvalidArgumentException('Tipo de trámite no soportado.'),
     };
 }
@@ -108,6 +127,16 @@ function eqrCrearTramite(PDO $db, string $tipo, array $equipo, array $contrato,
         'estado_fisico_reportado' => $datos['estado_fisico_reportado'] ?? null,
         'accesorios' => $datos['accesorios'] ?? null,
         'observaciones' => $datos['observaciones'] ?? null,
+        // Solo salidas (formulario 7)
+        'jefe_cedula' => $datos['jefe_cedula'] ?? null,
+        'jefe_nombre' => $datos['jefe_nombre'] ?? null,
+        'jefe_correo' => $datos['jefe_correo'] ?? null,
+        'jefe_cargo' => $datos['jefe_cargo'] ?? null,
+        'salida_motivo' => $datos['salida_motivo'] ?? null,
+        'salida_fecha' => $datos['salida_fecha'] ?? null,
+        'salida_fecha_retorno' => $datos['salida_fecha_retorno'] ?? null,
+        'salida_lugar' => $datos['salida_lugar'] ?? null,
+        'solicitud_id' => $datos['solicitud_id'] ?? null,
         'creado_por' => $usuarioAdmin,
     ];
 
@@ -391,6 +420,11 @@ function eqrCerrarTramiteCompleto(PDO $db, int $tramiteId, string $actor): void
                             custodio_cedula = NULL, custodio_nombre = NULL, custodio_correo = NULL,
                             custodio_cargo = NULL, custodio_area = NULL WHERE id = ?")
                ->execute([(int)$t['equipo_id']]);
+        } elseif ($t['tipo'] === 'salida') {
+            // El custodio NO cambia: solo queda la marca de fuera de instalaciones
+            $db->prepare("UPDATE eqr_equipos SET fuera_instalaciones = 1,
+                            fecha_retorno_estimada = ? WHERE id = ?")
+               ->execute([$t['salida_fecha_retorno'] ?: null, (int)$t['equipo_id']]);
         }
         eqrFlujoBitacora($db, (int)$t['equipo_id'], $tramiteId, 'tramite_completado',
             ['codigo' => $t['codigo'], 'tipo' => $t['tipo']], $actor);
@@ -441,8 +475,8 @@ function eqrReenviarEnlace(PDO $db, array $tramite, string $actor): array
 {
     $firma = eqrFirmaPendiente($db, (int)$tramite['id']);
     if (!$firma) { return ['ok' => false, 'error' => 'No hay un firmante de turno en este trámite.']; }
-    if ((int)$firma['orden'] === 1) {
-        return ['ok' => false, 'error' => 'La primera firma es del administrador: fírmela desde el panel (Retomar).'];
+    if ($firma['rol'] === 'administrador') {
+        return ['ok' => false, 'error' => 'La firma pendiente es del administrador: fírmela desde el panel (Firmar como administrador).'];
     }
     $tk = eqrTokenNuevo($db, (int)$firma['id']);
     eqrFlujoBitacora($db, (int)$tramite['equipo_id'], (int)$tramite['id'], 'enlace_reenviado',
@@ -451,6 +485,88 @@ function eqrReenviarEnlace(PDO $db, array $tramite, string $actor): array
     return $r['ok']
         ? ['ok' => true, 'error' => null, 'correo' => $firma['correo']]
         : ['ok' => false, 'error' => $r['error'], 'correo' => $firma['correo']];
+}
+
+// =====================================================================
+//  Salida de equipo (formulario 7 publico)
+// =====================================================================
+
+/**
+ * Verifica el par cedula + codigo interno SIN revelar informacion de
+ * terceros. Devuelve el equipo si esta a nombre de esa cedula, o null.
+ */
+function eqrEquipoDeCustodio(PDO $db, string $cedula, string $codigo): ?array
+{
+    $cedula = preg_replace('/\D/', '', $cedula);
+    $codigo = strtoupper(trim($codigo));
+    if ($cedula === '' || $codigo === '') { return null; }
+    $stmt = $db->prepare("SELECT * FROM eqr_equipos
+                          WHERE codigo_interno = ? AND custodio_cedula = ? AND estado = 'asignado'");
+    $stmt->execute([$codigo, $cedula]);
+    return $stmt->fetch() ?: null;
+}
+
+/** ¿Hay una salida abierta (borrador o en firma) para el equipo? */
+function eqrSalidaAbierta(PDO $db, int $equipoId): bool
+{
+    $stmt = $db->prepare("SELECT 1 FROM eqr_tramites WHERE equipo_id = ? AND tipo = 'salida'
+                          AND estado IN ('borrador','en_firma') LIMIT 1");
+    $stmt->execute([$equipoId]);
+    return (bool)$stmt->fetch();
+}
+
+/**
+ * ¿Por que NO puede salir el equipo? (null = puede). Mensajes para el
+ * propio custodio, que ya demostro el par cedula+codigo.
+ */
+function eqrSalidaProblema(PDO $db, array $equipo): ?string
+{
+    if (!empty($equipo['fuera_instalaciones'])) {
+        return 'El equipo ya consta como fuera de las instalaciones. Si ya retornó, pida a la DTIC registrar el retorno antes de una nueva salida.';
+    }
+    if (eqrTramiteAbierto($db, (int)$equipo['id'])) {
+        return 'El equipo tiene un trámite de custodia en curso (asignación, traspaso o devolución). Debe cerrarse antes de autorizar una salida.';
+    }
+    if (eqrSalidaAbierta($db, (int)$equipo['id'])) {
+        return 'Ya existe una autorización de salida en trámite para este equipo. Revise su correo o pida a la DTIC reenviar el enlace de firma.';
+    }
+    return null;
+}
+
+/**
+ * Crea el tramite de SALIDA (formulario 7): tramite + acta + token del
+ * custodio para que firme de inmediato. Devuelve ['tramite_id'=>, 'token'=>].
+ */
+function eqrCrearSalida(PDO $db, array $equipo, array $contrato, array $datos, ?int $solicitudId): array
+{
+    $datos['solicitud_id'] = $solicitudId;
+    $tramiteId = eqrCrearTramite($db, 'salida', $equipo, $contrato, $datos,
+        'formulario7:' . $datos['entrega_cedula']);
+    $firma = eqrFirmaPendiente($db, $tramiteId);
+    $tk = eqrTokenNuevo($db, (int)$firma['id']);
+    return ['tramite_id' => $tramiteId, 'token' => $tk['token']];
+}
+
+/** Registra el retorno del equipo de una salida completada (boton del admin). */
+function eqrRegistrarRetorno(PDO $db, array $tramite, string $actor): void
+{
+    if ($tramite['tipo'] !== 'salida' || $tramite['estado'] !== 'completado'
+        || $tramite['salida_retorno_registrado'] !== null) {
+        throw new RuntimeException('Este trámite no tiene un retorno pendiente de registrar.');
+    }
+    $db->beginTransaction();
+    try {
+        $db->prepare("UPDATE eqr_tramites SET salida_retorno_registrado = NOW() WHERE id = ?")
+           ->execute([(int)$tramite['id']]);
+        $db->prepare("UPDATE eqr_equipos SET fuera_instalaciones = 0, fecha_retorno_estimada = NULL WHERE id = ?")
+           ->execute([(int)$tramite['equipo_id']]);
+        eqrFlujoBitacora($db, (int)$tramite['equipo_id'], (int)$tramite['id'], 'retorno_registrado',
+            ['codigo' => $tramite['codigo']], $actor);
+        $db->commit();
+    } catch (Throwable $ex) {
+        $db->rollBack();
+        throw $ex;
+    }
 }
 
 /** Descarta un borrador (sin firmas): borra tramite, firmas y acta. */

@@ -1,11 +1,17 @@
 <?php
-session_start();
-require_once __DIR__ . '/../includes/functions.php';
+/**
+ * Formulario 7 — Autorizacion de salida de equipo de computo EN ARRENDAMIENTO.
+ * Nuevo flujo (Fase 3): el equipo se toma del inventario (cedula + codigo),
+ * y la autorizacion se firma EN LINEA: primero el custodio (al enviar este
+ * formulario) y luego su jefe inmediato (recibe el enlace por correo).
+ */
+require_once __DIR__ . '/../includes/eqr/publico.php';
 require_once __DIR__ . '/../includes/layout.php';
 
 $config = getAllConfig();
 $colorPrimario = $config['color_primario'] ?? '#003366';
 $titulo = 'Autorización de Salida de Equipo de Cómputo';
+$dominio = getConfig('eqr_dominio_correo', 'arconel.gob.ec');
 
 renderHeadHtml($titulo, $colorPrimario);
 renderHeader($config, $titulo);
@@ -16,108 +22,59 @@ renderHeader($config, $titulo);
         <div class="col-lg-9">
 
             <div class="alert alert-info">
-                <h6 class="fw-bold"><i class="bi bi-info-circle-fill"></i> ¿Qué es este formulario y cómo llenarlo?</h6>
-                <p class="small mb-2">Use este formulario cuando necesite <strong>sacar un equipo de cómputo de las instalaciones de la ARCONEL</strong> (por teletrabajo, comisión de servicios u otra necesidad institucional). Recuerde que debe contar con la autorización de su jefe inmediato <strong>antes</strong> de retirar el equipo.</p>
+                <h6 class="fw-bold"><i class="bi bi-info-circle-fill"></i> ¿Qué es este formulario y cómo funciona?</h6>
+                <p class="small mb-2">Use este formulario cuando necesite <strong>sacar su equipo de cómputo en
+                arrendamiento</strong> de las instalaciones de la ARCONEL (teletrabajo, comisión de servicios u
+                otra necesidad institucional). <strong>Todo se firma en línea</strong>, sin imprimir nada:</p>
                 <ol class="mb-0 small">
-                    <li><strong>Paso 1:</strong> Escriba sus datos personales.</li>
-                    <li><strong>Paso 2:</strong> Registre los datos del equipo que va a sacar (los encuentra en el acta de entrega o en la etiqueta del equipo).</li>
-                    <li><strong>Paso 3:</strong> Indique el motivo de la salida y las fechas.</li>
-                    <li><strong>Paso 4:</strong> Escriba los datos de su jefe inmediato (quien autoriza la salida).</li>
-                    <li><strong>Paso 5:</strong> Genere el PDF, fírmelo con <strong>FirmaEC</strong> junto con su jefe inmediato y envíelo a <strong>soporte@arconel.gob.ec</strong> antes de retirar el equipo.</li>
+                    <li><strong>Paso 1:</strong> Escriba su cédula y el código de su equipo (ej.: REN-0012, consta
+                        en la etiqueta del equipo o en su acta) y pulse <strong>Verificar</strong>.</li>
+                    <li><strong>Paso 2:</strong> Indique el motivo, las fechas y quién es su jefe inmediato.</li>
+                    <li><strong>Paso 3:</strong> Al enviar, el sistema le mostrará el documento para que lo
+                        <strong>firme ahí mismo con su archivo de firma electrónica (.p12)</strong>.</li>
+                    <li><strong>Paso 4:</strong> Su jefe inmediato recibirá un enlace por correo para autorizar con
+                        su firma. Cuando ambos firmen, la autorización queda lista y les llega por correo.</li>
                 </ol>
-                <p class="small mb-0 mt-2 text-muted">Los campos marcados con <span class="text-danger">*</span> son obligatorios. Los demás son opcionales.</p>
             </div>
 
             <div class="form-card">
                 <div class="card-header" style="background: #155724;">
-                    <i class="bi bi-laptop"></i> <?= $titulo ?>
+                    <i class="bi bi-laptop"></i> <?= htmlspecialchars($titulo) ?>
                 </div>
                 <div class="card-body">
-                    <form action="/process.php" method="POST" novalidate>
-                        <input type="hidden" name="tipo_formulario" value="7">
+                    <form action="/eqr_salida_crear.php" method="POST" id="formSalida" novalidate>
+                        <?= eqrPubCsrfCampo() ?>
 
-                        <!-- PASO 1: DATOS DEL USUARIO -->
-                        <div class="section-title"><i class="bi bi-1-circle-fill"></i> PASO 1: SUS DATOS</div>
+                        <!-- PASO 1: IDENTIFICACION -->
+                        <div class="section-title"><i class="bi bi-1-circle-fill"></i> PASO 1: IDENTIFIQUE SU EQUIPO</div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Apellidos y Nombres <span class="text-danger">*</span></label>
-                                <input type="text" name="nombre_completo" class="form-control" placeholder="Ej: IZA CANDO HUGO FERNANDO" required>
-                                <small class="text-muted">Tal como constan en su cédula.</small>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Su cédula <span class="text-danger">*</span></label>
+                                <input type="text" name="cedula" id="cedula" class="form-control" data-solo-numeros
+                                       maxlength="10" placeholder="Solo números" required autocomplete="off">
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                                <input type="text" name="cedula" class="form-control" data-solo-numeros maxlength="13" placeholder="Solo números" required>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Código del equipo <span class="text-danger">*</span></label>
+                                <input type="text" name="codigo" id="codigo" class="form-control"
+                                       placeholder="Ej: REN-0012" required autocomplete="off">
+                                <small class="text-muted">Consta en la etiqueta del equipo y en su acta.</small>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Correo electrónico</label>
-                                <input type="email" name="correo" class="form-control" placeholder="opcional">
+                            <div class="col-md-4 mb-3 d-flex align-items-end">
+                                <button type="button" id="btnVerificar" class="btn btn-success w-100 mb-1">
+                                    <i class="bi bi-search"></i> Verificar</button>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Cargo <span class="text-danger">*</span></label>
-                                <input type="text" name="cargo" class="form-control" placeholder="Ej: Analista de Talento Humano" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Coordinación / Dirección <span class="text-danger">*</span></label>
-                                <input type="text" name="area" class="form-control" placeholder="Ej: Dirección de Administración del Talento Humano" required>
-                            </div>
-                        </div>
+                        <div id="msgVerificar" class="alert alert-warning small" style="display:none"></div>
+                        <div id="equipoCard" class="alert alert-success small" style="display:none"></div>
 
-                        <!-- PASO 2: DATOS DEL EQUIPO -->
-                        <div class="section-title"><i class="bi bi-2-circle-fill"></i> PASO 2: DATOS DEL EQUIPO QUE VA A SACAR</div>
-                        <p class="text-muted small">Estos datos constan en el acta de entrega del equipo o en la etiqueta adherida al mismo. Si tiene dudas, consulte a la DTIC.</p>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Tipo de equipo <span class="text-danger">*</span></label>
-                                <select name="equipo_tipo" class="form-select" required>
-                                    <option value="">Seleccione...</option>
-                                    <option value="Computador portátil">Computador portátil (laptop)</option>
-                                    <option value="Computador de escritorio">Computador de escritorio</option>
-                                    <option value="Tablet">Tablet</option>
-                                    <option value="Proyector">Proyector</option>
-                                    <option value="Impresora">Impresora</option>
-                                    <option value="Otro">Otro</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Marca <span class="text-danger">*</span></label>
-                                <input type="text" name="equipo_marca" class="form-control" placeholder="Ej: DELL" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Modelo</label>
-                                <input type="text" name="equipo_modelo" class="form-control" placeholder="Ej: Latitude 5420 Touch">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Número de serie <span class="text-danger">*</span></label>
-                                <input type="text" name="equipo_serie" class="form-control" placeholder="Ej: 31X5HK3" required>
-                                <small class="text-muted">Consta en la etiqueta del equipo.</small>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">¿Lleva cargador?</label>
-                                <select name="equipo_cargador" class="form-select">
-                                    <option value="Sí">Sí</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Otros accesorios</label>
-                                <input type="text" name="equipo_accesorios" class="form-control" placeholder="Ej: mouse, maletín (opcional)">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Observaciones sobre el estado del equipo</label>
-                            <input type="text" name="equipo_observaciones" class="form-control" placeholder="Ej: equipo en buen estado, sin novedades (opcional)">
-                        </div>
+                        <!-- RESTO DEL FORMULARIO (se habilita tras verificar) -->
+                        <div id="restoForm" style="display:none">
 
-                        <!-- PASO 3: MOTIVO Y FECHAS -->
-                        <div class="section-title"><i class="bi bi-3-circle-fill"></i> PASO 3: MOTIVO Y TIEMPO DE LA SALIDA</div>
+                        <div class="section-title"><i class="bi bi-2-circle-fill"></i> PASO 2: MOTIVO Y TIEMPO DE LA SALIDA</div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Motivo de la salida <span class="text-danger">*</span></label>
-                                <select name="motivo_salida" class="form-select" required>
+                                <select name="salida_motivo" id="salida_motivo" class="form-select" required>
                                     <option value="">Seleccione...</option>
                                     <option value="Teletrabajo">Teletrabajo</option>
                                     <option value="Comisión de servicios">Comisión de servicios</option>
@@ -133,59 +90,79 @@ renderHeader($config, $titulo);
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Fecha de salida <span class="text-danger">*</span></label>
-                                <input type="date" name="fecha_salida" class="form-control" required>
+                                <input type="date" name="salida_fecha" class="form-control" required>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Fecha estimada de retorno</label>
-                                <input type="date" name="fecha_retorno" class="form-control">
-                                <small class="text-muted">Deje en blanco si es indefinida (ej: teletrabajo permanente).</small>
+                                <input type="date" name="salida_fecha_retorno" class="form-control">
+                                <small class="text-muted">Deje en blanco si es indefinida (ej.: teletrabajo permanente).</small>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Lugar donde estará el equipo</label>
-                                <input type="text" name="lugar_destino" class="form-control" placeholder="Ej: domicilio, ciudad de comisión (opcional)">
+                                <input type="text" name="salida_lugar" class="form-control"
+                                       placeholder="Ej: domicilio, ciudad de comisión (opcional)">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Accesorios que lleva</label>
+                                <input type="text" name="accesorios" id="accesorios" class="form-control"
+                                       placeholder="Ej: cargador, mouse, maletín (opcional)">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Observaciones del estado del equipo</label>
+                                <input type="text" name="observaciones" class="form-control"
+                                       placeholder="Ej: en buen estado, sin novedades (opcional)">
                             </div>
                         </div>
 
-                        <!-- PASO 4: AUTORIZACION -->
-                        <div class="section-title"><i class="bi bi-4-circle-fill"></i> PASO 4: ¿QUIÉN AUTORIZA LA SALIDA?</div>
+                        <div class="section-title"><i class="bi bi-3-circle-fill"></i> PASO 3: ¿QUIÉN AUTORIZA LA SALIDA?</div>
                         <div class="border rounded p-3 mb-3">
-                            <h6 class="fw-bold" style="color:#155724;">Su jefe inmediato <span class="text-danger">*</span></h6>
-                            <p class="text-muted small mb-2">Director, Coordinador o Jefe de Área que autoriza la salida del equipo. Deberá firmar el documento junto con usted.</p>
+                            <h6 class="fw-bold" style="color:#155724;">Su jefe inmediato</h6>
+                            <p class="text-muted small mb-2">Director, Coordinador o Jefe de Área. Recibirá en su
+                            correo institucional un enlace para <strong>autorizar la salida con su firma
+                            electrónica</strong>.</p>
                             <div class="row">
                                 <div class="col-md-4 mb-2">
-                                    <label class="form-label">Nombre completo <span class="text-danger">*</span></label>
-                                    <input type="text" name="autorizador_nombre" class="form-control" required>
+                                    <label class="form-label">Apellidos y nombres <span class="text-danger">*</span></label>
+                                    <input type="text" name="jefe_nombre" class="form-control" required>
                                 </div>
-                                <div class="col-md-4 mb-2">
+                                <div class="col-md-2 mb-2">
                                     <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                                    <input type="text" name="autorizador_cedula" class="form-control" data-solo-numeros maxlength="13" required>
+                                    <input type="text" name="jefe_cedula" class="form-control" data-solo-numeros
+                                           maxlength="10" required>
                                 </div>
-                                <div class="col-md-4 mb-2">
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Correo institucional <span class="text-danger">*</span></label>
+                                    <input type="email" name="jefe_correo" class="form-control"
+                                           placeholder="usuario@<?= htmlspecialchars($dominio) ?>" required>
+                                </div>
+                                <div class="col-md-3 mb-2">
                                     <label class="form-label">Cargo</label>
-                                    <input type="text" name="autorizador_cargo" class="form-control" placeholder="opcional">
+                                    <input type="text" name="jefe_cargo" class="form-control" placeholder="opcional">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- COMPROMISOS COLAPSADOS -->
+                        <!-- COMPROMISOS -->
                         <div class="accordion mb-3" id="accCompromisos">
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComp">
-                                        <i class="bi bi-exclamation-circle me-2"></i> Compromisos del usuario (léalos antes de enviar)
+                                        <i class="bi bi-exclamation-circle me-2"></i> Compromisos del usuario (constan en el documento que firmará)
                                     </button>
                                 </h2>
                                 <div id="collapseComp" class="accordion-collapse collapse" data-bs-parent="#accCompromisos">
                                     <div class="accordion-body consideraciones">
                                         <ul class="mb-0">
                                             <li>Utilizar el equipo exclusivamente para el cumplimiento de sus actividades institucionales.</li>
-                                            <li>Mantener el equipo bajo condiciones adecuadas de cuidado, custodia y conservación, evitando acciones que puedan ocasionar daño, pérdida o afectación a su funcionamiento.</li>
-                                            <li>No dejar el equipo desatendido en vehículos, lugares públicos o zonas vulnerables que representen un riesgo previsible de pérdida, hurto, robo o daño.</li>
-                                            <li>Cumplir las políticas institucionales de seguridad de la información, buenas prácticas informáticas y normativas sobre confidencialidad y protección de datos vigentes en la ARCONEL.</li>
-                                            <li>No abrir, reparar, modificar el hardware ni alterar sellos de garantía. Toda atención técnica deberá canalizarse exclusivamente a través de la DTIC.</li>
-                                            <li>En caso de falla o daño, reportar inmediatamente la novedad a la DTIC mediante la Mesa de Ayuda (soporte@arconel.gob.ec).</li>
-                                            <li>En caso de robo o asalto, notificar de forma inmediata a la DTIC y a su jefe inmediato, y presentar la denuncia ante la Fiscalía General del Estado o autoridad competente dentro de los plazos legales.</li>
-                                            <li>Devolver el equipo y la totalidad de sus accesorios a la DTIC al finalizar el período de salida, en condiciones equivalentes a las registradas, salvo el desgaste normal.</li>
+                                            <li>Mantener el equipo bajo condiciones adecuadas de cuidado, custodia y conservación.</li>
+                                            <li>No dejar el equipo desatendido en vehículos, lugares públicos o zonas vulnerables.</li>
+                                            <li>Cumplir las políticas institucionales de seguridad de la información.</li>
+                                            <li>No abrir, reparar ni modificar el hardware; toda atención técnica va por la DTIC.</li>
+                                            <li>Reportar fallas o daños de inmediato a la Mesa de Ayuda (soporte@arconel.gob.ec).</li>
+                                            <li>En caso de robo o asalto, notificar de inmediato a la DTIC y a su jefe, y presentar la denuncia ante la autoridad competente.</li>
+                                            <li>Devolver el equipo y sus accesorios a la DTIC al finalizar el período de salida.</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -196,14 +173,73 @@ renderHeader($config, $titulo);
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted"><i class="bi bi-shield-lock"></i> Sus datos serán tratados de forma confidencial.</small>
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-file-earmark-pdf"></i> Generar Solicitud PDF
+                                <i class="bi bi-pen"></i> Continuar y firmar en línea
                             </button>
                         </div>
+
+                        </div><!-- /restoForm -->
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    var csrf = document.querySelector('#formSalida input[name="csrf"]').value;
+    var btn = document.getElementById('btnVerificar');
+    var msg = document.getElementById('msgVerificar');
+    var card = document.getElementById('equipoCard');
+    var resto = document.getElementById('restoForm');
+
+    function aviso(texto, tipo) {
+        msg.className = 'alert alert-' + tipo + ' small';
+        msg.textContent = texto;
+        msg.style.display = 'block';
+    }
+
+    btn.addEventListener('click', function () {
+        var cedula = document.getElementById('cedula').value.replace(/\D/g, '');
+        var codigo = document.getElementById('codigo').value.trim();
+        if (cedula.length < 9 || !codigo) {
+            aviso('Escriba su cédula y el código del equipo.', 'warning');
+            return;
+        }
+        btn.disabled = true;
+        aviso('Verificando…', 'secondary');
+        card.style.display = 'none';
+        resto.style.display = 'none';
+        fetch('/eqr_salida_api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ csrf: csrf, cedula: cedula, codigo: codigo })
+        }).then(function (r) { return r.json(); }).then(function (d) {
+            btn.disabled = false;
+            if (!d.ok) { aviso(d.mensaje || 'No se pudo verificar.', 'warning'); return; }
+            if (d.problema) { aviso(d.problema, 'warning'); return; }
+            msg.style.display = 'none';
+            var eq = d.equipo;
+            card.innerHTML = '<i class="bi bi-check-circle-fill"></i> <strong>Equipo verificado:</strong> '
+                + eq.codigo + ' — ' + eq.marca + ' ' + eq.modelo + ' (serie ' + eq.serie + '), a cargo de '
+                + eq.custodio + '.';
+            card.style.display = 'block';
+            var acc = document.getElementById('accesorios');
+            if (eq.cargador && !acc.value) { acc.value = 'Cargador'; }
+            resto.style.display = 'block';
+        }).catch(function () {
+            btn.disabled = false;
+            aviso('Error de conexión. Intente de nuevo.', 'warning');
+        });
+    });
+
+    document.getElementById('formSalida').addEventListener('submit', function (ev) {
+        if (resto.style.display === 'none') {
+            ev.preventDefault();
+            aviso('Primero verifique su equipo (Paso 1).', 'warning');
+        }
+    });
+})();
+</script>
 
 <?php renderFooterHtml($config['nombre_institucion'] ?? 'ARCONEL'); ?>

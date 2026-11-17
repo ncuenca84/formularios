@@ -37,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             eqrFlash('Borrador descartado.');
             header('Location: eqr_tramites.php?tab=borrador');
             exit;
+        } elseif ($accion === 'retorno') {
+            eqrRegistrarRetorno($db, $tramite, $usuario);
+            eqrFlash('Retorno registrado: el equipo ya no consta como fuera de las instalaciones.');
         }
     } catch (Throwable $ex) {
         eqrFlash('Error: ' . $ex->getMessage(), 'error');
@@ -109,6 +112,20 @@ eqrHeader('Trámite ' . $tramite['codigo'], 'tramites');
             <?php endif; ?>
             <tr><th>Administrador del contrato</th>
                 <td><?= e($tramite['admin_contrato_nombre']) ?> (C.C. <?= e($tramite['admin_contrato_cedula']) ?>)</td></tr>
+            <?php if ($tramite['tipo'] === 'salida'): ?>
+                <tr><th>Jefe inmediato (autoriza)</th>
+                    <td><?= e((string)$tramite['jefe_nombre']) ?> (C.C. <?= e((string)$tramite['jefe_cedula']) ?>)
+                        — <?= e((string)$tramite['jefe_correo']) ?></td></tr>
+                <tr><th>Motivo de la salida</th><td><?= e((string)$tramite['salida_motivo']) ?></td></tr>
+                <tr><th>Período</th>
+                    <td>Sale el <?= e((string)$tramite['salida_fecha']) ?> —
+                        retorno estimado: <?= e((string)($tramite['salida_fecha_retorno'] ?: 'indefinido')) ?>
+                        <?= $tramite['salida_lugar'] ? ' — Lugar: ' . e($tramite['salida_lugar']) : '' ?></td></tr>
+                <?php if ($tramite['salida_retorno_registrado']): ?>
+                    <tr><th>Retorno registrado</th>
+                        <td class="text-success"><?= e(substr((string)$tramite['salida_retorno_registrado'], 0, 16)) ?></td></tr>
+                <?php endif; ?>
+            <?php endif; ?>
             <?php if ($tramite['motivo']): ?><tr><th>Motivo</th><td><?= e($tramite['motivo']) ?></td></tr><?php endif; ?>
             <?php if ($tramite['motivo_rechazo_anulacion']): ?>
                 <tr><th>Motivo del rechazo / anulación</th>
@@ -155,6 +172,15 @@ eqrHeader('Trámite ' . $tramite['codigo'], 'tramites');
                     <?= eqrCsrfCampo() ?><input type="hidden" name="accion" value="reenviar">
                     <button class="btn btn-outline-primary"><i class="bi bi-envelope-arrow-up"></i>
                         Reenviar enlace a <?= e($pendiente['nombre']) ?></button>
+                </form>
+            <?php endif; ?>
+            <?php if ($tramite['tipo'] === 'salida' && $tramite['estado'] === 'completado'
+                      && $tramite['salida_retorno_registrado'] === null): ?>
+                <form method="post" class="d-inline"
+                      onsubmit="return confirm('¿Registrar el retorno del equipo a las instalaciones?');">
+                    <?= eqrCsrfCampo() ?><input type="hidden" name="accion" value="retorno">
+                    <button class="btn btn-primary"><i class="bi bi-box-arrow-in-left"></i>
+                        Registrar retorno del equipo</button>
                 </form>
             <?php endif; ?>
             <?php if ($tramite['estado'] === 'borrador'): ?>

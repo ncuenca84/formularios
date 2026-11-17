@@ -47,7 +47,7 @@ $formularios = [
         'titulo' => 'Autorizacion de Salida de Equipo de Computo',
         'icono' => 'bi-laptop',
         'color' => '#155724',
-        'descripcion' => 'Autorizacion para sacar un equipo de computo de las instalaciones (teletrabajo, comision de servicios, etc.).',
+        'descripcion' => 'Autorizacion para sacar su equipo en arrendamiento de las instalaciones (teletrabajo, comision, etc.). Se firma EN LINEA con su archivo .p12, junto con su jefe inmediato.',
     ],
 ];
 ?>
