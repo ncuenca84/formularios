@@ -1,0 +1,43 @@
+{
+    "rootObj": 1,
+    "rootDictOriginal": "<< \/Type \/Catalog\n\/Outlines 2 0 R\n\/Pages 3 0 R >>",
+    "pageObj": 6,
+    "pageDict": "<< \/Type \/Page\n\/MediaBox [0.000 0.000 595.280 841.890]\n\/Parent 3 0 R\n\/Contents 7 0 R\n>>",
+    "annots": [],
+    "fields": [],
+    "maxObj": 9,
+    "size": 10,
+    "startxref": 2371,
+    "infoRef": "5 0 R",
+    "idArray": "[<a5d6490c386804b97597ded0f57004db><a5d6490c386804b97597ded0f57004db>]",
+    "fontObj": 10,
+    "pendiente": {
+        "holeStart": 3542,
+        "holeLenHex": 32768,
+        "firmante": {
+            "nombre": "Firmante con otra cedula",
+            "cedula": "1799999999",
+            "rol": "Prueba",
+            "rect": [
+                50,
+                169.89,
+                290,
+                241.89
+            ]
+        },
+        "prepPath": "\/home\/user\/formularios\/poc\/out\/cedula_mala.pdf.prep"
+    },
+    "_candidato": {
+        "maxObj": 14,
+        "fields": [
+            12
+        ],
+        "annots": [
+            12
+        ],
+        "startxref": 36639,
+        "size": 15,
+        "fontObj": 10,
+        "acroObj": 14
+    }
+}

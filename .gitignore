@@ -6,10 +6,8 @@
 .env
 *.log
 /config/mail.php
-# Fase 0
-poc/out/*
-!poc/out/.htaccess
 tools/firma-js/node_modules/
 storage/actas/*
 storage/tmp/*
 !storage/.htaccess
+tests/tmp/
