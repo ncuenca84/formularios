@@ -118,6 +118,35 @@ function firCrearDocumento(PDO $db, string $codigo, int $formularioId, string $t
     }
 }
 
+/**
+ * Sincroniza TODAS las solicitudes pendientes con sus circuitos de firma.
+ * - Repara enlaces documento<->solicitud por codigo (a prueba de tablas con
+ *   collation distinta: se compara con una collation explicita).
+ * - completado -> aprobada; rechazado/anulado -> rechazada.
+ * Devuelve cuantas filas cambio cada paso (para el log de la migracion).
+ */
+function firSincronizarSolicitudesPendientes(PDO $db): array
+{
+    $n = [];
+    $n['enlaces'] = $db->exec(
+        "UPDATE fir_documentos d JOIN solicitudes s
+            ON d.codigo = CONVERT(s.codigo USING utf8mb4) COLLATE utf8mb4_unicode_ci
+         SET d.solicitud_id = s.id WHERE d.solicitud_id IS NULL");
+    $n['aprobadas'] = $db->exec(
+        "UPDATE solicitudes s JOIN fir_documentos d ON d.solicitud_id = s.id
+         SET s.estado = 'aprobada' WHERE d.estado = 'completado' AND s.estado = 'pendiente'");
+    $n['rechazadas'] = $db->exec(
+        "UPDATE solicitudes s JOIN fir_documentos d ON d.solicitud_id = s.id
+         SET s.estado = 'rechazada' WHERE d.estado IN ('rechazado','anulado') AND s.estado = 'pendiente'");
+    $n['salidas_aprobadas'] = $db->exec(
+        "UPDATE solicitudes s JOIN eqr_tramites t ON t.solicitud_id = s.id
+         SET s.estado = 'aprobada' WHERE t.tipo = 'salida' AND t.estado = 'completado' AND s.estado = 'pendiente'");
+    $n['salidas_rechazadas'] = $db->exec(
+        "UPDATE solicitudes s JOIN eqr_tramites t ON t.solicitud_id = s.id
+         SET s.estado = 'rechazada' WHERE t.tipo = 'salida' AND t.estado IN ('rechazado','anulado') AND s.estado = 'pendiente'");
+    return $n;
+}
+
 /** Refleja el resultado del circuito en la solicitud original del formulario. */
 function firSincronizarSolicitud(PDO $db, array $doc, string $estado): void
 {
