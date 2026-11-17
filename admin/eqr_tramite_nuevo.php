@@ -226,6 +226,9 @@ $firmanteDtic = $hayDelegado
 </script>
 
 <?php else: // paso 2
+    // Solo conservar lo tecleado cuando se vuelve por un error de validacion;
+    // al entrar por primera vez (accion=datos) se PRELLENA todo lo posible.
+    $reenvio = (($_POST['accion'] ?? '') === 'crear');
     $custodioActual = [
         'cedula' => (string)$equipoSel['custodio_cedula'], 'nombre' => (string)$equipoSel['custodio_nombre'],
         'correo' => (string)$equipoSel['custodio_correo'], 'cargo' => (string)$equipoSel['custodio_cargo'],
@@ -252,20 +255,20 @@ $firmanteDtic = $hayDelegado
                     <input name="entrega_cedula" class="form-control" maxlength="10" required readonly
                            value="<?= e($custodioActual['cedula']) ?>"></div>
                 <div class="col-md-4"><label class="form-label">Apellidos y nombres *</label>
-                    <input name="entrega_nombre" class="form-control" required value="<?= $_POST ? $v('entrega_nombre') : e($custodioActual['nombre']) ?>"></div>
+                    <input name="entrega_nombre" class="form-control" required value="<?= $reenvio ? $v('entrega_nombre') : e($custodioActual['nombre']) ?>"></div>
                 <div class="col-md-3"><label class="form-label">Correo institucional *</label>
                     <input name="entrega_correo" type="email" class="form-control" required
-                           placeholder="usuario@<?= e($dominio) ?>" value="<?= $_POST ? $v('entrega_correo') : e($custodioActual['correo']) ?>"></div>
+                           placeholder="usuario@<?= e($dominio) ?>" value="<?= $reenvio ? $v('entrega_correo') : e($custodioActual['correo']) ?>"></div>
                 <div class="col-md-3"><label class="form-label">Cargo</label>
-                    <input name="entrega_cargo" class="form-control" value="<?= $_POST ? $v('entrega_cargo') : e($custodioActual['cargo']) ?>"></div>
+                    <input name="entrega_cargo" class="form-control" value="<?= $reenvio ? $v('entrega_cargo') : e($custodioActual['cargo']) ?>"></div>
                 <div class="col-md-6"><label class="form-label">Coordinación / Dirección</label>
-                    <input name="entrega_area" class="form-control" value="<?= $_POST ? $v('entrega_area') : e($custodioActual['area']) ?>"></div>
+                    <input name="entrega_area" class="form-control" value="<?= $reenvio ? $v('entrega_area') : e($custodioActual['area']) ?>"></div>
             </div>
         <?php endif; ?>
 
         <?php if (in_array($tipo, ['asignacion', 'traspaso', 'reposicion'], true)):
             // En una reposicion el que recibe es el MISMO custodio actual (prellenado)
-            $pre = fn($k) => $_POST ? $v('recibe_' . $k)
+            $pre = fn($k) => $reenvio ? $v('recibe_' . $k)
                 : ($tipo === 'reposicion' ? e($custodioActual[$k] ?? '') : '');
         ?>
             <h6 class="mt-4 text-success"><?= $tipo === 'reposicion'
@@ -293,13 +296,13 @@ $firmanteDtic = $hayDelegado
         <div class="row g-2">
             <div class="col-md-6"><label class="form-label">Estado físico reportado</label>
                 <input name="estado_fisico_reportado" class="form-control"
-                       value="<?= $_POST ? $v('estado_fisico_reportado') : e((string)$equipoSel['estado_fisico']) ?>"></div>
+                       value="<?= $reenvio ? $v('estado_fisico_reportado') : e((string)$equipoSel['estado_fisico']) ?>"></div>
             <div class="col-md-6"><label class="form-label">Accesorios que se entregan</label>
                 <input name="accesorios" class="form-control"
-                       value="<?= $_POST ? $v('accesorios') : (!empty($equipoSel['cargador_entregado']) ? 'Cargador' : '') ?>"></div>
+                       value="<?= $reenvio ? $v('accesorios') : (!empty($equipoSel['cargador_entregado']) ? 'Cargador' : '') ?>"></div>
             <div class="col-md-6"><label class="form-label">Motivo <?= $tipo === 'reposicion' ? '(aparece en el acta)' : '(opcional)' ?></label>
                 <input name="motivo" class="form-control"
-                       value="<?= $_POST ? $v('motivo') : ($tipo === 'reposicion' ? 'Reposición por robo del equipo anterior, serie: ' : '') ?>"
+                       value="<?= $reenvio ? $v('motivo') : ($tipo === 'reposicion' ? 'Reposición por robo del equipo anterior, serie: ' : '') ?>"
                        placeholder="Ej: cambio de área del funcionario"></div>
             <div class="col-md-6"><label class="form-label">Observaciones (opcional)</label>
                 <input name="observaciones" class="form-control" value="<?= $v('observaciones') ?>"></div>
