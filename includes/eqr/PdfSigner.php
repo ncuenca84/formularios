@@ -116,14 +116,20 @@ class PdfSigner
                 if (count($lineasNombre) <= max(1, $maxLineas)) { $fsNombre = $fs; break; }
             }
 
+            // Las dos lineas pequenas se ajustan al ancho disponible
+            // (la mas larga tiene 30 caracteres; Courier mide 0.6 em).
+            // OJO: no usar $y1/$y2 aqui, son las coordenadas del /Rect.
+            $fsChico = min(7.0, $anchoTexto / (0.6 * 30));
+            $lineaA = $h - 5 - $fsChico;
+            $lineaB = $lineaA - $fsChico - 2.0;
             $stream = "q\n";
             $stream .= sprintf("q %.2f 0 0 %.2f %.2f %.2f cm /Im1 Do Q\n", $qrLado, $qrLado, $qx, $qy);
             $stream .= "BT\n0 0 0 rg\n";
-            $stream .= sprintf("/F1 7 Tf\n1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n",
-                $tx, $h - 12, $this->textoPdf('Validar únicamente en FirmaEC.'));
+            $stream .= sprintf("/F1 %.1f Tf\n1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n",
+                $fsChico, $tx, $lineaA, $this->textoPdf('Validar únicamente en FirmaEC.'));
             $stream .= sprintf("1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n",
-                $tx, $h - 21, $this->textoPdf('Firmado electrónicamente por:'));
-            $ty = $h - 24 - $fsNombre;
+                $tx, $lineaB, $this->textoPdf('Firmado electrónicamente por:'));
+            $ty = $lineaB - 3 - $fsNombre;
             foreach ($lineasNombre as $ln) {
                 $stream .= sprintf("/F2 %.1f Tf\n1 0 0 1 %.2f %.2f Tm\n(%s) Tj\n",
                     $fsNombre, $tx, $ty, $this->textoPdf($ln));

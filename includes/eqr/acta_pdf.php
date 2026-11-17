@@ -34,12 +34,12 @@ function eqrRectsFirma(): array
 {
     // [left_css, top_css, ancho, alto] respecto del area de contenido
     // Hasta 4 firmantes (cuadricula 2x2); las actas usan 1-3.
-    // Tamano reducido 15% a pedido del usuario (similar al sello de FirmaEC).
+    // Tamano reducido ~24% a pedido del usuario (similar al sello de FirmaEC).
     $defs = [
-        1 => [20,  150, 200, 68],
-        2 => [290, 150, 200, 68],
-        3 => [20,  285, 200, 68],
-        4 => [290, 285, 200, 68],
+        1 => [35,  150, 180, 61],
+        2 => [295, 150, 180, 61],
+        3 => [35,  280, 180, 61],
+        4 => [295, 280, 180, 61],
     ];
     $out = [];
     foreach ($defs as $n => [$l, $t, $w, $h]) {
@@ -209,7 +209,7 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
                  font-size:8pt; color:#333;">%s<br>C.C. %s%s</div>',
             $c['left'], $c['top'], $c['w'], $c['h'],
             $c['left'], $c['top'] + $c['h'] + 4, $c['w'], $e($etiquetas[$n] ?? ''),
-            $c['left'], $c['top'] + $c['h'] + 16, $c['w'],
+            $c['left'], $c['top'] + $c['h'] + 26, $c['w'],
             $e($f['nombre']), $e($f['cedula']),
             $f['cargo'] !== '' ? '<br>' . $e($f['cargo']) : ''
         );
@@ -335,7 +335,7 @@ function eqrActaSalidaHtml(array $tramite, array $equipo, array $contrato, array
                  font-size:8pt; color:#333;">%s<br>C.C. %s%s</div>',
             $c['left'], $c['top'], $c['w'], $c['h'],
             $c['left'], $c['top'] + $c['h'] + 4, $c['w'], $e($etiquetas[$n] ?? ''),
-            $c['left'], $c['top'] + $c['h'] + 16, $c['w'],
+            $c['left'], $c['top'] + $c['h'] + 26, $c['w'],
             $e($f['nombre']), $e($f['cedula']),
             $f['cargo'] !== '' ? '<br>' . $e($f['cargo']) : ''
         );

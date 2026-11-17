@@ -40,7 +40,7 @@ function firPaginaFirmasHtml(string $codigo, array $firmantes, string $colorPrim
                  font-size:8pt; color:#333;">%s<br>C.C. %s%s</div>',
             $c['left'], $c['top'], $c['w'], $c['h'],
             $c['left'], $c['top'] + $c['h'] + 4, $c['w'], $e(mb_strtoupper($f['etiqueta'] ?? $f['rol'])),
-            $c['left'], $c['top'] + $c['h'] + 16, $c['w'],
+            $c['left'], $c['top'] + $c['h'] + 26, $c['w'],
             $e($f['nombre']), $e($f['cedula']),
             !empty($f['cargo']) ? '<br>' . $e($f['cargo']) : ''
         );
