@@ -2,6 +2,7 @@
 /** Ficha del equipo: datos tecnicos + historial de tramites y bitacora. */
 require __DIR__ . '/eqr_common.php';
 if (!eqrMigrado()) { header('Location: eqr_migrar.php'); exit; }
+require_once __DIR__ . '/../includes/eqr/flujo.php';
 
 $db = getDB();
 $id = (int)($_GET['id'] ?? 0);
@@ -11,9 +12,35 @@ $stmt->execute([$id]);
 $eq = $stmt->fetch();
 if (!$eq) { eqrFlash('Equipo no encontrado.', 'error'); header('Location: eqr_equipos.php'); exit; }
 
+// Registrar el retorno directamente desde la ficha
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'retorno') {
+    eqrCsrfVerificar();
+    try {
+        $tr = eqrTramitePorId($db, (int)($_POST['tramite_id'] ?? 0));
+        if (!$tr || (int)$tr['equipo_id'] !== $id) { throw new RuntimeException('Trámite no válido.'); }
+        eqrRegistrarRetorno($db, $tr, 'admin:' . ($_SESSION['admin_nombre'] ?? 'desconocido'));
+        eqrFlash('Retorno registrado: el equipo ya no consta como fuera de las instalaciones.');
+    } catch (Throwable $ex) {
+        eqrFlash('Error: ' . $ex->getMessage(), 'error');
+    }
+    header('Location: eqr_equipo_ficha.php?id=' . $id);
+    exit;
+}
+
 $stmt = $db->prepare("SELECT * FROM eqr_tramites WHERE equipo_id = ? ORDER BY id DESC");
 $stmt->execute([$id]);
 $tramites = $stmt->fetchAll();
+
+// Salida vigente (para el panel de acceso directo cuando esta "Fuera")
+$salidaVigente = null;
+if (!empty($eq['fuera_instalaciones'])) {
+    foreach ($tramites as $t) {
+        if ($t['tipo'] === 'salida' && $t['estado'] === 'completado' && $t['salida_retorno_registrado'] === null) {
+            $salidaVigente = $t;
+            break;
+        }
+    }
+}
 
 $stmt = $db->prepare("SELECT * FROM eqr_bitacora WHERE equipo_id = ? ORDER BY id DESC LIMIT 100");
 $stmt->execute([$id]);
@@ -26,6 +53,33 @@ $badgeTramite = function (string $s): string {
 
 eqrHeader('Ficha del equipo ' . $eq['codigo_interno'], 'equipos');
 ?>
+<?php if ($salidaVigente): ?>
+<div class="alert alert-primary d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <i class="bi bi-box-arrow-right"></i>
+        <strong>Fuera de las instalaciones</strong> — trámite <?= e($salidaVigente['codigo']) ?>:
+        <?= e((string)$salidaVigente['salida_motivo']) ?>,
+        salió el <?= e(date('d/m/Y', strtotime((string)$salidaVigente['salida_fecha']))) ?>,
+        retorno estimado: <?= $salidaVigente['salida_fecha_retorno']
+            ? e(date('d/m/Y', strtotime($salidaVigente['salida_fecha_retorno']))) : 'indefinido' ?>.
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-sm btn-light border" target="_blank"
+           href="eqr_acta_ver.php?id=<?= (int)$salidaVigente['id'] ?>&inline=1"><i class="bi bi-eye"></i> Ver acta</a>
+        <a class="btn btn-sm btn-light border"
+           href="eqr_acta_ver.php?id=<?= (int)$salidaVigente['id'] ?>"><i class="bi bi-download"></i> Descargar</a>
+        <a class="btn btn-sm btn-light border"
+           href="eqr_tramite_ver.php?id=<?= (int)$salidaVigente['id'] ?>"><i class="bi bi-journal-text"></i> Trámite</a>
+        <form method="post" class="d-inline"
+              onsubmit="return confirm('¿Registrar el retorno del equipo a las instalaciones?');">
+            <?= eqrCsrfCampo() ?>
+            <input type="hidden" name="accion" value="retorno">
+            <input type="hidden" name="tramite_id" value="<?= (int)$salidaVigente['id'] ?>">
+            <button class="btn btn-sm btn-primary"><i class="bi bi-box-arrow-in-left"></i> Registrar retorno</button>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
 <div class="row g-3">
     <div class="col-lg-5">
         <div class="card p-3">
@@ -62,7 +116,7 @@ eqrHeader('Ficha del equipo ' . $eq['codigo_interno'], 'equipos');
                 <p class="text-muted mb-0">Sin trámites todavía.</p>
             <?php else: ?>
                 <div class="table-responsive"><table class="table table-sm mb-0">
-                    <thead><tr><th>Código</th><th>Tipo</th><th>Estado</th><th>Recibe / Custodio</th><th>Fecha</th></tr></thead>
+                    <thead><tr><th>Código</th><th>Tipo</th><th>Estado</th><th>Recibe / Custodio</th><th>Fecha</th><th></th></tr></thead>
                     <tbody>
                     <?php foreach ($tramites as $t): ?>
                         <tr>
@@ -72,6 +126,16 @@ eqrHeader('Ficha del equipo ' . $eq['codigo_interno'], 'equipos');
                             <td><?= $badgeTramite($t['estado']) ?></td>
                             <td><?= e((string)$t['recibe_nombre']) ?: '—' ?></td>
                             <td><small><?= e((string)$t['created_at']) ?></small></td>
+                            <td class="text-end text-nowrap">
+                                <?php if (!empty($t['pdf_actual'])): ?>
+                                    <a class="btn btn-sm btn-outline-primary" target="_blank" title="Ver acta"
+                                       href="eqr_acta_ver.php?id=<?= (int)$t['id'] ?>&inline=1"><i class="bi bi-file-pdf"></i></a>
+                                <?php endif; ?>
+                                <?php if ($t['tipo'] !== 'carga_inicial'): ?>
+                                    <a class="btn btn-sm btn-outline-secondary" title="Ver trámite"
+                                       href="eqr_tramite_ver.php?id=<?= (int)$t['id'] ?>"><i class="bi bi-eye"></i></a>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
