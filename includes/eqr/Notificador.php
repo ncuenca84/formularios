@@ -40,7 +40,7 @@ class Notificador
      */
     public function enviar(PDO $db, ?int $tramiteId, string $para, string $asunto,
                            string $html, string $texto, array $adjuntos = [],
-                           ?int $documentoId = null): array
+                           ?int $documentoId = null, array $imagenesInline = []): array
     {
         $resultado = 'fallido';
         $error = null;
@@ -69,6 +69,11 @@ class Notificador
                 foreach ($adjuntos as $a) {
                     if (!empty($a['path']) && is_file($a['path'])) {
                         $m->addAttachment($a['path'], $a['nombre'] ?? basename($a['path']));
+                    }
+                }
+                foreach ($imagenesInline as $img) {
+                    if (!empty($img['path']) && is_file($img['path'])) {
+                        $m->addEmbeddedImage($img['path'], $img['cid'], $img['nombre'] ?? basename($img['path']));
                     }
                 }
                 $m->send();
@@ -180,14 +185,36 @@ class Notificador
         }
         $extraSalida = '';
         $extraSalidaTxt = '';
+        $imagenesInline = [];
+        $qrTmp = null;
         if (($tramite['tipo'] ?? '') === 'salida' && !empty($tramite['verif_token'])
             && function_exists('eqrUrlVerificacionSalida')) {
             $urlQr = eqrUrlVerificacionSalida($tramite['verif_token']);
+            // QR como imagen EMBEBIDA (cid): se ve directo en el correo, sin abrir el PDF
+            try {
+                $opts = new \chillerlan\QRCode\QROptions([
+                    'outputType' => \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG,
+                    'scale' => 6,
+                    'imageBase64' => false,
+                    'eccLevel' => \chillerlan\QRCode\Common\EccLevel::M,
+                ]);
+                $png = (new \chillerlan\QRCode\QRCode($opts))->render($urlQr);
+                $qrTmp = tempnam(sys_get_temp_dir(), 'qrsalida') . '.png';
+                file_put_contents($qrTmp, $png);
+                $imagenesInline[] = ['path' => $qrTmp, 'cid' => 'qrporteria', 'nombre' => 'qr_porteria.png'];
+            } catch (Throwable $exQr) {
+                $qrTmp = null; // sin imagen: queda el enlace
+            }
+            $imgHtml = $qrTmp !== null
+                ? '<div style="text-align:center;margin:10px 0;">
+                     <img src="cid:qrporteria" width="190" height="190" alt="QR de validación en portería"
+                          style="border:1px solid #cdd; border-radius:8px;"></div>'
+                : '';
             $extraSalida = '<p style="background:#eef7ee;padding:10px;border-radius:6px;">
-               <strong>Validación en portería:</strong> el acta adjunta incluye un código QR.
-               Al salir con el equipo, preséntelo al personal de seguridad: al escanearlo verán
-               al instante si la salida está autorizada y vigente. Enlace directo:<br>
-               <a href="' . $e($urlQr) . '">' . $e($urlQr) . '</a></p>';
+               <strong>Validación en portería:</strong> muestre este código al personal de seguridad
+               directamente desde su celular (o desde el acta adjunta/impresa). Al escanearlo verán
+               al instante si la salida está autorizada y vigente.</p>' . $imgHtml . '
+               <p style="text-align:center;font-size:12px;"><a href="' . $e($urlQr) . '">' . $e($urlQr) . '</a></p>';
             $extraSalidaTxt = "\nValidación en portería: presente el QR del acta al guardia. Enlace: $urlQr";
         }
         $html = $this->plantilla('Trámite completado — acta firmada', '
@@ -208,9 +235,10 @@ class Notificador
         }
         $ultimo = ['ok' => true, 'error' => null];
         foreach ($destinos as $d) {
-            $r = $this->enviar($db, (int)$tramite['id'], $d, $asunto, $html, $texto, $adjunto);
+            $r = $this->enviar($db, (int)$tramite['id'], $d, $asunto, $html, $texto, $adjunto, null, $imagenesInline);
             if (!$r['ok']) { $ultimo = $r; }
         }
+        if ($qrTmp !== null) { @unlink($qrTmp); }
         return $ultimo;
     }
 
