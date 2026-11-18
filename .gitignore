@@ -8,6 +8,7 @@
 /config/mail.php
 tools/firma-js/node_modules/
 storage/actas/*
+storage/documentos/*
 storage/tmp/*
 !storage/.htaccess
 tests/tmp/
