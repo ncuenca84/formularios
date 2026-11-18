@@ -79,11 +79,21 @@ ok($eq['custodio_cedula'] === '1710000002' && $eq['estado'] === 'asignado', 'el 
 $equipo = $db->query("SELECT * FROM eqr_equipos WHERE id = $equipoId")->fetch();
 ok(eqrSalidaProblema($db, $equipo) !== null, 'una segunda salida queda bloqueada mientras esté fuera');
 
+echo "== 4b. QR de validación en portería ==\n";
+$tQr = eqrTramitePorId($db, $tramiteId);
+ok(!empty($tQr['verif_token']) && strlen($tQr['verif_token']) === 32, 'la salida nace con token de verificación');
+$rQr = eqrEstadoSalidaQr($db, $tQr['verif_token']);
+ok($rQr['encontrada'] && $rQr['autorizada'], 'el guardia ve SALIDA AUTORIZADA (completada y vigente)');
+$rMal = eqrEstadoSalidaQr($db, str_repeat('0', 32));
+ok(!$rMal['encontrada'], 'un token inventado NO revela nada');
+
 echo "== 5. Registrar retorno ==\n";
 $tramite = eqrTramitePorId($db, $tramiteId);
 eqrRegistrarRetorno($db, $tramite, 'admin:prueba');
 $eq = $db->query("SELECT fuera_instalaciones, fecha_retorno_estimada FROM eqr_equipos WHERE id = $equipoId")->fetch();
 ok((string)$eq['fuera_instalaciones'] === '0' && $eq['fecha_retorno_estimada'] === null, 'retorno registrado: equipo dentro');
+$rQr = eqrEstadoSalidaQr($db, $tQr['verif_token']);
+ok(!$rQr['autorizada'] && stripos($rQr['motivo'], 'RETORNO') !== false, 'tras el retorno el QR dice NO AUTORIZADA (ya se usó)');
 try { eqrRegistrarRetorno($db, eqrTramitePorId($db, $tramiteId), 'admin:prueba'); ok(false, 'no debe registrar dos veces'); }
 catch (Throwable $e) { ok(true, 'doble retorno rechazado'); }
 

@@ -178,15 +178,27 @@ class Notificador
             $lista .= '<li>' . $e($f['nombre']) . ' (C.C. ' . $e($f['cedula']) . ') — '
                 . $e($f['fecha_firma']) . '</li>';
         }
+        $extraSalida = '';
+        $extraSalidaTxt = '';
+        if (($tramite['tipo'] ?? '') === 'salida' && !empty($tramite['verif_token'])
+            && function_exists('eqrUrlVerificacionSalida')) {
+            $urlQr = eqrUrlVerificacionSalida($tramite['verif_token']);
+            $extraSalida = '<p style="background:#eef7ee;padding:10px;border-radius:6px;">
+               <strong>Validación en portería:</strong> el acta adjunta incluye un código QR.
+               Al salir con el equipo, preséntelo al personal de seguridad: al escanearlo verán
+               al instante si la salida está autorizada y vigente. Enlace directo:<br>
+               <a href="' . $e($urlQr) . '">' . $e($urlQr) . '</a></p>';
+            $extraSalidaTxt = "\nValidación en portería: presente el QR del acta al guardia. Enlace: $urlQr";
+        }
         $html = $this->plantilla('Trámite completado — acta firmada', '
             <p>El trámite <strong>' . $e($tramite['codigo']) . '</strong> (' . $e($tipo) . ') se
                <strong style="color:#14532d;">completó</strong> con todas sus firmas electrónicas.</p>
             <p>Equipo: ' . $e(self::equipoLinea($tramite)) . '</p>
-            <p><strong>Firmas:</strong></p><ul>' . $lista . '</ul>
+            <p><strong>Firmas:</strong></p><ul>' . $lista . '</ul>' . $extraSalida . '
             <p>Se adjunta el acta final firmada. Huella SHA-256 del documento:<br>
                <code style="font-size:11px;">' . $e($tramite['hash_actual']) . '</code></p>');
         $texto = "El trámite {$tramite['codigo']} ($tipo) se completó con todas sus firmas.\n"
-            . "Equipo: " . self::equipoLinea($tramite) . "\nSHA-256: {$tramite['hash_actual']}";
+            . "Equipo: " . self::equipoLinea($tramite) . "\nSHA-256: {$tramite['hash_actual']}" . $extraSalidaTxt;
         $adjunto = [['path' => $actaPath, 'nombre' => 'ACTA_' . $tramite['codigo'] . '.pdf']];
 
         $asunto = "Trámite completado — {$tramite['codigo']}";

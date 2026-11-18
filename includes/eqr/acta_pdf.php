@@ -447,10 +447,45 @@ asignación, entrega y recepción del equipo ni la custodia registrada en el sis
         que solicita la salida y luego el jefe inmediato que la autoriza.
     </p>
     <?= $cajas ?>
+    <?php if (!empty($tramite['verif_token'])):
+        $qrVerif = eqrQrPngDataUri(eqrUrlVerificacionSalida($tramite['verif_token'])); ?>
+    <!-- Validacion en porteria: posicion fija bajo los recuadros de firma -->
+    <div style="position:absolute; left:8pt; top:430pt; width:494pt; border:1pt solid #999;
+                background:#f8f9fa; padding:8pt;">
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
+                <td style="width:100pt; vertical-align:top;">
+                    <img src="<?= $qrVerif ?>" style="width:95px; height:95px;">
+                </td>
+                <td style="vertical-align:top; padding-left:8pt; font-size:8.5pt; color:#333;">
+                    <strong style="font-size:9.5pt;">VALIDACIÓN EN PORTERÍA</strong><br>
+                    Al salir con el equipo, presente este código al personal de seguridad.
+                    El guardia lo escanea con la cámara de su celular y el sistema le confirma
+                    al instante si la salida está <strong>AUTORIZADA y vigente</strong>
+                    (firmas completas, dentro del período y sin retorno registrado).<br>
+                    <span style="font-size:7pt; color:#666;">La página de validación debe abrirse
+                    en el dominio institucional del sistema de formularios.</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <?php endif; ?>
 </div>
 
 </body>
 </html>
     <?php
     return ob_get_clean();
+}
+
+/** Data URI PNG de un codigo QR (para incrustar en los PDF). */
+function eqrQrPngDataUri(string $contenido): string
+{
+    $opts = new QROptions([
+        'outputType' => QROutputInterface::GDIMAGE_PNG,
+        'scale' => 3,
+        'imageBase64' => true,
+        'eccLevel' => \chillerlan\QRCode\Common\EccLevel::M,
+    ]);
+    return (new QRCode($opts))->render($contenido);
 }

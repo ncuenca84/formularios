@@ -132,6 +132,7 @@ function eqrMigrar(PDO $db): array
                 salida_lugar VARCHAR(255) NULL,
                 salida_retorno_registrado DATETIME NULL,
                 referencia_acta_fisica VARCHAR(255) NULL,
+                verif_token CHAR(32) NULL,
                 creado_por VARCHAR(100) NOT NULL DEFAULT '',
                 solicitud_id INT NULL,
                 pdf_original VARCHAR(500) NULL,
@@ -229,6 +230,7 @@ function eqrMigrar(PDO $db): array
         ['eqr_contratos', 'delegado_cargo', "VARCHAR(255) NOT NULL DEFAULT ''"],
         ['eqr_contratos', 'delegado_correo', "VARCHAR(255) NOT NULL DEFAULT ''"],
         ['eqr_contratos', 'delegado_memorando', "VARCHAR(255) NOT NULL DEFAULT ''"],
+        ['eqr_tramites', 'verif_token', "CHAR(32) NULL"],
     ];
     $delegadoRecienCreado = false;
     $stmtCol = $db->prepare("SELECT COUNT(*) FROM information_schema.COLUMNS
@@ -252,6 +254,16 @@ function eqrMigrar(PDO $db): array
         $db->exec("ALTER TABLE eqr_tramites MODIFY tipo
             ENUM('asignacion','traspaso','devolucion','salida','carga_inicial','reposicion') NOT NULL");
         $log[] = "Tipo de trámite 'reposicion' agregado.";
+    }
+
+    // Indice unico del token de verificacion de salidas (si falta)
+    $stmt = $db->prepare("SELECT COUNT(*) FROM information_schema.STATISTICS
+                          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'eqr_tramites'
+                          AND INDEX_NAME = 'uk_verif_token'");
+    $stmt->execute();
+    if ((int)$stmt->fetchColumn() === 0) {
+        $db->exec("ALTER TABLE eqr_tramites ADD UNIQUE KEY uk_verif_token (verif_token)");
+        $log[] = 'Índice del token de verificación de salidas agregado.';
     }
 
     // Delegacion vigente del contrato real (solo UNA VEZ, al crear las columnas;

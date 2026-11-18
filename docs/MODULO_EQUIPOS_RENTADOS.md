@@ -50,6 +50,11 @@ replica el formato de FirmaEC, con su QR estándar.
     anterior consta en el acta.
   - *Salida del edificio* (formulario 7 público): verificación cédula + código,
     marca "fuera" al completarse y botón **Registrar retorno** en el detalle del trámite.
+    El acta incluye un **QR de validación en portería**: el guardia lo escanea con su
+    celular (sin instalar nada) y `salida_qr.php` le muestra SALIDA AUTORIZADA (verde)
+    solo si tiene todas las firmas, está dentro del período y no se registró el retorno;
+    en cualquier otro caso, NO AUTORIZADA (rojo) con el motivo. Cada escaneo queda en la
+    bitácora. El guardia solo debe comprobar que la página sea del dominio institucional.
   - El custodio **solo cambia cuando el acta tiene todas sus firmas** (transacción).
   - El acta se genera **una sola vez** y nunca se regenera: solo crece con firmas.
 - **Actas y pagos**: documentos del contrato (acta inicial / parcial mensual / definitiva

@@ -138,6 +138,7 @@ function eqrCrearTramite(PDO $db, string $tipo, array $equipo, array $contrato,
         'salida_fecha_retorno' => $datos['salida_fecha_retorno'] ?? null,
         'salida_lugar' => $datos['salida_lugar'] ?? null,
         'solicitud_id' => $datos['solicitud_id'] ?? null,
+        'verif_token' => $datos['verif_token'] ?? null,
         'creado_por' => $usuarioAdmin,
     ];
 
@@ -553,11 +554,68 @@ function eqrSalidaProblema(PDO $db, array $equipo): ?string
 function eqrCrearSalida(PDO $db, array $equipo, array $contrato, array $datos, ?int $solicitudId): array
 {
     $datos['solicitud_id'] = $solicitudId;
+    // Token del QR de validacion en porteria: nace con el acta (que nunca se regenera)
+    $datos['verif_token'] = bin2hex(random_bytes(16));
     $tramiteId = eqrCrearTramite($db, 'salida', $equipo, $contrato, $datos,
         'formulario7:' . $datos['entrega_cedula']);
     $firma = eqrFirmaPendiente($db, $tramiteId);
     $tk = eqrTokenNuevo($db, (int)$firma['id']);
     return ['tramite_id' => $tramiteId, 'token' => $tk['token']];
+}
+
+/** URL de la pagina de validacion en porteria (QR del acta de salida). */
+function eqrUrlVerificacionSalida(string $token): string
+{
+    $base = rtrim(trim(getConfig('eqr_url_base')), '/');
+    if ($base === '' && !empty($_SERVER['HTTP_HOST'])) {
+        $base = 'https://' . $_SERVER['HTTP_HOST'];
+    }
+    return $base . '/salida_qr.php?v=' . $token;
+}
+
+/**
+ * Estado de una salida para el GUARDIA (pagina del QR).
+ * Devuelve ['encontrada'=>bool, 'autorizada'=>bool, 'motivo'=>string, 'tramite'=>?array]
+ * La salida esta AUTORIZADA solo si: todas las firmas estan (completado),
+ * el retorno NO se registro aun, y hoy cae dentro del periodo autorizado.
+ */
+function eqrEstadoSalidaQr(PDO $db, string $token): array
+{
+    if (!preg_match('/^[0-9a-f]{32}$/', $token)) {
+        return ['encontrada' => false, 'autorizada' => false, 'motivo' => 'Código no válido.', 'tramite' => null];
+    }
+    $stmt = $db->prepare("SELECT t.*, e.codigo_interno equipo_codigo, e.marca equipo_marca,
+                                 e.modelo equipo_modelo, e.serie equipo_serie
+                          FROM eqr_tramites t JOIN eqr_equipos e ON e.id = t.equipo_id
+                          WHERE t.verif_token = ? AND t.tipo = 'salida' LIMIT 1");
+    $stmt->execute([$token]);
+    $t = $stmt->fetch();
+    if (!$t) {
+        return ['encontrada' => false, 'autorizada' => false, 'motivo' => 'Código no válido.', 'tramite' => null];
+    }
+
+    $hoy = date('Y-m-d');
+    $motivo = null;
+    if (in_array($t['estado'], ['borrador', 'en_firma'], true)) {
+        $motivo = 'La autorización aún NO tiene todas las firmas.';
+    } elseif ($t['estado'] === 'rechazado') {
+        $motivo = 'La autorización fue RECHAZADA.';
+    } elseif ($t['estado'] === 'anulado') {
+        $motivo = 'La autorización fue ANULADA.';
+    } elseif ($t['salida_retorno_registrado'] !== null) {
+        $motivo = 'El equipo ya registró su RETORNO: esta autorización ya se usó.';
+    } elseif ($t['salida_fecha'] && $hoy < $t['salida_fecha']) {
+        $motivo = 'La autorización aún no está vigente: inicia el ' . date('d/m/Y', strtotime($t['salida_fecha'])) . '.';
+    } elseif ($t['salida_fecha_retorno'] && $hoy > $t['salida_fecha_retorno']) {
+        $motivo = 'La autorización VENCIÓ el ' . date('d/m/Y', strtotime($t['salida_fecha_retorno'])) . '.';
+    }
+
+    return [
+        'encontrada' => true,
+        'autorizada' => $motivo === null,
+        'motivo' => $motivo ?? 'Salida autorizada y vigente.',
+        'tramite' => $t,
+    ];
 }
 
 /** Registra el retorno del equipo de una salida completada (boton del admin). */
