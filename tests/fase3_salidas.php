@@ -106,5 +106,26 @@ $equipo = $db->query("SELECT * FROM eqr_equipos WHERE id = $equipoId")->fetch();
 ok(eqrSalidaProblema($db, $equipo) !== null, 'salida bloqueada: hay una devolución en curso');
 eqrDescartarBorrador($db, eqrTramitePorId($db, $idT), 'admin:prueba');
 
+echo "== 7. Cierre automático al vencer el plazo de retorno ==\n";
+// Se simula la situación: la salida sigue abierta y la fecha estimada ya pasó.
+$ayer = date('Y-m-d', time() - 86400);
+$db->exec("UPDATE eqr_tramites SET salida_retorno_registrado = NULL, salida_fecha_retorno = '$ayer' WHERE id = $tramiteId");
+$db->exec("UPDATE eqr_equipos SET fuera_instalaciones = 1, fecha_retorno_estimada = '$ayer' WHERE id = $equipoId");
+ok(eqrCerrarSalidasVencidas($db) >= 1, 'la salida vencida se detecta y se cierra sola');
+$eq = $db->query("SELECT fuera_instalaciones, fecha_retorno_estimada FROM eqr_equipos WHERE id = $equipoId")->fetch();
+ok((string)$eq['fuera_instalaciones'] === '0' && $eq['fecha_retorno_estimada'] === null,
+   'al vencer el plazo el equipo vuelve SOLO al estado normal');
+$t = eqrTramitePorId($db, $tramiteId);
+ok($t['salida_retorno_registrado'] !== null, 'el retorno quedó registrado en el trámite');
+$u = $db->query("SELECT usuario FROM eqr_bitacora WHERE tramite_id = $tramiteId
+                 AND accion = 'retorno_registrado' ORDER BY id DESC LIMIT 1")->fetchColumn();
+ok($u === 'sistema:plazo_vencido', 'la bitácora dice que lo registró el sistema por plazo vencido');
+$rQr = eqrEstadoSalidaQr($db, $tQr['verif_token']);
+ok(!$rQr['autorizada'] && mb_stripos($rQr['motivo'], 'VENCI') !== false,
+   'el QR del guardia dice NO AUTORIZADA: VENCIÓ (no "ya se usó")');
+$equipo = $db->query("SELECT * FROM eqr_equipos WHERE id = $equipoId")->fetch();
+ok(eqrSalidaProblema($db, $equipo) === null, 'puede iniciarse una NUEVA salida sin trámite de ingreso');
+ok(eqrCerrarSalidasVencidas($db) === 0, 'no queda nada por cerrar (idempotente)');
+
 copy(eqrRutaActaAbs(eqrTramitePorId($db, $tramiteId)), "$SCR/acta_salida_final.pdf");
 echo "\nTODO PASÓ (Fase 3). Acta: $SCR/acta_salida_final.pdf\n";

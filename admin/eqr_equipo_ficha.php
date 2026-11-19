@@ -62,6 +62,8 @@ eqrHeader('Ficha del equipo ' . $eq['codigo_interno'], 'equipos');
         salió el <?= e(date('d/m/Y', strtotime((string)$salidaVigente['salida_fecha']))) ?>,
         retorno estimado: <?= $salidaVigente['salida_fecha_retorno']
             ? e(date('d/m/Y', strtotime($salidaVigente['salida_fecha_retorno']))) : 'indefinido' ?>.
+        <br><small class="text-muted">Al vencer la fecha estimada, el retorno se registra solo y el
+        equipo vuelve al estado normal (no hace falta trámite de ingreso).</small>
     </div>
     <div class="d-flex gap-2 flex-wrap">
         <a class="btn btn-sm btn-light border" target="_blank"

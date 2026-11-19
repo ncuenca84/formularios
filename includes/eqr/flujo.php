@@ -535,6 +535,13 @@ function eqrSalidaAbierta(PDO $db, int $equipoId): bool
  */
 function eqrSalidaProblema(PDO $db, array $equipo): ?string
 {
+    // Primero se cierran las salidas con plazo vencido: si la anterior ya
+    // vencio, el equipo volvio solo al estado normal y puede salir de nuevo.
+    if (eqrCerrarSalidasVencidas($db) > 0) {
+        $stmt = $db->prepare("SELECT fuera_instalaciones FROM eqr_equipos WHERE id = ?");
+        $stmt->execute([(int)$equipo['id']]);
+        $equipo['fuera_instalaciones'] = $stmt->fetchColumn();
+    }
     if (!empty($equipo['fuera_instalaciones'])) {
         return 'El equipo ya consta como fuera de las instalaciones. Si ya retornó, pida a la DTIC registrar el retorno antes de una nueva salida.';
     }
@@ -602,12 +609,14 @@ function eqrEstadoSalidaQr(PDO $db, string $token): array
         $motivo = 'La autorización fue RECHAZADA.';
     } elseif ($t['estado'] === 'anulado') {
         $motivo = 'La autorización fue ANULADA.';
+    } elseif ($t['salida_fecha_retorno'] && $hoy > $t['salida_fecha_retorno']) {
+        // Antes que el chequeo de retorno: una salida vencida se cierra sola,
+        // y el guardia debe ver "VENCIÓ", no "ya registró su retorno".
+        $motivo = 'La autorización VENCIÓ el ' . date('d/m/Y', strtotime($t['salida_fecha_retorno'])) . '.';
     } elseif ($t['salida_retorno_registrado'] !== null) {
         $motivo = 'El equipo ya registró su RETORNO: esta autorización ya se usó.';
     } elseif ($t['salida_fecha'] && $hoy < $t['salida_fecha']) {
         $motivo = 'La autorización aún no está vigente: inicia el ' . date('d/m/Y', strtotime($t['salida_fecha'])) . '.';
-    } elseif ($t['salida_fecha_retorno'] && $hoy > $t['salida_fecha_retorno']) {
-        $motivo = 'La autorización VENCIÓ el ' . date('d/m/Y', strtotime($t['salida_fecha_retorno'])) . '.';
     }
 
     return [
@@ -616,6 +625,28 @@ function eqrEstadoSalidaQr(PDO $db, string $token): array
         'motivo' => $motivo ?? 'Salida autorizada y vigente.',
         'tramite' => $t,
     ];
+}
+
+/**
+ * Cierra AUTOMATICAMENTE las salidas cuyo plazo de retorno ya vencio:
+ * pasada la fecha estimada de retorno, el equipo vuelve solo al estado
+ * normal, sin tramite de ingreso (decision del usuario, 2026-11-19).
+ * Las salidas con retorno "indefinido" (sin fecha) no se tocan.
+ * Devuelve cuantas salidas cerro. Es barata: no hace nada si no hay vencidas.
+ */
+function eqrCerrarSalidasVencidas(PDO $db): int
+{
+    $stmt = $db->query("SELECT t.* FROM eqr_tramites t
+                        WHERE t.tipo = 'salida' AND t.estado = 'completado'
+                          AND t.salida_retorno_registrado IS NULL
+                          AND t.salida_fecha_retorno IS NOT NULL
+                          AND t.salida_fecha_retorno < CURDATE()");
+    $n = 0;
+    foreach ($stmt->fetchAll() as $t) {
+        eqrRegistrarRetorno($db, $t, 'sistema:plazo_vencido');
+        $n++;
+    }
+    return $n;
 }
 
 /** Registra el retorno del equipo de una salida completada (boton del admin). */

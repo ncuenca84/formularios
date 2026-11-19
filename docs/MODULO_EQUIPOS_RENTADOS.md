@@ -49,7 +49,10 @@ replica el formato de FirmaEC, con su QR estándar.
     (modelo/serie) y se re-emite el acta **al mismo custodio**; el motivo con la serie
     anterior consta en el acta.
   - *Salida del edificio* (formulario 7 público): verificación cédula + código,
-    marca "fuera" al completarse y botón **Registrar retorno** en el detalle del trámite.
+    marca "fuera" al completarse y botón **Registrar retorno** en el detalle del trámite
+    y en la ficha del equipo. **Al vencer la fecha de retorno estimada, el retorno se
+    registra solo**: el equipo vuelve automáticamente al estado normal, sin trámite de
+    ingreso (las salidas con retorno "indefinido" sí requieren el botón).
     El acta incluye un **QR de validación en portería**: el guardia lo escanea con su
     celular (sin instalar nada) y `salida_qr.php` le muestra SALIDA AUTORIZADA (verde)
     solo si tiene todas las firmas, está dentro del período y no se registró el retorno;

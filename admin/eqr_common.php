@@ -106,6 +106,19 @@ function eqrMigrado(): bool
     }
 }
 
+// Cierre automatico de salidas con plazo de retorno vencido: al vencer la
+// fecha estimada, el equipo vuelve solo al estado normal, sin tramite de
+// ingreso (decision del usuario, 2026-11-19). Corre al abrir cualquier
+// pagina del panel, ANTES de las consultas de cada pagina.
+if (eqrMigrado()) {
+    try {
+        require_once __DIR__ . '/../includes/eqr/flujo.php';
+        eqrCerrarSalidasVencidas(getDB());
+    } catch (Throwable $e) {
+        error_log('eqrCerrarSalidasVencidas: ' . $e->getMessage());
+    }
+}
+
 // ------------------------------------------------------------------- layout
 function eqrHeader(string $titulo, string $activo = ''): void
 {

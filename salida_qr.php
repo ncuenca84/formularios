@@ -33,6 +33,9 @@ if ($bloqueada) {
     $r = ['encontrada' => false, 'autorizada' => false,
           'motivo' => 'Demasiados intentos desde esta conexión. Espere unos minutos.', 'tramite' => null];
 } else {
+    // Las salidas con plazo vencido se cierran solas (el equipo vuelve al
+    // estado normal); un QR vencido se muestra en rojo con "VENCIÓ el ...".
+    try { eqrCerrarSalidasVencidas($db); } catch (Throwable $exAuto) { /* tablas sin migrar */ }
     $r = eqrEstadoSalidaQr($db, $token);
     if (!$r['encontrada']) {
         eqrFlujoBitacora($db, null, null, 'salida_qr_invalido', [], 'porteria');
