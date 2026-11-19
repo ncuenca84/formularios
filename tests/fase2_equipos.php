@@ -5,6 +5,8 @@ require __DIR__ . '/guard.php';
 require 'includes/eqr/flujo.php';
 $db = getDB();
 $SCR = PRUEBAS_TMP;
+require_once 'config/eqr_schema.php';
+eqrMigrar($db);   // idempotente: garantiza columnas nuevas (p. ej. fecha_acta)
 
 
 // ---------- 0. datos de prueba limpios ----------
@@ -45,11 +47,16 @@ $datos = [
     'recibe_correo' => 'nuevo@arconel.gob.ec', 'recibe_cargo' => 'Especialista', 'recibe_area' => 'DTIC',
     'motivo' => 'Prueba de punta a punta', 'estado_fisico_reportado' => 'Buen estado',
     'accesorios' => 'Cargador', 'observaciones' => '',
+    'fecha_acta' => '2026-09-05',   // fecha contractual elegida por el admin
 ];
 $tramiteId = eqrCrearTramite($db, 'traspaso', $equipo, $contrato, $datos, 'admin:prueba');
 $tramite = eqrTramitePorId($db, $tramiteId);
 ok($tramite['estado'] === 'borrador', 'tramite en borrador');
 ok(is_file(eqrRutaActaAbs($tramite)), 'acta generada: ' . $tramite['codigo']);
+exec('pdftotext ' . escapeshellarg(eqrRutaActaAbs($tramite)) . ' - 2>/dev/null', $oFA);
+ok(strpos(implode("\n", $oFA), '5 de septiembre de 2026') !== false,
+   'el cuerpo del acta lleva la FECHA elegida por el admin (no la de hoy)');
+unset($oFA);
 $firmas = eqrFirmasDeTramite($db, $tramiteId);
 ok(count($firmas) === 3 && $firmas[0]['estado'] === 'pendiente' && $firmas[1]['estado'] === 'en_espera', '3 firmas en orden, la 1 pendiente');
 try { eqrGenerarActa($tramite, $equipo, $contrato, []); ok(false, 'no debe regenerar'); }

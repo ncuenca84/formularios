@@ -231,6 +231,7 @@ function eqrMigrar(PDO $db): array
         ['eqr_contratos', 'delegado_correo', "VARCHAR(255) NOT NULL DEFAULT ''"],
         ['eqr_contratos', 'delegado_memorando', "VARCHAR(255) NOT NULL DEFAULT ''"],
         ['eqr_tramites', 'verif_token', "CHAR(32) NULL"],
+        ['eqr_tramites', 'fecha_acta', "DATE NULL"],
     ];
     $delegadoRecienCreado = false;
     $stmtCol = $db->prepare("SELECT COUNT(*) FROM information_schema.COLUMNS

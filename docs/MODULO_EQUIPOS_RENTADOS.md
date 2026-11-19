@@ -41,7 +41,10 @@ replica el formato de FirmaEC, con su QR estándar.
 - **Equipos**: inventario (códigos REN-####), custodios, estados (en stock / asignado /
   en reparación / retirado) y marca "Fuera de las instalaciones". Importador CSV con
   vista previa.
-- **Trámites** con acta PDF y firmas en línea:
+- **Trámites** con acta PDF y firmas en línea. Al crear el trámite se puede elegir la
+  **fecha del acta** (la del texto "a los … días de …", por temas contractuales; vacía = hoy);
+  los sellos de firma siempre llevan la fecha real de cada firma, y un acta ya firmada
+  no se puede re-fechar (habría que anular el trámite y crear otro):
   - *Asignación* (stock → funcionario): firman administrador/delegado y nuevo custodio.
   - *Traspaso* (funcionario → funcionario): administrador/delegado, custodio anterior y nuevo.
   - *Devolución* (→ stock): administrador/delegado y custodio.

@@ -72,7 +72,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errores && $accion === 'crear') {
         $paso = 2;
         $limpia = fn($k) => trim((string)($_POST[$k] ?? ''));
+
+        // Fecha del cuerpo del acta (por temas contractuales): vacia = hoy.
+        $fechaActa = $limpia('fecha_acta');
+        if ($fechaActa !== '') {
+            $tsFA = strtotime($fechaActa);
+            if ($tsFA === false || (int)date('Y', $tsFA) < 2000 || (int)date('Y', $tsFA) > 2100) {
+                $errores[] = 'La fecha del acta no es válida.';
+                $fechaActa = '';
+            }
+        }
+
         $datos = [
+            'fecha_acta' => $fechaActa !== '' ? $fechaActa : null,
             'motivo' => $limpia('motivo'),
             'estado_fisico_reportado' => $limpia('estado_fisico_reportado'),
             'accesorios' => $limpia('accesorios'),
@@ -294,6 +306,13 @@ $firmanteDtic = $hayDelegado
 
         <h6 class="mt-4 text-success">Condiciones del equipo</h6>
         <div class="row g-2">
+            <div class="col-md-6"><label class="form-label">Fecha del acta</label>
+                <input name="fecha_acta" type="date" class="form-control"
+                       value="<?= $reenvio ? $v('fecha_acta') : date('Y-m-d') ?>">
+                <div class="form-text">Es la fecha que lleva el texto del acta ("a los … días de …");
+                    por temas contractuales puede ser distinta de hoy. Los sellos de firma siempre
+                    llevan la fecha real en que cada persona firma.</div>
+            </div>
             <div class="col-md-6"><label class="form-label">Estado físico reportado</label>
                 <input name="estado_fisico_reportado" class="form-control"
                        value="<?= $reenvio ? $v('estado_fisico_reportado') : e((string)$equipoSel['estado_fisico']) ?>"></div>

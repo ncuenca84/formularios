@@ -141,7 +141,9 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
     $parrafos = fn($txt) => nl2br($e($txt));
 
     $mesesEs = [1=>'enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    $ts = strtotime((string)$tramite['created_at']) ?: time();
+    // Fecha del cuerpo del acta: la elegida por el admin (fecha_acta) o,
+    // si no se indico, la fecha de creacion del tramite.
+    $ts = strtotime((string)(($tramite['fecha_acta'] ?? null) ?: $tramite['created_at'])) ?: time();
     $fechaLarga = date('j', $ts) . ' de ' . $mesesEs[(int)date('n', $ts)] . ' de ' . date('Y', $ts);
 
     // ---- constancia segun tipo (textos nuevos de traspaso/devolucion:

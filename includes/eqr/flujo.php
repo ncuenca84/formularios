@@ -124,6 +124,10 @@ function eqrCrearTramite(PDO $db, string $tipo, array $equipo, array $contrato,
               . (trim((string)($contrato['delegado_memorando'] ?? '')) !== ''
                  ? ' — ' . trim((string)$contrato['delegado_memorando']) : '')
             : $contrato['admin_calidad'],
+        // Fecha que lleva el CUERPO del acta ("a los ... dias de ..."): la
+        // elige el admin por temas contractuales; vacia = fecha de creacion.
+        // Los sellos de firma siempre llevan la fecha real de cada firma.
+        'fecha_acta' => $datos['fecha_acta'] ?? null,
         'motivo' => $datos['motivo'] ?? null,
         'estado_fisico_reportado' => $datos['estado_fisico_reportado'] ?? null,
         'accesorios' => $datos['accesorios'] ?? null,
