@@ -1,0 +1,14 @@
+/vendor/
+/assets/uploads/logos/*
+/assets/uploads/pdfs/*
+!assets/uploads/logos/.gitkeep
+!assets/uploads/pdfs/.gitkeep
+.env
+*.log
+/config/mail.php
+tools/firma-js/node_modules/
+storage/actas/*
+storage/documentos/*
+storage/tmp/*
+!storage/.htaccess
+tests/tmp/
