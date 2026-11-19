@@ -19,7 +19,7 @@ servidor (CWP), cómo se recompila el componente de firma, y cómo firma un func
 | 4 | Acceso VPN | Solicitante → Su jefe → [Área ARCONEL, si se indica] → Director/a TIC |
 | 5 | Privilegios de directorio activo | Solicitante → Director/Jefe de área |
 | 6 | Accesos especiales de internet | Solicitante → Director/Jefe de área |
-| 7 | Salida de equipo de cómputo (equipos rentados) | Custodio → Jefe inmediato |
+| 7 | Salida de equipo de cómputo (rentados e institucionales) | Custodio → Jefe inmediato |
 | 8 | Cuenta adicional de correo electrónico | Solicitante → Director/Jefe de área |
 
 El proceso es siempre el mismo: la persona llena el formulario, **firma ahí mismo** con su
@@ -48,9 +48,13 @@ replica el formato de FirmaEC, con su QR estándar.
   - *Reposición* (el proveedor repuso el equipo por robo/daño): se actualiza la ficha
     (modelo/serie) y se re-emite el acta **al mismo custodio**; el motivo con la serie
     anterior consta en el acta.
-  - *Salida del edificio* (formulario 7 público): verificación cédula + código,
-    marca "fuera" al completarse y botón **Registrar retorno** en el detalle del trámite
-    y en la ficha del equipo. **Al vencer la fecha de retorno estimada, el retorno se
+  - *Salida del edificio* (formulario 7 público): para **equipos rentados**, verificación
+    cédula + código contra el inventario; para **equipos de propiedad institucional** (sin
+    inventario en el sistema), el funcionario indica solo el **código del bien**, los
+    accesorios y sus datos — el sistema crea un registro interno bajo el contrato
+    `BIENES-ARCONEL` (inactivo) y reutiliza todo el circuito: firmas, QR de portería,
+    marca "fuera" y retorno. Marca "fuera" al completarse y botón **Registrar retorno**
+    en el detalle del trámite y en la ficha del equipo. **Al vencer la fecha de retorno estimada, el retorno se
     registra solo**: el equipo vuelve automáticamente al estado normal, sin trámite de
     ingreso (las salidas con retorno "indefinido" sí requieren el botón).
     El acta incluye un **QR de validación en portería**: el guardia lo escanea con su

@@ -24,12 +24,15 @@ renderFormErroresYPrevios();
 
             <div class="alert alert-info">
                 <h6 class="fw-bold"><i class="bi bi-info-circle-fill"></i> ¿Qué es este formulario y cómo funciona?</h6>
-                <p class="small mb-2">Use este formulario cuando necesite <strong>sacar su equipo de cómputo en
-                arrendamiento</strong> de las instalaciones de la ARCONEL (teletrabajo, comisión de servicios u
-                otra necesidad institucional). <strong>Todo se firma en línea</strong>, sin imprimir nada:</p>
+                <p class="small mb-2">Use este formulario cuando necesite <strong>sacar un equipo de
+                cómputo</strong> de las instalaciones de la ARCONEL (teletrabajo, comisión de servicios u
+                otra necesidad institucional), sea un equipo <strong>rentado</strong> (código REN-…) o un
+                equipo <strong>de propiedad de la institución</strong> (código de bien del sticker de
+                inventario). <strong>Todo se firma en línea</strong>, sin imprimir nada:</p>
                 <ol class="mb-0 small">
-                    <li><strong>Paso 1:</strong> Escriba su cédula y el código de su equipo (ej.: REN-0012, consta
-                        en la etiqueta del equipo o en su acta) y pulse <strong>Verificar</strong>.</li>
+                    <li><strong>Paso 1:</strong> Identifique el equipo: si es rentado, su cédula + código
+                        (ej.: REN-0012) y <strong>Verificar</strong>; si es institucional, solo el código del
+                        bien y sus datos.</li>
                     <li><strong>Paso 2:</strong> Indique el motivo, las fechas y quién es su jefe inmediato.</li>
                     <li><strong>Paso 3:</strong> Al enviar, el sistema le mostrará el documento para que lo
                         <strong>firme ahí mismo con su archivo de firma electrónica (.p12)</strong>.</li>
@@ -48,6 +51,20 @@ renderFormErroresYPrevios();
 
                         <!-- PASO 1: IDENTIFICACION -->
                         <div class="section-title"><i class="bi bi-1-circle-fill"></i> PASO 1: IDENTIFIQUE SU EQUIPO</div>
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tipo_equipo" id="teRentado"
+                                       value="rentado" checked>
+                                <label class="form-check-label" for="teRentado">Equipo <strong>rentado</strong> (código REN-…)</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tipo_equipo" id="teBien"
+                                       value="bien">
+                                <label class="form-check-label" for="teBien">Equipo <strong>de la institución</strong> (código de bien)</label>
+                            </div>
+                        </div>
+
+                        <div id="zonaRentado">
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Su cédula <span class="text-danger">*</span></label>
@@ -67,6 +84,39 @@ renderFormErroresYPrevios();
                         </div>
                         <div id="msgVerificar" class="alert alert-warning small" style="display:none"></div>
                         <div id="equipoCard" class="alert alert-success small" style="display:none"></div>
+                        </div><!-- /zonaRentado -->
+
+                        <div id="zonaBien" style="display:none">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Código del bien <span class="text-danger">*</span></label>
+                                <input type="text" name="codigo_bien" class="form-control"
+                                       placeholder="Del sticker de inventario" autocomplete="off" maxlength="30">
+                            </div>
+                        </div>
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="fw-bold" style="color:#155724;">Sus datos (usted firma la solicitud)</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Apellidos y nombres <span class="text-danger">*</span></label>
+                                    <input type="text" name="bien_nombre" class="form-control">
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                                    <input type="text" name="bien_cedula" class="form-control" data-solo-numeros maxlength="10">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Correo institucional <span class="text-danger">*</span></label>
+                                    <input type="email" name="bien_correo" class="form-control"
+                                           placeholder="usuario@<?= htmlspecialchars($dominio) ?>">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Cargo / Área</label>
+                                    <input type="text" name="bien_cargo" class="form-control" placeholder="opcional">
+                                </div>
+                            </div>
+                        </div>
+                        </div><!-- /zonaBien -->
 
                         <!-- RESTO DEL FORMULARIO (se habilita tras verificar) -->
                         <div id="restoForm" style="display:none">
@@ -193,6 +243,29 @@ renderFormErroresYPrevios();
     var msg = document.getElementById('msgVerificar');
     var card = document.getElementById('equipoCard');
     var resto = document.getElementById('restoForm');
+    var zonaRentado = document.getElementById('zonaRentado');
+    var zonaBien = document.getElementById('zonaBien');
+
+    function esBien() {
+        var r = document.querySelector('input[name="tipo_equipo"]:checked');
+        return r && r.value === 'bien';
+    }
+    function aplicarTipo() {
+        if (esBien()) {
+            zonaRentado.style.display = 'none';
+            zonaBien.style.display = 'block';
+            resto.style.display = 'block';   // sin verificación: no hay inventario del bien
+        } else {
+            zonaRentado.style.display = 'block';
+            zonaBien.style.display = 'none';
+            // el resto se habilita solo tras Verificar (flujo original)
+            resto.style.display = (card.style.display === 'block') ? 'block' : 'none';
+        }
+    }
+    document.querySelectorAll('input[name="tipo_equipo"]').forEach(function (r) {
+        r.addEventListener('change', aplicarTipo);
+    });
+    aplicarTipo();
 
     function aviso(texto, tipo) {
         msg.className = 'alert alert-' + tipo + ' small';
@@ -235,7 +308,7 @@ renderFormErroresYPrevios();
     });
 
     document.getElementById('formSalida').addEventListener('submit', function (ev) {
-        if (resto.style.display === 'none') {
+        if (!esBien() && resto.style.display === 'none') {
             ev.preventDefault();
             aviso('Primero verifique su equipo (Paso 1).', 'warning');
         }

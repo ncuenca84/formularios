@@ -127,8 +127,13 @@ class Notificador
 
     private static function equipoLinea(array $tramite): string
     {
-        return trim(($tramite['equipo_marca'] ?? '') . ' ' . ($tramite['equipo_modelo'] ?? '') .
-            ' — Código ' . ($tramite['equipo_codigo'] ?? '') . ', Serie ' . ($tramite['equipo_serie'] ?? ''));
+        $marcaModelo = trim(($tramite['equipo_marca'] ?? '') . ' ' . ($tramite['equipo_modelo'] ?? ''));
+        if ($marcaModelo === '') {
+            // Bien de propiedad institucional registrado solo por su codigo
+            return 'Equipo institucional — Código de bien ' . ($tramite['equipo_codigo'] ?? '');
+        }
+        return $marcaModelo . ' — Código ' . ($tramite['equipo_codigo'] ?? '')
+            . ', Serie ' . ($tramite['equipo_serie'] ?? '');
     }
 
     /** Correo al firmante de turno con su enlace de firma. */

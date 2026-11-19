@@ -320,8 +320,12 @@ function eqrActaHtml(array $tramite, array $equipo, array $contrato, array $firm
 function eqrActaSalidaHtml(array $tramite, array $equipo, array $contrato, array $firmantes,
                            array $config, array $meta, string $logoDataUri, string $logoSecundarioDataUri): string
 {
+    // ¿Equipo de propiedad institucional (registro interno BIENES-ARCONEL)?
+    $esBien = (($contrato['numero'] ?? '') === 'BIENES-ARCONEL');
     $metaDoc = $meta;
-    $metaDoc['titulo_encabezado'] = 'AUTORIZACIÓN DE SALIDA DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO';
+    $metaDoc['titulo_encabezado'] = $esBien
+        ? 'AUTORIZACIÓN DE SALIDA DE EQUIPO DE CÓMPUTO INSTITUCIONAL'
+        : 'AUTORIZACIÓN DE SALIDA DE EQUIPO DE CÓMPUTO EN ARRENDAMIENTO';
     $encabezado = renderPdfEncabezadoInstitucional($config, $metaDoc, $logoDataUri, $logoSecundarioDataUri);
     $colorPrimario = $config['color_primario'] ?? '#003366';
     $e = fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
@@ -378,13 +382,20 @@ function eqrActaSalidaHtml(array $tramite, array $equipo, array $contrato, array
 <?= $encabezado ?>
 
 <div class="codigo-tramite">Trámite Nro. <strong><?= $e($tramite['codigo']) ?></strong> ·
-    Contrato <?= $e($contrato['numero']) ?></div>
+    <?= $esBien ? 'Equipo de propiedad institucional' : 'Contrato ' . $e($contrato['numero']) ?></div>
 
+<?php if ($esBien): ?>
+<p class="intro">Mediante el presente documento se registra y autoriza la salida del equipo de cómputo de
+propiedad de la Agencia de Regulación y Control de Electricidad — ARCONEL detallado a continuación, fuera
+de sus instalaciones. El equipo se identifica por su código de bien institucional y se encuentra bajo la
+responsabilidad del usuario solicitante, quien debe contar con esta autorización firmada antes de retirarlo.</p>
+<?php else: ?>
 <p class="intro">Mediante el presente documento se registra y autoriza la salida del equipo de cómputo en
 arrendamiento detallado a continuación fuera de las instalaciones de la Agencia de Regulación y Control de
 Electricidad — ARCONEL, conforme a lo previsto en el acta de asignación, entrega y recepción del equipo.
 El equipo se encuentra bajo la custodia del usuario solicitante, quien debe contar con esta autorización
 firmada antes de retirarlo.</p>
+<?php endif; ?>
 
 <div class="seccion">1. DATOS DEL CUSTODIO (USUARIO FINAL)</div>
 <table class="dt">
@@ -396,6 +407,16 @@ firmada antes de retirarlo.</p>
 </table>
 
 <div class="seccion">2. DATOS DEL EQUIPO</div>
+<?php if ($esBien): ?>
+<table class="dt">
+    <tr><td class="lb">Código del bien:</td><td><?= $e($equipo['codigo_interno']) ?></td>
+        <td class="lb">Tipo:</td><td><?= $e($equipo['tipo']) ?></td></tr>
+    <tr><td class="lb">Accesorios que lleva:</td><td colspan="3"><?= $e($tramite['accesorios']) ?: '—' ?></td></tr>
+    <?php if (trim((string)$tramite['observaciones']) !== ''): ?>
+    <tr><td class="lb">Observaciones:</td><td colspan="3"><?= $e($tramite['observaciones']) ?></td></tr>
+    <?php endif; ?>
+</table>
+<?php else: ?>
 <table class="dt">
     <tr><td class="lb">Código interno:</td><td><?= $e($equipo['codigo_interno']) ?></td>
         <td class="lb">Tipo:</td><td><?= $e($equipo['tipo']) ?></td></tr>
@@ -407,6 +428,7 @@ firmada antes de retirarlo.</p>
     <tr><td class="lb">Observaciones:</td><td colspan="3"><?= $e($tramite['observaciones']) ?></td></tr>
     <?php endif; ?>
 </table>
+<?php endif; ?>
 
 <div class="seccion">3. MOTIVO Y PERÍODO DE LA SALIDA</div>
 <table class="dt">
@@ -434,8 +456,8 @@ firmada antes de retirarlo.</p>
 <p class="intro">El custodio declara conocer y aceptar los compromisos detallados en el presente documento y
 asume la responsabilidad del cuidado, buen uso, custodia y conservación del equipo mientras permanezca
 fuera de las instalaciones de la ARCONEL. El jefe inmediato autoriza la salida del equipo para el motivo y
-período indicados. Esta autorización no modifica las responsabilidades establecidas en el acta de
-asignación, entrega y recepción del equipo ni la custodia registrada en el sistema.</p>
+período indicados.<?= $esBien ? '' : ' Esta autorización no modifica las responsabilidades establecidas en el acta de
+asignación, entrega y recepción del equipo ni la custodia registrada en el sistema.' ?></p>
 
 <!-- ============ ULTIMA PAGINA: FIRMAS ELECTRONICAS ============ -->
 <div style="page-break-before: always;">

@@ -325,6 +325,18 @@ function eqrMigrar(PDO $db): array
         $log[] = 'Contrato ARCONEL-005-2026 ya existía (no se modificó).';
     }
 
+    // Registro interno (activo=0) para los equipos de PROPIEDAD institucional
+    // (no arrendados) que tramitan salidas por el formulario 7. No interfiere
+    // con los tramites de custodia ni con las actas y pagos del arrendamiento.
+    $db->prepare("INSERT IGNORE INTO eqr_contratos
+                  (numero, objeto, proveedor, admin_nombre, admin_calidad, activo)
+                  VALUES ('BIENES-ARCONEL',
+                          'Equipos de cómputo de propiedad de la institución (no arrendados) — registro interno para autorizaciones de salida',
+                          'ARCONEL', 'Dirección de Tecnologías de la Información y Comunicación',
+                          'Registro interno de bienes institucionales', 0)")
+       ->execute();
+    $log[] = 'Registro interno BIENES-ARCONEL para salidas de equipos institucionales verificado.';
+
     // Encabezado de las actas del modulo: fila 20 (la fila 8 paso a ser el
     // formulario publico de cuenta de correo). Migracion del dato existente:
     $db->exec("UPDATE formularios_meta SET formulario_id = 20

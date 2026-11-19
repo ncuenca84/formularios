@@ -127,5 +127,54 @@ $equipo = $db->query("SELECT * FROM eqr_equipos WHERE id = $equipoId")->fetch();
 ok(eqrSalidaProblema($db, $equipo) === null, 'puede iniciarse una NUEVA salida sin trámite de ingreso');
 ok(eqrCerrarSalidasVencidas($db) === 0, 'no queda nada por cerrar (idempotente)');
 
+echo "== 8. Salida de un BIEN institucional (no rentado) ==\n";
+require_once 'config/eqr_schema.php';
+eqrMigrar($db);   // idempotente: garantiza el registro interno BIENES-ARCONEL
+$sol = ['cedula' => '1710000002', 'nombre' => 'Custodio Anterior de Prueba',
+        'correo' => 'custodio@arconel.gob.ec', 'cargo' => 'Analista', 'area' => 'DTIC'];
+$rb = eqrEquipoBienInstitucional($db, 'test-bien-0001', $sol);
+ok(isset($rb['equipo']) && $rb['equipo']['codigo_interno'] === 'TEST-BIEN-0001',
+   'bien registrado (sombra) con el código normalizado a mayúsculas');
+ok($rb['contrato']['numero'] === 'BIENES-ARCONEL' && (string)$rb['contrato']['activo'] === '0',
+   'bajo el registro interno BIENES-ARCONEL (inactivo: no interfiere con el arrendamiento)');
+$idBien = (int)$rb['equipo']['id'];
+$rb2 = eqrEquipoBienInstitucional($db, 'TEST-BIEN-0001', $sol);
+ok(isset($rb2['equipo']) && (int)$rb2['equipo']['id'] === $idBien, 'una segunda solicitud reutiliza el mismo registro');
+$rMalB = eqrEquipoBienInstitucional($db, 'TEST-3001', $sol);
+ok(isset($rMalB['error']) && mb_stripos($rMalB['error'], 'RENTADO') !== false,
+   'un código de equipo rentado se rechaza con aviso de usar la otra opción');
+
+$datosB = [
+    'entrega_cedula' => $sol['cedula'], 'entrega_nombre' => $sol['nombre'],
+    'entrega_correo' => $sol['correo'], 'entrega_cargo' => $sol['cargo'], 'entrega_area' => $sol['area'],
+    'jefe_cedula' => '1710000003', 'jefe_nombre' => 'Jefe Inmediato de Prueba',
+    'jefe_correo' => 'jefe@arconel.gob.ec', 'jefe_cargo' => 'Director de Área',
+    'salida_motivo' => 'Comisión de servicios', 'salida_fecha' => date('Y-m-d'),
+    'salida_fecha_retorno' => date('Y-m-d', time() + 7 * 86400), 'salida_lugar' => 'Guayaquil',
+    'accesorios' => 'Cargador y mouse', 'observaciones' => '',
+];
+$rS = eqrCrearSalida($db, $rb['equipo'], $rb['contrato'], $datosB, null);
+$ctx = eqrFirmaPorToken($db, $rS['token']);
+$prep = eqrPrepararFirma($ctx['tramite'], $ctx['firma']);
+$hex = firmaCli('firmante2_anterior.p12', $prep['bytesB64'], 'sigB1.der');
+$rr = eqrCompletarFirma($db, $ctx['tramite'], $ctx['firma'], $hex, 'firmante:1710000002');
+ok($rr['ok'] && !$rr['completo'], 'firma del funcionario aceptada en el acta del bien');
+$fJ = eqrFirmaPendiente($db, (int)$rS['tramite_id']);
+$tkJ = eqrTokenNuevo($db, (int)$fJ['id']);
+$ctx = eqrFirmaPorToken($db, $tkJ['token']);
+$prep = eqrPrepararFirma($ctx['tramite'], $ctx['firma']);
+$hex = firmaCli('firmante3_nuevo.p12', $prep['bytesB64'], 'sigB2.der');
+$rr = eqrCompletarFirma($db, $ctx['tramite'], $ctx['firma'], $hex, 'firmante:1710000003');
+ok($rr['ok'] && $rr['completo'], 'firma del jefe: salida del bien COMPLETA');
+$eqB = $db->query("SELECT fuera_instalaciones FROM eqr_equipos WHERE id = $idBien")->fetch();
+ok((string)$eqB['fuera_instalaciones'] === '1', 'el bien quedó marcado FUERA de las instalaciones');
+$tB = eqrTramitePorId($db, (int)$rS['tramite_id']);
+$rQrB = eqrEstadoSalidaQr($db, $tB['verif_token']);
+ok($rQrB['encontrada'] && $rQrB['autorizada'], 'el QR de portería del bien dice AUTORIZADA');
+$rb3 = eqrEquipoBienInstitucional($db, 'TEST-BIEN-0001', $sol);
+ok(isset($rb3['error']), 'mientras está fuera, una nueva salida del mismo bien se bloquea');
+copy(eqrRutaActaAbs($tB), "$SCR/acta_salida_bien.pdf");
+eqrRegistrarRetorno($db, $tB, 'admin:prueba');
+
 copy(eqrRutaActaAbs(eqrTramitePorId($db, $tramiteId)), "$SCR/acta_salida_final.pdf");
 echo "\nTODO PASÓ (Fase 3). Acta: $SCR/acta_salida_final.pdf\n";

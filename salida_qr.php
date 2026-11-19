@@ -97,9 +97,13 @@ $ok = $r['autorizada'];
     <?php if ($t): ?>
         <div class="datos">
             <div class="fila"><span class="k">Equipo</span>
-                <span class="v"><?= $e($t['equipo_codigo']) ?> — <?= $e($t['equipo_marca']) ?> <?= $e($t['equipo_modelo']) ?></span></div>
+                <span class="v"><?= $e($t['equipo_codigo']) ?><?= trim($t['equipo_marca'] . ' ' . $t['equipo_modelo']) !== ''
+                    ? ' — ' . $e($t['equipo_marca']) . ' ' . $e($t['equipo_modelo'])
+                    : ' — Bien institucional' ?></span></div>
+            <?php if (!str_starts_with((string)$t['equipo_serie'], 'BIEN-')): ?>
             <div class="fila"><span class="k">Serie</span>
                 <span class="v"><?= $e($t['equipo_serie']) ?></span></div>
+            <?php endif; ?>
             <div class="fila"><span class="k">Custodio</span>
                 <span class="v"><?= $e($t['entrega_nombre']) ?></span></div>
             <div class="fila"><span class="k">Sale el</span>

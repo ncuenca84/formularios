@@ -21,7 +21,43 @@ if (!$errores && eqrPubIpBloqueada($db, 'salida_verificacion_fallida')) {
 
 $equipo = null;
 $contrato = null;
-if (!$errores) {
+$tipoEquipo = (($_POST['tipo_equipo'] ?? '') === 'bien') ? 'bien' : 'rentado';
+
+if (!$errores && $tipoEquipo === 'bien') {
+    // Equipo de PROPIEDAD institucional (sin inventario previo): el funcionario
+    // aporta solo el codigo del bien y sus propios datos; se crea o reutiliza
+    // un registro sombra bajo el contrato interno BIENES-ARCONEL.
+    $dominio = getConfig('eqr_dominio_correo', 'arconel.gob.ec');
+    $limpiaB = fn($k) => trim((string)($_POST[$k] ?? ''));
+    $solCedula = preg_replace('/\D/', '', $limpiaB('bien_cedula'));
+    if (strlen($solCedula) === 9 && eqrValidarCedula('0' . $solCedula)) { $solCedula = '0' . $solCedula; }
+    $solNombre = $limpiaB('bien_nombre');
+    $solCorreo = $limpiaB('bien_correo');
+    if (!eqrValidarCedula($solCedula)) { $errores[] = 'Su cédula no es válida (su firma electrónica se valida contra ella).'; }
+    if ($solNombre === '') { $errores[] = 'Escriba sus apellidos y nombres.'; }
+    if ($solCorreo === '' || !filter_var($solCorreo, FILTER_VALIDATE_EMAIL)
+        || !str_ends_with(strtolower($solCorreo), '@' . strtolower($dominio))) {
+        $errores[] = "Su correo debe ser institucional (@$dominio): ahí le llegará el documento firmado.";
+    }
+    if (!$errores) {
+        // Limite por IP para no permitir crear registros sombra en masa
+        $stmt = $db->prepare("SELECT COUNT(*) FROM eqr_bitacora
+                              WHERE accion = 'bien_institucional_registrado' AND ip = ?
+                                AND fecha > DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+        $stmt->execute([$_SERVER['REMOTE_ADDR'] ?? '']);
+        if ((int)$stmt->fetchColumn() >= 10) {
+            $errores[] = 'Demasiados registros de bienes desde su conexión. Espere un momento e intente de nuevo.';
+        }
+    }
+    if (!$errores) {
+        $r = eqrEquipoBienInstitucional($db, (string)($_POST['codigo_bien'] ?? ''), [
+            'cedula' => $solCedula, 'nombre' => $solNombre, 'correo' => $solCorreo,
+            'cargo' => $limpiaB('bien_cargo'), 'area' => '',
+        ]);
+        if (isset($r['error'])) { $errores[] = $r['error']; }
+        else { $equipo = $r['equipo']; $contrato = $r['contrato']; }
+    }
+} elseif (!$errores) {
     $cedula = preg_replace('/\D/', '', (string)($_POST['cedula'] ?? ''));
     $codigo = strtoupper(trim((string)($_POST['codigo'] ?? '')));
     $equipo = eqrEquipoDeCustodio($db, $cedula, $codigo);
@@ -103,7 +139,9 @@ if (!$errores) {
                       VALUES (?,?,?,?,?,?,?)")
            ->execute([$codigoSol, $equipo['custodio_nombre'], $equipo['custodio_cedula'],
                       $equipo['custodio_correo'], (string)$equipo['custodio_cargo'],
-                      (string)$equipo['custodio_area'], 'Autorización de Salida de Equipo Rentado']);
+                      (string)$equipo['custodio_area'],
+                      $tipoEquipo === 'bien' ? 'Autorización de Salida de Equipo Institucional'
+                                             : 'Autorización de Salida de Equipo Rentado']);
         $solicitudId = (int)$db->lastInsertId();
 
         $r = eqrCrearSalida($db, $equipo, $contrato, $datos, $solicitudId);

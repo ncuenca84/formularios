@@ -506,6 +506,88 @@ function eqrReenviarEnlace(PDO $db, array $tramite, string $actor): array
 // =====================================================================
 
 /**
+ * Numero del contrato INTERNO bajo el que se registran los equipos de
+ * propiedad de la institucion (no arrendados) cuando tramitan una salida.
+ * Lo siembra la migracion con activo=0: no interfiere con tramites de
+ * custodia ni con actas y pagos del contrato de arrendamiento.
+ */
+const EQR_CONTRATO_BIENES = 'BIENES-ARCONEL';
+
+function eqrContratoBienes(PDO $db): ?array
+{
+    $stmt = $db->prepare("SELECT * FROM eqr_contratos WHERE numero = ?");
+    $stmt->execute([EQR_CONTRATO_BIENES]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Busca o crea el registro "sombra" de un EQUIPO INSTITUCIONAL (no
+ * arrendado) para tramitar su salida, a nombre del solicitante.
+ * El funcionario solo aporta el codigo del bien; sus datos personales son
+ * los del propio circuito de firma. Si el bien ya salio antes, se reutiliza
+ * su registro (y queda un mini-inventario de bienes que han salido).
+ *
+ * @param array $sol ['cedula','nombre','correo','cargo','area'] del solicitante
+ * @return array ['equipo'=>array,'contrato'=>array] o ['error'=>string]
+ */
+function eqrEquipoBienInstitucional(PDO $db, string $codigoBien, array $sol): array
+{
+    $codigo = mb_strtoupper(trim($codigoBien));
+    if ($codigo === '' || mb_strlen($codigo) > 30) {
+        return ['error' => 'Escriba el código del bien (consta en el sticker de inventario del equipo, máx. 30 caracteres).'];
+    }
+    if (!preg_match('/^[A-Z0-9ÑÁÉÍÓÚ][A-Z0-9ÑÁÉÍÓÚ\.\-\/ ]*$/u', $codigo)) {
+        return ['error' => 'El código del bien solo puede tener letras, números, puntos, guiones o barras.'];
+    }
+    $contrato = eqrContratoBienes($db);
+    if (!$contrato) {
+        return ['error' => 'Falta ejecutar la migración del módulo (registro de bienes institucionales). Avise a la DTIC.'];
+    }
+
+    $stmt = $db->prepare("SELECT * FROM eqr_equipos WHERE codigo_interno = ?");
+    $stmt->execute([$codigo]);
+    $eq = $stmt->fetch();
+
+    if ($eq && (int)$eq['contrato_id'] !== (int)$contrato['id']) {
+        return ['error' => 'Ese código corresponde a un equipo RENTADO del inventario: use la opción "Equipo rentado (REN-…)" con su cédula.'];
+    }
+    if ($eq) {
+        // El registro existe de una salida anterior: si tiene una salida en
+        // curso o vigente, no se toca (ni se cambia su custodio).
+        if (($problema = eqrSalidaProblema($db, $eq)) !== null) {
+            return ['error' => $problema];
+        }
+        $db->prepare("UPDATE eqr_equipos SET estado = 'asignado',
+                        custodio_cedula = ?, custodio_nombre = ?, custodio_correo = ?,
+                        custodio_cargo = ?, custodio_area = ? WHERE id = ?")
+           ->execute([$sol['cedula'], $sol['nombre'], $sol['correo'],
+                      (string)($sol['cargo'] ?? ''), (string)($sol['area'] ?? ''), (int)$eq['id']]);
+    } else {
+        $db->prepare("INSERT INTO eqr_equipos (contrato_id, codigo_interno, tipo, marca, modelo,
+                        serie, cargador_entregado, estado,
+                        custodio_cedula, custodio_nombre, custodio_correo, custodio_cargo, custodio_area,
+                        observaciones)
+                      VALUES (?, ?, 'Equipo institucional (no arrendado)', '', '', ?, 0, 'asignado',
+                              ?, ?, ?, ?, ?, 'Registrado automáticamente por el formulario 7 (salida de bien institucional).')")
+           ->execute([(int)$contrato['id'], $codigo, 'BIEN-' . $codigo,
+                      $sol['cedula'], $sol['nombre'], $sol['correo'],
+                      (string)($sol['cargo'] ?? ''), (string)($sol['area'] ?? '')]);
+        $id = (int)$db->lastInsertId();
+        eqrFlujoBitacora($db, $id, null, 'bien_institucional_registrado',
+            ['codigo' => $codigo], 'formulario7:' . $sol['cedula']);
+    }
+    $db->prepare("INSERT INTO eqr_personas (cedula, nombres, correo, cargo, area)
+                  VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE nombres=VALUES(nombres),
+                  correo=VALUES(correo), cargo=VALUES(cargo), area=VALUES(area)")
+       ->execute([$sol['cedula'], $sol['nombre'], $sol['correo'],
+                  (string)($sol['cargo'] ?? ''), (string)($sol['area'] ?? '')]);
+
+    $stmt = $db->prepare("SELECT * FROM eqr_equipos WHERE codigo_interno = ?");
+    $stmt->execute([$codigo]);
+    return ['equipo' => $stmt->fetch(), 'contrato' => $contrato];
+}
+
+/**
  * Verifica el par cedula + codigo interno SIN revelar informacion de
  * terceros. Devuelve el equipo si esta a nombre de esa cedula, o null.
  */

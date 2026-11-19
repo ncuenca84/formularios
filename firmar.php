@@ -42,13 +42,17 @@ if (eqrIpBloqueada($db)) {
               'reposicion' => 'Reposición', 'salida' => 'Salida de las instalaciones'];
     if (($ctx = eqrFirmaPorToken($db, $token)) !== null) {
         $t = $ctx['tramite'];
+        $descEquipo = trim($t['equipo_marca'] . ' ' . $t['equipo_modelo']) !== ''
+            ? $e($t['equipo_marca']) . ' ' . $e($t['equipo_modelo']) . ', serie ' . $e($t['equipo_serie'])
+            : 'equipo de propiedad institucional (código de bien)';
+        $creado = $t['tipo'] === 'salida'
+            ? 'solicitado por ' . $e($t['entrega_nombre'])
+            : 'creado por ' . $e($t['admin_contrato_nombre']);
         $vista = [
             'firma' => $ctx['firma'],
             'titulo' => 'Firma electrónica de acta — ' . ($tipos[$t['tipo']] ?? $t['tipo']),
-            'sub' => 'Trámite <strong>' . $e($t['codigo']) . '</strong>, creado por '
-                . $e($t['admin_contrato_nombre']) . '.<br>Equipo: <strong>' . $e($t['equipo_codigo'])
-                . '</strong> — ' . $e($t['equipo_marca']) . ' ' . $e($t['equipo_modelo'])
-                . ', serie ' . $e($t['equipo_serie']) . '.',
+            'sub' => 'Trámite <strong>' . $e($t['codigo']) . '</strong>, ' . $creado
+                . '.<br>Equipo: <strong>' . $e($t['equipo_codigo']) . '</strong> — ' . $descEquipo . '.',
             'problema' => eqrTokenProblema($ctx['firma'], $t),
         ];
     } elseif (($ctx = firFirmaPorToken($db, $token)) !== null) {
