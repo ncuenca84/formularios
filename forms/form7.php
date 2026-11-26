@@ -30,9 +30,9 @@ renderFormErroresYPrevios();
                 equipo <strong>de propiedad de la institución</strong> (código de bien del sticker de
                 inventario). <strong>Todo se firma en línea</strong>, sin imprimir nada:</p>
                 <ol class="mb-0 small">
-                    <li><strong>Paso 1:</strong> Identifique el equipo: si es rentado, su cédula + código
-                        (ej.: REN-0012) y <strong>Verificar</strong>; si es institucional, solo el código del
-                        bien y sus datos.</li>
+                    <li><strong>Paso 1:</strong> Identifique el equipo: si es rentado, su cédula + la
+                        <strong>serie</strong> del equipo (consta en su acta, ej.: J6F8LG3) y
+                        <strong>Verificar</strong>; si es institucional, solo el código del bien y sus datos.</li>
                     <li><strong>Paso 2:</strong> Indique el motivo, las fechas y quién es su jefe inmediato.</li>
                     <li><strong>Paso 3:</strong> Al enviar, el sistema le mostrará el documento para que lo
                         <strong>firme ahí mismo con su archivo de firma electrónica (.p12)</strong>.</li>
@@ -72,10 +72,11 @@ renderFormErroresYPrevios();
                                        maxlength="10" placeholder="Solo números" required autocomplete="off">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Código del equipo <span class="text-danger">*</span></label>
+                                <label class="form-label">Serie o código del equipo <span class="text-danger">*</span></label>
                                 <input type="text" name="codigo" id="codigo" class="form-control"
-                                       placeholder="Ej: REN-0012" required autocomplete="off">
-                                <small class="text-muted">Consta en la etiqueta del equipo y en su acta.</small>
+                                       placeholder="Ej: J6F8LG3 o REN-0012" required autocomplete="off">
+                                <small class="text-muted">La <strong>serie</strong> consta en su acta de
+                                    entrega y en la etiqueta del equipo. También sirve el código REN-….</small>
                             </div>
                             <div class="col-md-4 mb-3 d-flex align-items-end">
                                 <button type="button" id="btnVerificar" class="btn btn-success w-100 mb-1">

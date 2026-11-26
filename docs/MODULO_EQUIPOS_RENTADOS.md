@@ -52,7 +52,8 @@ replica el formato de FirmaEC, con su QR estándar.
     (modelo/serie) y se re-emite el acta **al mismo custodio**; el motivo con la serie
     anterior consta en el acta.
   - *Salida del edificio* (formulario 7 público): para **equipos rentados**, verificación
-    cédula + código contra el inventario; para **equipos de propiedad institucional** (sin
+    contra el inventario con cédula + **serie del equipo** (la que consta en el acta del
+    funcionario) o código REN-…; para **equipos de propiedad institucional** (sin
     inventario en el sistema), el funcionario indica solo el **código del bien**, los
     accesorios y sus datos — el sistema crea un registro interno bajo el contrato
     `BIENES-ARCONEL` (inactivo) y reutiliza todo el circuito: firmas, QR de portería,

@@ -38,7 +38,7 @@ $equipo = eqrEquipoDeCustodio($db, $cedula, $codigo);
 if (!$equipo) {
     eqrPubIntentoFallido($db, 'salida_verificacion_fallida', ['codigo' => substr($codigo, 0, 20)]);
     salidaApiResponder(['ok' => false,
-        'mensaje' => 'Los datos no coinciden con un equipo a su cargo. Verifique su cédula y el código del equipo (ej.: REN-0012).']);
+        'mensaje' => 'Los datos no coinciden con un equipo a su cargo. Verifique su cédula y la serie del equipo (consta en su acta de entrega, ej.: J6F8LG3) o el código REN-….']);
 }
 
 salidaApiResponder([

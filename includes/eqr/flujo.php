@@ -548,12 +548,14 @@ function eqrEquipoBienInstitucional(PDO $db, string $codigoBien, array $sol): ar
         return ['error' => 'Falta ejecutar la migración del módulo (registro de bienes institucionales). Avise a la DTIC.'];
     }
 
-    $stmt = $db->prepare("SELECT * FROM eqr_equipos WHERE codigo_interno = ?");
-    $stmt->execute([$codigo]);
+    // Tambien por serie: si alguien escribe la serie de un equipo rentado
+    // en la opcion de bienes, se le indica usar la otra opcion.
+    $stmt = $db->prepare("SELECT * FROM eqr_equipos WHERE codigo_interno = ? OR serie = ? LIMIT 1");
+    $stmt->execute([$codigo, $codigo]);
     $eq = $stmt->fetch();
 
     if ($eq && (int)$eq['contrato_id'] !== (int)$contrato['id']) {
-        return ['error' => 'Ese código corresponde a un equipo RENTADO del inventario: use la opción "Equipo rentado (REN-…)" con su cédula.'];
+        return ['error' => 'Ese código o serie corresponde a un equipo RENTADO del inventario: use la opción "Equipo rentado" con su cédula.'];
     }
     if ($eq) {
         // El registro existe de una salida anterior: si tiene una salida en
@@ -592,8 +594,11 @@ function eqrEquipoBienInstitucional(PDO $db, string $codigoBien, array $sol): ar
 }
 
 /**
- * Verifica el par cedula + codigo interno SIN revelar informacion de
- * terceros. Devuelve el equipo si esta a nombre de esa cedula, o null.
+ * Verifica el par cedula + equipo SIN revelar informacion de terceros.
+ * El equipo se identifica por su CODIGO INTERNO (REN-....) o por su NUMERO
+ * DE SERIE: el funcionario normalmente conoce la serie (consta en su acta
+ * de entrega y en el equipo), no el codigo interno del inventario.
+ * Devuelve el equipo si esta a nombre de esa cedula, o null.
  */
 function eqrEquipoDeCustodio(PDO $db, string $cedula, string $codigo): ?array
 {
@@ -601,8 +606,9 @@ function eqrEquipoDeCustodio(PDO $db, string $cedula, string $codigo): ?array
     $codigo = strtoupper(trim($codigo));
     if ($cedula === '' || $codigo === '') { return null; }
     $stmt = $db->prepare("SELECT * FROM eqr_equipos
-                          WHERE codigo_interno = ? AND custodio_cedula = ? AND estado = 'asignado'");
-    $stmt->execute([$codigo, $cedula]);
+                          WHERE (codigo_interno = ? OR serie = ?)
+                            AND custodio_cedula = ? AND estado = 'asignado' LIMIT 1");
+    $stmt->execute([$codigo, $codigo, $cedula]);
     return $stmt->fetch() ?: null;
 }
 

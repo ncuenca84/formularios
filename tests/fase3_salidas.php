@@ -29,7 +29,9 @@ $db->prepare("INSERT INTO eqr_equipos (contrato_id, codigo_interno, tipo, marca,
 $equipoId = (int)$db->lastInsertId();
 echo "== 1. Verificación cédula + código (neutral) ==\n";
 ok(eqrEquipoDeCustodio($db, '1710000002', 'TEST-3001') !== null, 'par correcto encontrado');
+ok(eqrEquipoDeCustodio($db, '1710000002', 'serie-f3-1') !== null, 'también funciona con la SERIE del equipo (la que el funcionario conoce)');
 ok(eqrEquipoDeCustodio($db, '1710000003', 'TEST-3001') === null, 'cédula ajena: NO revela nada');
+ok(eqrEquipoDeCustodio($db, '1710000003', 'SERIE-F3-1') === null, 'serie con cédula ajena: NO revela nada');
 ok(eqrEquipoDeCustodio($db, '1710000002', 'TEST-9999') === null, 'código equivocado: NO revela nada');
 $equipo = $db->query("SELECT * FROM eqr_equipos WHERE id = $equipoId")->fetch();
 ok(eqrSalidaProblema($db, $equipo) === null, 'el equipo puede salir');
