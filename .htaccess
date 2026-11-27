@@ -1,0 +1,18 @@
+# Proteger directorios sensibles
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Denegar acceso a archivos de configuracion
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^includes/ - [F,L]
+    RewriteRule ^vendor/ - [F,L]
+    RewriteRule ^templates/ - [F,L]
+
+    # Permitir acceso a uploads (logos y PDFs)
+    RewriteRule ^assets/uploads/ - [L]
+</IfModule>
+
+# Proteger archivos sensibles
+<FilesMatch "\.(env|json|lock|md|sql)$">
+    Require all denied
+</FilesMatch>
