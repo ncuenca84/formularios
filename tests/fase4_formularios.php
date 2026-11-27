@@ -14,6 +14,25 @@ foreach (firMigrar($db) as $l) { echo "   ", $l, "\n"; }
 firMigrar($db);
 ok(true, 'migración sin errores');
 
+echo "== 0b. Cédula en el certificado según la entidad certificadora ==\n";
+// Caso real: CA que pone un numero interno en el serialNumber y la cedula
+// en una extension propia (y el RUC en otro campo del sujeto).
+pruebasGenerarCertsValidos();
+$p12Ext = (string)file_get_contents(pruebasCert('valido_ext.p12'));
+$outExt = [];
+openssl_pkcs12_read($p12Ext, $outExt, 'prueba123');
+$pemExt = (string)$outExt['cert'];
+$verExt = new CmsVerifier();
+$idsExt = $verExt->identificacionesDelCert($pemExt);
+ok(in_array('131223165199', $idsExt, true) && in_array('1710000033', $idsExt, true),
+   'se detectan el número interno Y la cédula de la extensión (' . implode(', ', $idsExt) . ')');
+ok($verExt->certTieneCedula($pemExt, '1710000033'),
+   'la cédula esperada SE ENCUENTRA aunque el serialNumber tenga un número interno');
+ok($verExt->certTieneCedula($pemExt, '1710000041'),
+   'también se reconoce la cédula dentro de un RUC (cédula + 001)');
+ok(!$verExt->certTieneCedula($pemExt, '1710000009'),
+   'una cédula ajena sigue RECHAZADA');
+
 // limpiar datos de prueba
 $db->exec("DELETE FROM fir_firmas WHERE documento_id IN (SELECT id FROM fir_documentos WHERE codigo LIKE 'TEST-%')");
 $db->exec("DELETE FROM eqr_notificaciones WHERE documento_id IN (SELECT id FROM fir_documentos WHERE codigo LIKE 'TEST-%')");
@@ -63,7 +82,7 @@ echo "== 3. Negativa: solicitante firma con certificado ajeno ==\n";
 $prep = firPrepararFirma($ctx['documento'], $ctx['firma']);
 $hexMala = firmaCli('firmante2_anterior.p12', $prep['bytesB64'], 'sigF0.der');  // 1710000002 != 1710000009
 $rr = firCompletarFirma($db, $ctx['documento'], $ctx['firma'], $hexMala, 'firmante:x');
-ok(!$rr['ok'] && (bool)preg_grep('/no corresponde/', $rr['errores']), 'rechazada: cédula no corresponde');
+ok(!$rr['ok'] && (bool)preg_grep('/no contiene la cedula/', $rr['errores']), 'rechazada: cédula no corresponde');
 
 echo "== 4. Firma 1 (solicitante) y Firma 2 (autorizador) ==\n";
 $ctx = firFirmaPorToken($db, $r['token']);

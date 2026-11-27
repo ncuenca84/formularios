@@ -31,7 +31,8 @@ define('PRUEBAS_CERTS_VALIDOS', PRUEBAS_TMP . '/certs_validos');
 /** Certificados de prueba con cedulas VALIDAS (modulo 10): se generan una vez. */
 function pruebasGenerarCertsValidos(): void
 {
-    if (is_file(PRUEBAS_CERTS_VALIDOS . '/valido1.p12')) { return; }
+    if (is_file(PRUEBAS_CERTS_VALIDOS . '/valido1.p12')
+        && is_file(PRUEBAS_CERTS_VALIDOS . '/valido_ext.p12')) { return; }
     @mkdir(PRUEBAS_CERTS_VALIDOS, 0775, true);
     exec('cd tools/firma-js && node src/gen_certs_validos.js ' . escapeshellarg(PRUEBAS_CERTS_VALIDOS) . ' 2>&1', $o, $rc);
     if ($rc !== 0) {

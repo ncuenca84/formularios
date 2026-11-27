@@ -92,25 +92,57 @@ class CmsVerifier
         return ['ok' => true, 'certPem' => $certPem, 'error' => null];
     }
 
-    /** Extrae la cedula del certificado (serialNumber del sujeto o extensiones). */
-    public function extraerCedula(string $certPem): ?string
+    /**
+     * TODAS las identificaciones (10 a 13 digitos) que aparecen en el
+     * certificado: en el subject (serialNumber, CN, UID, etc.) y en las
+     * extensiones. Cada entidad certificadora ecuatoriana guarda la cedula
+     * en un campo distinto (el Banco Central en el serialNumber, otras en
+     * OIDs propios y ponen en el serialNumber un numero interno), asi que
+     * NO basta con mirar un solo campo.
+     */
+    public function identificacionesDelCert(string $certPem): array
     {
         $info = openssl_x509_parse($certPem);
-        if ($info === false) { return null; }
+        if ($info === false) { return []; }
 
-        // 1) subject serialNumber
-        foreach (['serialNumber', 'SN', '2.5.4.5'] as $k) {
-            if (!empty($info['subject'][$k])) {
-                if (preg_match('/\d{10,13}/', (string)$info['subject'][$k], $m)) {
-                    return $m[0];
+        $textos = [];
+        $junta = function ($v) use (&$textos, &$junta) {
+            if (is_array($v)) { foreach ($v as $x) { $junta($x); } }
+            elseif (is_string($v) || is_numeric($v)) { $textos[] = (string)$v; }
+        };
+        $junta($info['subject'] ?? []);
+        $junta($info['extensions'] ?? []);   // valores DER en bruto: los digitos ASCII igual aparecen
+
+        $ids = [];
+        foreach ($textos as $t) {
+            if (preg_match_all('/(?<!\d)(\d{10,13})(?!\d)/', $t, $mm)) {
+                foreach ($mm[1] as $num) {
+                    $ids[$num] = true;
+                    // un RUC de persona natural es cedula + 001
+                    if (strlen($num) === 13 && substr($num, 10) === '001') {
+                        $ids[substr($num, 0, 10)] = true;
+                    }
                 }
             }
         }
-        // 2) extensiones (las CA ecuatorianas usan OIDs propios)
-        foreach (($info['extensions'] ?? []) as $v) {
-            if (is_string($v) && preg_match('/\b(\d{10})\b/', $v, $m)) {
-                return $m[1];
-            }
+        // strval: PHP convierte las claves numericas a enteros y romperia
+        // las comparaciones estrictas de cadenas.
+        return array_map('strval', array_keys($ids));
+    }
+
+    /** ¿El certificado pertenece a la cedula esperada? (busca en todos los campos) */
+    public function certTieneCedula(string $certPem, string $cedulaEsperada): bool
+    {
+        $esperada = preg_replace('/\D/', '', $cedulaEsperada);
+        if (strlen($esperada) !== 10) { return false; }
+        return in_array($esperada, $this->identificacionesDelCert($certPem), true);
+    }
+
+    /** Extrae la cedula del certificado (la primera identificacion de 10 digitos). */
+    public function extraerCedula(string $certPem): ?string
+    {
+        foreach ($this->identificacionesDelCert($certPem) as $id) {
+            if (strlen($id) === 10) { return $id; }
         }
         return null;
     }
@@ -180,11 +212,18 @@ class CmsVerifier
         $cert = null;
         if ($certNuevo) {
             $cert = $this->datosCert($certNuevo);
-            if ($cert['cedula'] === null) {
+            $idsCert = $this->identificacionesDelCert($certNuevo);
+            if ($this->certTieneCedula($certNuevo, $cedulaEsperada)) {
+                // El certificado SI contiene la cedula esperada (en el campo
+                // que sea segun la entidad certificadora): esa es la que se
+                // registra, no el primer numero que aparezca.
+                $cert['cedula'] = preg_replace('/\D/', '', $cedulaEsperada);
+            } elseif (!$idsCert) {
                 $advertencias[] = 'No se encontro la cedula en el certificado: requiere revision manual (CN: ' . $cert['cn'] . ').';
-            } elseif ($cert['cedula'] !== preg_replace('/\D/', '', $cedulaEsperada)) {
-                $errores[] = 'La cedula del certificado (' . $cert['cedula'] .
-                    ') no corresponde al firmante esperado (' . $cedulaEsperada . ').';
+            } else {
+                $errores[] = 'El certificado no contiene la cedula del firmante esperado (' . $cedulaEsperada
+                    . '). Identificaciones encontradas en el certificado: ' . implode(', ', $idsCert)
+                    . '. Verifique que este usando SU archivo .p12 y no el de otra persona.';
             }
             // 5. Vigencia
             $info = openssl_x509_parse($certNuevo);

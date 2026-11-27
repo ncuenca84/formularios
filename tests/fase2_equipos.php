@@ -69,7 +69,7 @@ $prep = eqrPrepararFirma($tramite, $f1);
 $hexMala = firmaCli('firmante2_anterior.p12', $prep['bytesB64'], 'sig_mala.der');  // cedula 1710000002
 $r = eqrCompletarFirma($db, $tramite, $f1, $hexMala, 'admin:prueba');
 ok(!$r['ok'], 'rechazada por el servidor');
-ok((bool)preg_grep('/no corresponde/', $r['errores']), 'motivo: cédula no corresponde');
+ok((bool)preg_grep('/no contiene la cedula/', $r['errores']), 'motivo: cédula no corresponde');
 $f1b = eqrFirmaPendiente($db, $tramiteId);
 ok((int)$f1b['intentos_fallidos'] === 1, 'intento fallido contabilizado');
 
